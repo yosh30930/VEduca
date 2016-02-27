@@ -1,0 +1,48 @@
+{% extends "sesion/base.html" %}
+
+{% block header%}
+    <style>
+        form {
+            display: block;
+            background-color: #ddd;
+            padding: 20px;
+            width: 400px;
+            min-height: 100px;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+{% if form.errors %}
+<p>Tu usario o contraseña no coincidieron. Intenta otra vez.</p>
+{% endif %}
+
+{% if user.is_authenticated %}
+    <p>Bienvenido '{{ request.user.username }}'</p>
+    <p>Tu cargo es '{{ request.user.last_name }}'</p>
+    {# Assumes you setup the password_reset view in your URLconf #}
+    <p><a href="{% url 'sesion' %}">Cerrar Sesión</a></p>
+{% else %}
+    <form method="post" action="{% url 'sesion' %}">
+    {% csrf_token %}
+    <table style="margin: 0 auto;">
+    <tr>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+    </tr>
+    <tr>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
+    </tr>
+    </table>
+
+    <input type="submit" value="login" />
+    <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+{% endif %}
+
+{# Assumes you setup the password_reset view in your URLconf #}
+{# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
+
+{% endblock %}

@@ -1,0 +1,4 @@
+Django==1.9.2
+Unipath==1.1
+psycopg2==2.6.1
+django-braces==1.8.1
