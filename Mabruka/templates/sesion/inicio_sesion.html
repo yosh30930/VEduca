@@ -22,9 +22,9 @@
     <p>Bienvenido '{{ request.user.username }}'</p>
     <p>Tu cargo es '{{ request.user.last_name }}'</p>
     {# Assumes you setup the password_reset view in your URLconf #}
-    <p><a href="{% url 'sesion' %}">Cerrar Sesión</a></p>
+    <p><a href="{% url 'inicio_sesion' %}">Cerrar Sesión</a></p>
 {% else %}
-    <form method="post" action="{% url 'sesion' %}">
+    <form method="post" action="{% url 'inicio_sesion' %}">
     {% csrf_token %}
     <table style="margin: 0 auto;">
     <tr>
@@ -40,6 +40,7 @@
     <input type="submit" value="login" />
     <input type="hidden" name="next" value="{{ next }}" />
     </form>
+    <a href="{% url 'restaura_contraseña' %}">¿Olvidaste tu contraseña?</a>
 {% endif %}
 
 {# Assumes you setup the password_reset view in your URLconf #}

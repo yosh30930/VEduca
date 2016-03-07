@@ -38,9 +38,10 @@ THIRD_PARTY_APPS = [
     ]
 
 LOCAL_APPS = [
+    'apps.calendario',
     'apps.sesion',
-    'apps.usuarios',
     'apps.tests',
+    'apps.usuarios',
     ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -108,4 +109,4 @@ USE_L10N = True
 
 USE_TZ = True
 
-AUTH_USER_MODEL = 'usuarios.Usuario'
+#AUTH_USER_MODEL = 'usuarios.Usuario'

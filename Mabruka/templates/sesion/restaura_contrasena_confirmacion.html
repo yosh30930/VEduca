@@ -1,0 +1,35 @@
+{% extends "sesion/base.html" %}
+
+{% block content %}
+    {% if validlink %}
+        <p>Por favor introduce tu nueva contraseña 2 veces.<br />
+           Para que podamos verificar si la introdujiste correctamente.</p>
+        <form action="" method="post">
+            <div style="display:none">
+                <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+            </div>
+            <table>
+                <tr>
+                    <td>{{ form.new_password1.errors }}
+                        <label for="id_new_password1">Nueva contraseña:</label></td>
+                    <td>{{ form.new_password1 }}</td>
+                </tr>
+                <tr>
+                    <td>{{ form.new_password2.errors }}
+                        <label for="id_new_password2">Confirma la contraseña:</label></td>
+                    <td>{{ form.new_password2 }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="submit" value="Change my password" /></td>
+                </tr>
+            </table>
+        </form>
+    {% else %}
+        <h1>No se pudo restaurar la contraseña</h1>
+        <p>La liga para la restauración de contraseña es inválida, <br />
+        probablemente porque ya se ha usado. <br/>
+        </p>
+        <a href="{% url 'restaura_contraseña' %}">Vuelve a solicitar un nueva restauración de contraseña.</a>
+    {% endif %}
+{% endblock %}

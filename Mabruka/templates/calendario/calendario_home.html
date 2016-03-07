@@ -1,0 +1,315 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<link href="{% static 'fullcalendar-2.6.0/fullcalendar.css' %}" rel='stylesheet' />
+<link href="{% static 'fullcalendar-2.6.0/fullcalendar.print.css' %}" rel='stylesheet' media='print' />
+<script src="{% static 'fullcalendar-2.6.0/lib/moment.min.js' %}"></script>
+<script src="{% static 'fullcalendar-2.6.0/lib/jquery.min.js' %}"></script>
+<script src="{% static 'fullcalendar-2.6.0/lib/jquery-ui.custom.min.js' %}"></script>
+<script src="{% static 'fullcalendar-2.6.0/fullcalendar.min.js' %}"></script>
+<script src="{% static 'fullcalendar-2.6.0/lang/es.js' %}"></script>
+<script>
+    function is_null_or_undefined(objeto) {
+        return (typeof objeto === 'undefined' || objeto === null)
+    }
+    var mapa_actividades = new Map();
+
+    $(document).ready(function() {
+
+        $('#external-events').on('click', '.actividad', function() {
+            var actividad = mapa_actividades.get($(this).data('map_id'));
+            console.log(actividad);
+            var text = "";
+            text +=  actividad['fields']['nombre'] + " ";
+            if(! is_null_or_undefined(actividad['fields']['start'])){
+                text += "Inicia " + actividad['fields']['start'].format('llll') + " ";
+            }
+            $("#info-actividad span").text(text);
+        });
+
+        function updateEvent(event) {
+            console.log(event,moment(event['start']).isValid() , event['start'].utc().format());
+            var modelo = event['modelo'];
+            var pk = event['id'];
+            var nombre = event['title'];
+            var calId = (typeof event['calId'] === 'undefined' || event['calId'] === null)  ? "0" : event['calId'];
+            var allDay = (typeof event['allDay'] === 'undefined' || event['allDay'] === null) ? "false" : event['allDay'];
+            var start = event['start'].utc().format();
+            var end = moment(event['end']).isValid() ? event['end'].utc().format() : "null";
+            $.ajax({
+                data: {
+                    'pk' : pk,
+                    'modelo' : modelo,
+                    'nombre' : nombre,
+                    'calId' : calId,
+                    'allDay' : allDay,
+                    'start' : start,
+                    'end' : end,
+                },
+                url : '/actualizar-evento/',
+                type : 'get',
+                success: function () {
+                    console.log("exito");
+                }
+            });
+        }
+
+
+        /* initialize the external events
+        -----------------------------------------------------------------*/
+
+        $('#external-events .fc-event').each(function() {
+
+            // store data so the calendar knows to render an event upon drop
+            $(this).data('event', {
+                title: $.trim($(this).text()), // use the element's text as the event title
+                stick: true // maintain when user navigates (see docs on the renderEvent method)
+            });
+
+            // make the event draggable using jQuery UI
+            $(this).draggable({
+                zIndex: 999,
+                revert: true,      // will cause the event to go back to its
+                revertDuration: 0  //  original position after the drag
+            });
+
+        });
+
+
+        /* initialize the calendar
+        -----------------------------------------------------------------*/
+
+        $('#calendar').fullCalendar({
+            lang: 'es',
+            slotDuration: '00:15:00',
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            editable: true,
+            droppable: true, // this allows things to be dropped onto the calendar
+            drop: function(date) {
+                // is the "remove after drop" checkbox checked?
+                if ($('#drop-remove').is(':checked')) {
+                    // if so, remove the element from the "Draggable Events" list
+                    $(this).remove();
+                }
+            },
+            eventDrop: function(event) {
+                event['calId'] = "1";
+                updateEvent(event);
+            },
+            eventReceive: function (event) {
+                event['calId'] = "1";
+                updateEvent(event);
+            },
+            eventResize: function (event) {
+                updateEvent(event);
+            }
+        });
+
+
+        $('#calendar-min').fullCalendar({
+            lang: 'es',
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            editable: true,
+            droppable: true, // this allows things to be dropped onto the calendar
+            hiddenDays: [0,3,4,5,6],
+            firstDay: 1,
+            dayNames: ['Día 7', 'Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6'],
+            dayNamesShort: ['Día 7', 'Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6'],
+            columnFormat: "ddd",
+            drop: function(date) {
+                // is the "remove after drop" checkbox checked?
+                if ($('#drop-remove').is(':checked')) {
+                    // if so, remove the element from the "Draggable Events" list
+                    //$(this).remove();
+                }
+            },
+            eventDrop: function(event) {
+                event['calId'] = "2";
+                updateEvent(event);
+            },
+            eventReceive: function (event) {
+                event['calId'] = "2";
+                updateEvent(event);
+            },
+            eventResize: function (event) {
+                updateEvent(event);
+            }
+        });
+
+        function render_actividades(actividad, lista) {
+            if (typeof actividad === 'undefined' || actividad === null){return;}
+            var padre = actividad['padre'];
+            padre['fields']['map_id'] = mapa_actividades.size;
+            mapa_actividades.set(mapa_actividades.size, padre);
+            var div = null;
+            var li = $('<li>');
+            if(is_null_or_undefined(padre['fields']['start'])){
+                div = $("<div>", {class:'actividad'});
+                $(div).data('event', {actividad:actividad});
+                $(div).data('map_id', padre['fields']['map_id']);
+                $(div).text(padre['fields']['nombre']);
+                $(li).append(div);
+                $(lista).append(li);
+                var tmp_lista = $('<ul>');
+                $(lista).append(tmp_lista);
+                $(actividad['hijos']).each(function (index, value) {
+                    render_actividades(value, tmp_lista);
+                });
+            }else {
+                div = agrega_arrastrable(padre);
+                $(li).append(div);
+                $(lista).append(li);
+            }
+
+        }
+
+        function agrega_arrastrable(raw_actividad) {
+            var actividad = raw_actividad['fields'];
+            actividad['id'] = raw_actividad['pk'];
+            actividad['modelo'] = raw_actividad['model'];
+            actividad['title'] = actividad['nombre'];
+            var start = moment.utc(actividad['start']);
+            var end = (typeof actividad['end'] === 'undefined' || actividad['end'] === null) ? null : moment.utc(actividad['end']);
+            actividad['start'] = start;
+            actividad['end'] = end;
+            actividad['stick'] = true;
+            var tmp_div = $("<div>", {class:'fc-event actividad', text:actividad['nombre']});
+            $(tmp_div).data('event', {id:actividad['id'], title:actividad['nombre'], modelo:actividad['modelo'], actividad:actividad});
+            $(tmp_div).data('map_id', actividad['map_id']);
+            $(tmp_div).draggable({
+                zIndex: 999,
+                revert: true,      // will cause the event to go back to its
+                revertDuration: 0  //  original position after the drag
+            });
+            switch(actividad['calId']) {
+                case "0":
+                    break;
+                case "1":
+                    $("#calendar").fullCalendar('renderEvent', actividad, true);
+                    $("#calendar").fullCalendar('unselect');
+                    break;
+                case "2":
+                    $("#calendar-min").fullCalendar('renderEvent', actividad, true);
+                    $("#calendar-min").fullCalendar('unselect');
+                    break;
+                default:
+                    console.log("Error con", actividad);
+            }
+            return tmp_div;
+        }
+
+        /*Pide la lista de los eventos*/
+        $.ajax({
+            url : '/buscar-actividades/',
+            type : 'get',
+            success : function (data) {
+                console.log(data);
+                var lista = $('#lista-eventos');
+                render_actividades(data, lista);
+                $('#calendar').fullCalendar( 'rerenderEvents' );
+                return;
+            }
+        });
+
+
+
+    });
+
+</script>
+<style>
+
+    body {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 14px;
+        font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+    }
+
+    #wrap {
+        width: 1100px;
+        margin: 0 auto;
+    }
+
+    #external-events {
+        float: left;
+        width: 250px;
+        padding: 0 10px;
+        border: 1px solid #ccc;
+        background: #eee;
+        text-align: left;
+    }
+
+    #external-events h4 {
+        font-size: 16px;
+        margin-top: 0;
+        padding-top: 1em;
+    }
+
+    #external-events .fc-event {
+        margin: 10px 0;
+        cursor: pointer;
+    }
+
+    #external-events p {
+        margin: 1.5em 0;
+        font-size: 11px;
+        color: #666;
+    }
+
+    #external-events p input {
+        margin: 0;
+        vertical-align: middle;
+    }
+
+    .calendar {
+        float: right;
+        width: 800px;
+    }
+
+    ul {
+        padding-left: 1em;
+    }
+
+    #info-actividad {
+        float: left;
+        width: 250px;
+    }
+
+    .actividad {
+        cursor: pointer;
+    }
+
+</style>
+</head>
+<body>
+    <div id='wrap'>
+        <div id='external-events'>
+            <h4>Eventos arrastrables</h4>
+            <!--<p>
+                <input type='checkbox' id='drop-remove' checked="true" />
+                <label for='drop-remove'>remover al soltar</label>
+            </p>-->
+            <ul id="lista-eventos" class="tree">
+            </ul>
+        </div>
+        <div id='calendar' class="calendar"></div>
+        <div id="info-actividad">
+            <span></span><br>
+            <button>Editar</button>
+        </div>
+        <div style='clear:both'></div>
+        <div id='calendar-min' class="calendar"></div>
+        <div style='clear:both'></div>
+    </div>
+</body>
+</html>

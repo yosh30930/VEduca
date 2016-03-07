@@ -1,0 +1,29 @@
+{% extends "sesion/base.html" %}
+
+{% block header%}
+    <style>
+        form {
+            display: block;
+            background-color: #ddd;
+            padding: 20px;
+            width: 400px;
+            min-height: 100px;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
+{% block title %}Reset Password{% endblock %}
+
+{% block content %}
+<p>Escribe tu correo para recibir instrucciones sobre como recuperar tu contraseña.</p>
+
+<form action="" method="post">
+    <div style="display:none">
+        <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+    </div>
+     {{ form.email.errors }}
+    <p><label for="id_email">Correo:</label> {{ form.email }}</p>
+    <input type="submit" value="Recuperar contraseña" />
+</form>
+{% endblock %}
