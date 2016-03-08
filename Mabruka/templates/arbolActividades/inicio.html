@@ -1,0 +1,51 @@
+{% extends "arbolActividades/base.html" %}
+
+{% block header%}
+
+    <style type="text/css">
+        .jstree-anchor {
+        }
+        .jstree-node:nth-child(even) {background: #444}
+        .jstree-node:nth-child(odd) {background: #333}
+        .jstree-node .jstree-node:nth-child(even) {background: #222}
+        .jstree-node .jstree-node:nth-child(odd) {background: #111}
+        .jstree-node {
+            color: white;
+            padding: 25px;
+            width: auto;
+            height: auto;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+Hola
+{% for object in object_list %}
+    <p>{{object.nombre}}</p>
+{% endfor %}
+<button type="button" class="btn btn-default btn-lg">
+  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Crear Evento
+</button>
+<div id="jstree_demo_div"></div>
+{# Assumes you setup the password_reset view in your URLconf #}
+{# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
+<script type="text/javascript">
+    $(function () {
+        $('#jstree_demo_div').jstree({ 'core' : {
+    'data' : [
+       { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
+       { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
+       { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
+       { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
+    ]
+        } });
+    });
+</script>
+<ul>
+    <li> <div style="width: 100px; height:100px; background-color:red;"></div></li>
+    <li> <div style="width: 100px; height:100px; background-color:red;"></div></li>
+    <li> <div style="width: 100px; height:100px; background-color:red;"></div></li>
+    <li> <div style="width: 100px; height:100px; background-color:red;"></div></li>
+    <li> <div style="width: 100px; height:100px; background-color:red;"></div></li>
+</ul>
+{% endblock %}
