@@ -211,7 +211,8 @@
         /*Pide la lista de los eventos*/
         $.ajax({
             url : '/buscar-actividades/',
-            type : 'get',
+            type: 'get',
+            data: {id:{{evento_id}}},
             success : function (data) {
                 console.log(data);
                 var lista = $('#lista-eventos');

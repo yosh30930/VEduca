@@ -24,6 +24,10 @@ class Programables(models.Model):
         abstract = True
 
 
+class Espacio(models.Model):
+    nombre = models.CharField(max_length=300)
+
+
 class Relacion(models.Model):
     padre_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_as_padre")
     padre_id = models.PositiveIntegerField()

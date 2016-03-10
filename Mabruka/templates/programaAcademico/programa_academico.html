@@ -1,4 +1,4 @@
-{% extends "arbolActividades/base.html" %}
+{% extends "programaAcademico/base.html" %}
 
 {% block header%}
 
@@ -48,9 +48,6 @@
   </div>
 </div>
 <!-- Termina Modal -->
-<button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#myModal">
-  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Crear Evento
-</button>
 <div id="jstree_demo_div"></div>
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
@@ -143,7 +140,7 @@
             var li = arbol.get_node(id_nodo, true);
             var boton_gestion = $("<a>",
                 {class:"btn btn-default btn-lg",
-                href:"/programa_academico/" + evento_id + "/"
+                href:"/gestion_evento/" + evento_id + "/"
             })
             var boton_modificacion = $("<a>",
                 {class:"btn btn-default btn-lg",

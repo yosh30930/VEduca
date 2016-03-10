@@ -7,6 +7,7 @@ from .models import Evento, Foro, Seminario, Panel, Relacion
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
+from django.http import Http404, HttpResponseBadRequest
 import json
 
 # Create your views here.
@@ -17,7 +18,7 @@ class CalendarioHome(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(CalendarioHome, self).get_context_data(**kwargs)
-#       context['eventos'] = Actividad.objects.all()
+        context['evento_id'] = kwargs['id']
 #       context['latest_articles'] = Article.objects.all()[:5]
         return context
 
@@ -63,15 +64,17 @@ def ResetActividades():
 
 
 def BuscarActividades(request):
-    ResetActividades()
+    if request.method != 'POST':
+        raise Http404
     eventos = Evento.objects.all()
     if len(eventos) == 0:
         ResetActividades()
     if len(User.objects.all()) == 0:
-        pass
-    ResetUsuarios()
-    eventos = Evento.objects.all()
-    evento = eventos[0]
+        ResetUsuarios()
+    try:
+        evento = Evento.objects.get(pk=request.GET['id'])
+    except Exception:
+        return HttpResponseBadRequest()
     arbol = obten_hijos(evento)
     data = serializa(arbol)
     data_json = json.dumps(data)
