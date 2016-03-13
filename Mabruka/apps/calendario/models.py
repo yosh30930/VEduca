@@ -1,14 +1,46 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from mptt.models import MPTTModel, TreeForeignKey
+
+
+class Nodo(MPTTModel):
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_id = models.PositiveIntegerField()
+    elemento = GenericForeignKey('content_type', 'content_id')
+
+    def obten_nodo(objeto_relacionado):
+        tipo_objeto_relacionado = ContentType.objects.get_for_model(objeto_relacionado)
+        nodo = Nodo.objects.filter(content_type__pk=tipo_objeto_relacionado.id, content_id=objeto_relacionado.id).first()
+        return nodo
+
+class ActividadManager(models.Manager):
+    def crear(self, **kwargs):
+        padre = None
+        if "padre" in kwargs:
+            padre = kwargs.pop("padre", None)
+        try:
+            actividad = self.create(**kwargs)
+            nodo = None
+            if padre is None:
+                nodo = Nodo(elemento=actividad).save()
+            else:
+                nodo = Nodo(parent=padre.nodos.all().first(), elemento=actividad).save()
+            actividad.nodo = nodo
+            return actividad
+        except Exception as e:
+            raise e
+        # do something with the book
 
 
 # Create your models here.
 class Actividad(models.Model):
     nombre = models.CharField(max_length=300)
-    relacion = models.OneToOneField(
-        'Relacion', on_delete=models.CASCADE, null=True)
+    nodos = GenericRelation('Nodo', content_type_field='content_type', object_id_field='content_id')
+    objects = ActividadManager()
+
 
     class Meta:
         abstract = True
@@ -28,15 +60,6 @@ class Espacio(models.Model):
     nombre = models.CharField(max_length=300)
 
 
-class Relacion(models.Model):
-    padre_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_as_padre")
-    padre_id = models.PositiveIntegerField()
-    padre = GenericForeignKey('padre_type', 'padre_id')
-    hijo_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_as_hijo")
-    hijo_id = models.PositiveIntegerField()
-    hijo = GenericForeignKey('hijo_type', 'hijo_id')
-
-
 class Responsables(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     actividad_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -44,8 +67,8 @@ class Responsables(models.Model):
     actividad = GenericForeignKey('actividad_type', 'actividad_id')
 
 
-class Evento(models.Model):
-    nombre = models.CharField(max_length=120)
+class Evento(Actividad):
+    pass
 
 
 class EncuentroInternacional(Evento):

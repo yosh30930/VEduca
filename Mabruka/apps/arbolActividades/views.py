@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from apps.calendario.models import Evento, Relacion
+from apps.calendario.models import Evento
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
@@ -55,11 +55,7 @@ def ObtenerHijos(request):
     if padre is None:
         hijos = Evento.objects.all()
     else:
-        relaciones = Relacion.objects.filter(
-            padre_id=padre.id,
-            padre_type=ContentType.objects.get_for_model(padre)
-        )
-        hijos = [relacion.hijo for relacion in relaciones]
+        hijos = Evento.objects.all()
     data_json = serializers.serialize('json', hijos)
     return HttpResponse(data_json, content_type='application/json')
 

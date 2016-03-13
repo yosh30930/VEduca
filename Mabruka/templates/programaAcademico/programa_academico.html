@@ -1,26 +1,7 @@
 {% extends "programaAcademico/base.html" %}
+{% load static from staticfiles %}
 
 {% block header%}
-
-    <style type="text/css">
-        .jstree-children {
-            padding: 0;
-            margin: 0;
-            border: 0;
-        }
-        .jstree-node:nth-child(odd) {background: rgba(0,0,0,.4);}
-        .jstree-node:nth-child(even) {background: rgba(0,0,0,.5);}
-        .jstree-node {
-            color: white;
-            padding: 25px;
-            width: auto;
-            height: auto;
-            font-size: 18pt;
-            padding-right: 0;
-            padding-left: 0;
-            list-style-type: none;
-        }
-    </style>
 {% endblock %}
 
 {% block content %}
@@ -48,25 +29,11 @@
   </div>
 </div>
 <!-- Termina Modal -->
-<div id="jstree_demo_div"></div>
+<div id="tree1"></div>
+
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
 <script type="text/javascript">
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
     var csrftoken = getCookie('csrftoken');
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -79,113 +46,62 @@
             }
         }
     });
-    $('#nombre_evento_input').on('input propertychange paste', function () {
-        var nombre_evento = $.trim($(this).val());
-        if(nombre_evento === ""){
-            $('#crea_evento_btn').attr("disabled", "disabled");
-        }else {
-            $('#crea_evento_btn').removeAttr("disabled");
-        };
-    });
-    $('#crea_evento_btn').on('click', function () {
-        //$(this).button('complete') // button text will be "finished!"
-        var nombre_evento = $.trim($("#nombre_evento_input").val());
-        console.log(typeof nombre_evento, nombre_evento);
-        if(nombre_evento === ""){
-            return;
-        }
-        $.post( "/crear_evento/", {nombre:nombre_evento}, function() {
-          console.log( "success" );
-        })
-          .done(function() {
-            location.reload();
-            console.log( "second success" );
-          })
-          .fail(function() {
-            console.log( "error" );
-          })
-          .always(function() {
-            console.log( "finished" );
-        });
-    });
-    function obtener_hijos(obj, cb) {
-        console.log(obj, cb);
-        var data = {};
-        if (obj.id !== "#") {
-            var pos = obj.id.lastIndexOf('.');
-            data["pk"] = obj.id.substr(pos + 1);
-            data["model"] = obj.id.substr(0, pos);
-            console.log(data["pk"], data["model"]);
-        };
-        $.get( "/obtener_hijos/", data, function( data ) {
-            console.log( "Load was performed." );
-            var nodos = [];
-            $(data).each(function(index, element) {
-                var nodo = {
-                    id:element["model"]+"."+element["pk"],
-                    text:element["fields"]["nombre"],
-                    children:true,
-                    title:"holas",
-                    element:element}
-                nodos.push(nodo);
-            });
-            console.log( data );
-            cb.call(this, nodos);
-        });
-    }
-    function agrega_botones_nodo(arbol, id_nodo) {
-        if(id_nodo.indexOf("evento.") > -1){
-            var split = id_nodo.split(".");
-            var evento_id = split[split.length - 1];
-            var li = arbol.get_node(id_nodo, true);
-            var boton_gestion = $("<a>",
-                {class:"btn btn-default btn-lg",
-                href:"/gestion_evento/" + evento_id + "/"
-            })
-            var boton_modificacion = $("<a>",
-                {class:"btn btn-default btn-lg",
-                href:"/modificacion_evento/" + evento_id + "/"
-            })
-            $(boton_gestion).text("Gestionar");
-            $(boton_modificacion).text("Modificar");
-            $(li).append($("<br>"));
-            $(li).append(boton_gestion);
-            $(li).append(boton_modificacion);
-        };
-    }
-    function agrega_botones_nodos(arbol, ids_nodos) {
-        $(ids_nodos).each(function (index, nodo) {
-            agrega_botones_nodo(arbol, nodo);
-        });
-    }
-    $('#jstree_demo_div')
-    //escucha eventos
-    .on('redraw.jstree', function (event, data) {
-        var nodes = data.nodes;
-        var arbol = $('#jstree_demo_div').jstree(true);
-        agrega_botones_nodos(arbol, nodes);
-        //console.log("@@@@@@@@@@@@@@@@@@@", nodes);
-    })
-    //Crea la instancia
-    .jstree({
-        'core' : {
-            'data' : obtener_hijos
-    }});
-    /*$("#jstree_demo_div").jstree({
-        'core' : {
-          'data' : {
-            'url' : function (node) {
-              return node.id === '#' ?
-                '/obtener_hijos/' :
-                '/obtener_hijos/';
-            },
-            'data' : function (node) {
-                console.log(node);
-                //return { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" };
-              //return { 'id' : node.id };
-            }
-          }
-        }
-    });*/
 </script>
+<script type="text/javascript">
+$(function() {
+    $('#tree1').tree({
+        dataUrl:  function(node) {
+            var data = {};
+            var url = '';
+            if(node){
+                var tipo = node.tipo;
+                var id = node.id;
+                url = '/hijos/'+tipo+"/"+id+"/";
+                console.log("pidiendo", node);
+            }else{
+              url = '/encuentros/'+{{evento_id}}+'/';
+            }
+            return {url: url, data: data};
+       },
+        dataFilter: function(data) {
+            console.log(data);
+            if (data['nombre']) {
+              var nodo = data;
+              nodo['label'] = nodo['nombre'];
+              nodo['load_on_demand'] = true;
+              return [nodo];
+            }
+            var nodos = [];
+            $(data).each(function (index, obj) {
+              var nodo_categoria = {label:Object.keys(obj)[0], children: []};
+              $(obj[nodo_categoria['label']]).each(function(index, nodo){
+                //console.log('nodo', nodo);
+                nodo['label'] = nodo['nombre'];
+                nodo['load_on_demand'] = true;
+                nodo_categoria['children'].push(nodo);
+                //console.log('nodo', nodo);
+              });
+              //console.log(nodo_categoria['children'])
+              nodos.push(nodo_categoria);
+            });
+            return nodos;
+        },
+        selectable: false,
+        closedIcon: '+',
+        openedIcon: '-',
+        onCreateLi: function (node, $li) {
+            //console.log($li);
+            if (node.tipo) {
+              var boton_agregar = $("<a>",
+                {text:"+",
+                class:"btn btn-default btn-md",
+                href:"#" + node.id + "/"
+              });
+              $($li.children()[0]).append(boton_agregar);
+              $li.addClass("list-group-item");
+            }
+        }
+    });
+});
+</script
 {% endblock %}

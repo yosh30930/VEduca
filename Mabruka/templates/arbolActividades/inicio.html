@@ -8,8 +8,8 @@
             margin: 0;
             border: 0;
         }
-        .jstree-node:nth-child(odd) {background: rgba(0,0,0,.4);}
-        .jstree-node:nth-child(even) {background: rgba(0,0,0,.5);}
+        .jstree-node:nth-child(odd) {background: rgba(0,0,0,.1);}
+        .jstree-node:nth-child(even) {background: rgba(0,0,0,.2);}
         .jstree-node {
             color: white;
             padding: 25px;
@@ -35,6 +35,29 @@
       <div class="modal-body">
         <form>
           <div class="form-group">
+            <div class="container">
+                <div class="row">
+                    <div class='col-sm-6'>
+                        <label for="recipient-name" class="control-label">Fecha inicio</label>
+                        <input type='text' class="form-control" id='datetimepicker_inicio' />
+                        <label for="recipient-name" class="control-label">Fecha fin</label>
+                        <input type='text' class="form-control" id='datetimepicker_fin' />
+                    </div>
+                    <script type="text/javascript">
+                        $(function () {
+                            $('#datetimepicker_inicio').datetimepicker({format: 'DD/MM/YYYY'});
+                            $('#datetimepicker_fin').datetimepicker({
+                                format: 'DD/MM/YYYY', useCurrent: false});
+                            $("#datetimepicker_inicio").on("dp.change", function (e) {
+                                $('#datetimepicker_fin').data("DateTimePicker").minDate(e.date);
+                            });
+                            $("#datetimepicker_fin").on("dp.change", function (e) {
+                                $('#datetimepicker_inicio').data("DateTimePicker").maxDate(e.date);
+                            });
+                        });
+                    </script>
+                </div>
+            </div>
             <label for="recipient-name" class="control-label">Nombre del Evento</label>
             <input id="nombre_evento_input" type="text" class="form-control" id="recipient-name" placeholder="Encuentro ...">
           </div>
@@ -52,6 +75,7 @@
   <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Crear Evento
 </button>
 <div id="jstree_demo_div"></div>
+<div id="tree1"></div>
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
 <script type="text/javascript">
@@ -111,84 +135,47 @@
             console.log( "finished" );
         });
     });
-    function obtener_hijos(obj, cb) {
-        console.log(obj, cb);
-        var data = {};
-        if (obj.id !== "#") {
-            var pos = obj.id.lastIndexOf('.');
-            data["pk"] = obj.id.substr(pos + 1);
-            data["model"] = obj.id.substr(0, pos);
-            console.log(data["pk"], data["model"]);
-        };
-        $.get( "/obtener_hijos/", data, function( data ) {
-            console.log( "Load was performed." );
-            var nodos = [];
-            $(data).each(function(index, element) {
-                var nodo = {
-                    id:element["model"]+"."+element["pk"],
-                    text:element["fields"]["nombre"],
-                    children:true,
-                    title:"holas",
-                    element:element}
-                nodos.push(nodo);
-            });
-            console.log( data );
-            cb.call(this, nodos);
-        });
-    }
-    function agrega_botones_nodo(arbol, id_nodo) {
-        if(id_nodo.indexOf("evento.") > -1){
-            var split = id_nodo.split(".");
-            var evento_id = split[split.length - 1];
-            var li = arbol.get_node(id_nodo, true);
-            var boton_gestion = $("<a>",
-                {class:"btn btn-default btn-lg",
-                href:"/programa_academico/" + evento_id + "/"
-            })
-            var boton_modificacion = $("<a>",
-                {class:"btn btn-default btn-lg",
-                href:"/modificacion_evento/" + evento_id + "/"
-            })
-            $(boton_gestion).text("Gestionar");
-            $(boton_modificacion).text("Modificar");
-            $(li).append($("<br>"));
-            $(li).append(boton_gestion);
-            $(li).append(boton_modificacion);
-        };
-    }
-    function agrega_botones_nodos(arbol, ids_nodos) {
-        $(ids_nodos).each(function (index, nodo) {
-            agrega_botones_nodo(arbol, nodo);
-        });
-    }
-    $('#jstree_demo_div')
-    //escucha eventos
-    .on('redraw.jstree', function (event, data) {
-        var nodes = data.nodes;
-        var arbol = $('#jstree_demo_div').jstree(true);
-        agrega_botones_nodos(arbol, nodes);
-        //console.log("@@@@@@@@@@@@@@@@@@@", nodes);
-    })
-    //Crea la instancia
-    .jstree({
-        'core' : {
-            'data' : obtener_hijos
-    }});
-    /*$("#jstree_demo_div").jstree({
-        'core' : {
-          'data' : {
-            'url' : function (node) {
-              return node.id === '#' ?
-                '/obtener_hijos/' :
-                '/obtener_hijos/';
+    $(function() {
+        $('#tree1').tree({
+            dataUrl:  function(node) {
+                var data = {};
+                if(node){
+                    console.log(node);
+                }
+                return {
+                   url: '/encuentros/',
+                   data: data,
+                };
+           },
+            dataFilter: function(data) {
+                var nodos = [];
+                $(data).each(function (index, nodo) {
+                    nodo['label'] = nodo['nombre'];
+                    //nodo['load_on_demand'] = true;
+                    nodos.push(nodo);
+                });
+                return nodos;
             },
-            'data' : function (node) {
-                console.log(node);
-                //return { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" };
-              //return { 'id' : node.id };
+            selectable: false,
+            closedIcon: '+',
+            openedIcon: '-',
+            onCreateLi: function (node, $li) {
+                //console.log($li);
+                var boton_gestion = $("<a>",
+                    {text:"Gestionar",
+                    class:"btn btn-default btn-md",
+                    href:"/programa_academico/" + node.id + "/"
+                });
+                var boton_modificacion = $("<a>",
+                    {text:"Modificar",
+                    class:"btn btn-default btn-md",
+                    href:"/modificacion_evento/" + node.id + "/"
+                });
+                $li.append(boton_gestion);
+                $li.append(boton_modificacion);
+                $li.addClass("list-group-item");
             }
-          }
-        }
-    });*/
+        });
+    });
 </script>
 {% endblock %}

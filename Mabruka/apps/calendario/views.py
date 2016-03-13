@@ -1,23 +1,226 @@
 from django.apps import apps
-#  from django.shortcuts import render
-from django.views.generic import TemplateView
-from django.core import serializers
-from django.http import HttpResponse
-from .models import Evento, Foro, Seminario, Panel, Relacion
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
-from django.http import Http404, HttpResponseBadRequest
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render
+from django.views.generic import TemplateView
+
+from drf_multiple_model.views import MultipleModelAPIView
+from rest_framework import status, generics, filters
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
 import json
 
+from .models import Evento, Foro, Seminario, Panel
+from .models import Evento
+from .serializers import EncuentroSerializer, ForoSerializer, SeminarioSerializer, PanelSerializer
 # Create your views here.
 
+
+@api_view(['GET', 'POST'])
+def get_encuentros(request):
+    """
+    Regresa una lista de todos los encuentros.
+    """
+    if request.method == "GET":
+        encuentros = Evento.objects.all()
+        serializer = EncuentroSerializer(encuentros, many=True)
+        return Response(serializer.data)
+    elif request.method == "POST":
+        serializer = EncuentroSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class HijosListView(MultipleModelAPIView):
+    def get_queryList(self):
+        queryList = []
+        tipo_padre = self.kwargs['tipo_padre']
+        id_padre = self.kwargs['id_padre']
+        tipos_padres = {'encuentro': Evento, 'foro': Foro, 'seminario': Seminario, 'panel': Panel}
+        if tipo_padre not in tipos_padres:
+            raise Http404
+        Modelo = tipos_padres[tipo_padre]
+        print(tipo_padre, Modelo, id_padre)
+        padre = Modelo.objects.get(id=id_padre)
+        nodo = padre.nodos.all().first()
+        nodos_hijos = nodo.get_children()
+        conjunto_hijos = {
+            Foro:([],ForoSerializer,'foros'),
+            Evento:([],EncuentroSerializer,'encuentros'),
+            Panel:([],PanelSerializer,'paneles'),
+            Seminario:([],SeminarioSerializer,'seminarios'),
+        }
+        for nodo_hijo in nodos_hijos:
+            hijo = nodo_hijo.elemento
+            conjunto_hijos[type(hijo)][0].append(hijo)
+
+        for llave, valor in conjunto_hijos.items():
+            if len(valor[0]) > 0:
+                queryList.append(valor)
+        return queryList
+
+
+class EncuentroListView(generics.ListCreateAPIView):
+    """
+    Regresa una lista de todos los **encuentros** (GET)
+
+    Agrega un nuevo encuentro (POST)
+
+    Actualiza todos los encuentros (PUT)
+
+    Elimina todos los encuentros en el sistema (DELETE)
+    """
+    model = Evento
+    serializer_class = EncuentroSerializer
+    queryset = Evento.objects.all()
+    def post(self, request, format=None):
+        data = {'nombre':request.data.get('nombre')}
+        serializer = EncuentroSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EncuentroDetailView(APIView):
+    """
+    Regresa un encuentro (GET)
+    Actualiza un encuentro (PUT)
+    Elimina un encuentro (DELETE)
+    """
+    def get_object(self, id):
+        try:
+            return Evento.objects.get(pk=id)
+        except Evento.DoesNotExist:
+            raise Http404
+
+    def get(self, request, id, format=None):
+        encuentro = self.get_object(id)
+        serializer = EncuentroSerializer(encuentro)
+        return Response(serializer.data)
+
+    def put(self, request, id, format=None):
+        encuentro = self.get_object(id)
+        serializer = EncuentroSerializer(encuentro, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        encuentro = self.get_object(id)
+        encuentro.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ForoListView(generics.ListCreateAPIView):
+    """
+    Regresa una lista de todos los **foros** (GET)
+    Agrega un nuevo foro (POST)
+    Actualiza todos los foros (PUT)
+    Elimina todos los foros en el sistema (DELETE)
+    """
+    model = Foro
+    serializer_class = ForoSerializer
+    queryset = Foro.objects.all()
+    def post(self, request, format=None):
+        data = {'nombre':request.data.get('nombre'), 'padre_id':request.data.get('padre_id')}
+        serializer = ForoSerializer(data=data)
+        if serializer.is_valid():
+            #serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ForoDetailView(APIView):
+    """
+    Regresa un encuentro (GET)
+    Actualiza un encuentro (PUT)
+    Elimina un encuentro (DELETE)
+    """
+    def get_object(self, id):
+        try:
+            return Foro.objects.get(pk=id)
+        except Foro.DoesNotExist:
+            raise Http404
+
+    def get(self, request, id, format=None):
+        encuentro = self.get_object(id)
+        serializer = ForoSerializer(encuentro)
+        return Response(serializer.data)
+
+    def put(self, request, id, format=None):
+        foro = self.get_object(id)
+        serializer = ForoSerializer(foro, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        foro = self.get_object(id)
+        foro.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ForosView(generics.ListAPIView):
+    """
+    Regresa una lista de todos los **foros** en el sistema.
+    Opciones:
+    + padre_id (Se obtendrán sólo los hijos que sean hijos de la actividad con este identificador)
+    """
+    serializer_class = ForoSerializer
+    def get_queryset(self):
+        padre_id = self.request.query_params.get('padre_id', None)
+        queryset = []
+        if padre_id is not None:
+            queryset = Foro.objects.all()
+        else:
+            queryset = Foro.objects.all()
+        return queryset
+
+
+class SeminariosView(generics.ListAPIView):
+    """
+    Returns a list of all **active** accounts in the system.
+
+    For more details on how accounts are activated please [see here][ref].
+
+    [ref]: http://example.com/activating-accounts
+    """
+    serializer_class = SeminarioSerializer
+    def get_queryset(self):
+        padre_id = self.request.query_params.get('padre_id', None)
+        queryset = []
+        if padre_id is not None:
+            queryset = Seminario.objects.all()
+        else:
+            queryset = Seminario.objects.all()
+        return queryset
+
+
+class PanelesView(generics.ListAPIView):
+    serializer_class = PanelSerializer
+    def get_queryset(self):
+        padre_id = self.request.query_params.get('padre_id', None)
+        queryset = []
+        if padre_id is not None:
+            queryset = Panel.objects.all()
+        else:
+            queryset = Panel.objects.all()
+        return queryset
 
 class CalendarioHome(TemplateView):
     template_name = "calendario/calendario_home.html"
 
     def get_context_data(self, **kwargs):
         context = super(CalendarioHome, self).get_context_data(**kwargs)
+        ResetActividades()
         context['evento_id'] = kwargs['id']
 #       context['latest_articles'] = Article.objects.all()[:5]
         return context
@@ -27,23 +230,17 @@ class CalendarioHome(TemplateView):
 def crea_actividad(Modelo, nombre, padre, *args, **kwargs):
     try:
         with transaction.atomic():
-            actividad = Modelo(nombre=nombre, *args, **kwargs)
-            actividad.save()
-            relacion = Relacion(padre=padre, hijo=actividad)
-            relacion.save()
-            actividad.relacion = relacion
-            actividad.save()
+            actividad = Modelo.objects.crear(nombre=nombre, padre=padre, *args, **kwargs)
             return actividad
     except IntegrityError as e:
         raise e
 
 
 def ResetActividades():
-    modelos = [Evento, Foro, Seminario, Panel, Relacion]
+    modelos = [Evento, Foro, Seminario, Panel]
     for modelo in modelos:
         modelo.objects.all().delete()
-    evento = Evento(nombre="Encuentro Internacional 2016 Costa Rica")
-    evento.save()
+    evento = Evento.objects.crear(nombre="Encuentro Internacional 2016 Costa Rica")
     foro1 = crea_actividad(
         Foro, "Educación Superior, Innovación e Internacionalización", evento,
         nombre_corto="Educación Superior")
@@ -64,7 +261,7 @@ def ResetActividades():
 
 
 def BuscarActividades(request):
-    if request.method != 'POST':
+    if request.method != 'GET':
         raise Http404
     eventos = Evento.objects.all()
     if len(eventos) == 0:
@@ -82,12 +279,7 @@ def BuscarActividades(request):
 
 
 def obten_hijos(padre):
-    relaciones = Relacion.objects.filter(
-            padre_id=padre.id,
-            padre_type=ContentType.objects.get_for_model(padre)
-        )
-    hijos = [obten_hijos(relacion.hijo) for relacion in relaciones]
-    return {'padre': padre, 'hijos': hijos}
+    return {'padre': padre, 'hijos': []}
 
 
 def serializa(arbol):

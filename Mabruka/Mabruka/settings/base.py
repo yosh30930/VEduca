@@ -35,6 +35,10 @@ DJANGO_APPS = [
     ]
 
 THIRD_PARTY_APPS = [
+    'rest_framework',
+    'rest_framework_docs',
+    'mptt',
+    'drf_multiple_model',
     ]
 
 LOCAL_APPS = [
@@ -112,3 +116,9 @@ USE_L10N = True
 USE_TZ = True
 
 #AUTH_USER_MODEL = 'usuarios.Usuario'
+
+LOGIN_REDIRECT_URL = '/actividades/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+}

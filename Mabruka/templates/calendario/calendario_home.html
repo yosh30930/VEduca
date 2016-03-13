@@ -1,8 +1,7 @@
+{% extends "programaAcademico/base.html" %}
 {% load static from staticfiles %}
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset='utf-8' />
+
+{% block header %}
 <link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.css' %}" rel='stylesheet' />
 <link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.print.css' %}" rel='stylesheet' media='print' />
 <script src="{% static 'js/fullcalendar-2.6.0/lib/moment.min.js' %}"></script>
@@ -228,14 +227,6 @@
 
 </script>
 <style>
-
-    body {
-        margin-top: 40px;
-        text-align: center;
-        font-size: 14px;
-        font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
-    }
-
     #wrap {
         width: 1100px;
         margin: 0 auto;
@@ -291,8 +282,9 @@
     }
 
 </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div id='wrap'>
         <div id='external-events'>
             <h4>Eventos arrastrables</h4>
@@ -312,5 +304,4 @@
         <div id='calendar-min' class="calendar"></div>
         <div style='clear:both'></div>
     </div>
-</body>
-</html>
+{% endblock %}
