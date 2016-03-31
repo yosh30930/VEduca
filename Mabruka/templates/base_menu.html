@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% block header %}
+{{ block.super }}
+<script type="text/javascript" src="{% static 'js/mbraak-jqTree-ce47a98/tree.jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap-select-1.10.0/js/bootstrap-select.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'js/bootstrap-select-1.10.0/css/bootstrap-select.min.css' %}">
+<link href="{% static 'js/mbraak-jqTree-ce47a98/jqtree.css' %}" rel='stylesheet' />
+{% endblock header %}
+
+{% block content %}
+{{ block.super }}
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <!--<a class="navbar-brand" href="/">
+        <img src="{% static 'img/logo-virtual-educa-institucional.png' %}">
+      </a>-->
+      <a href="/" class="pull-left"><img src="{% static 'img/logo-virtual-educa-institucional.png' %}"></a>
+    </div>
+
+    <!-- Col°lect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <!--<li class="active"><a href="/">Encuentros <span class="sr-only">(current)</span></a></li>
+        <a href="/"><img src="{% static 'img/logo-virtual-educa-institucional.png' %}"></a>-->
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li ><a href="/inicio/">Encuentros</a></li>
+        <li><a href="#">Conflictos<span class="badge">1</span></a></li>
+        <li><a href="{% url 'logout' %}">Salir</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<ol class="breadcrumb">
+{% block breadcrums%}
+{% endblock breadcrums%}
+</ol>
+{% endblock content %}

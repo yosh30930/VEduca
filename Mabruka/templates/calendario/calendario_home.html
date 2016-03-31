@@ -2,13 +2,15 @@
 {% load static from staticfiles %}
 
 {% block header %}
-<link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.css' %}" rel='stylesheet' />
-<link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.print.css' %}" rel='stylesheet' media='print' />
+{{ block.super }}
+<link href="{% static 'js/jstree-3.3.0/themes/default/style.min.css' %}" rel='stylesheet'/>
+<link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.css' %}" rel='stylesheet'/>
+<link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.print.css' %}" rel='stylesheet' media='print'/>
 <script src="{% static 'js/fullcalendar-2.6.0/lib/moment.min.js' %}"></script>
-<script src="{% static 'js/fullcalendar-2.6.0/lib/jquery.min.js' %}"></script>
 <script src="{% static 'js/fullcalendar-2.6.0/lib/jquery-ui.custom.min.js' %}"></script>
 <script src="{% static 'js/fullcalendar-2.6.0/fullcalendar.min.js' %}"></script>
 <script src="{% static 'js/fullcalendar-2.6.0/lang/es.js' %}"></script>
+<script src="{% static 'js/jstree-3.3.0/jstree.min.js' %}"></script>
 <script>
     function is_null_or_undefined(objeto) {
         return (typeof objeto === 'undefined' || objeto === null)
@@ -19,7 +21,6 @@
 
         $('#external-events').on('click', '.actividad', function() {
             var actividad = mapa_actividades.get($(this).data('map_id'));
-            console.log(actividad);
             var text = "";
             text +=  actividad['fields']['nombre'] + " ";
             if(! is_null_or_undefined(actividad['fields']['start'])){
@@ -29,29 +30,15 @@
         });
 
         function updateEvent(event) {
-            console.log(event,moment(event['start']).isValid() , event['start'].utc().format());
-            var modelo = event['modelo'];
-            var pk = event['id'];
-            var nombre = event['title'];
-            var calId = (typeof event['calId'] === 'undefined' || event['calId'] === null)  ? "0" : event['calId'];
-            var allDay = (typeof event['allDay'] === 'undefined' || event['allDay'] === null) ? "false" : event['allDay'];
+            //console.log(event,moment(event['start']).isValid() , event['start'].utc().format());
+            var actividad = event.objeto;
+            var tipo = actividad.tipo;
+            var id = actividad.id;
             var start = event['start'].utc().format();
             var end = moment(event['end']).isValid() ? event['end'].utc().format() : "null";
-            $.ajax({
-                data: {
-                    'pk' : pk,
-                    'modelo' : modelo,
-                    'nombre' : nombre,
-                    'calId' : calId,
-                    'allDay' : allDay,
-                    'start' : start,
-                    'end' : end,
-                },
-                url : '/actualizar-evento/',
-                type : 'get',
-                success: function () {
-                    console.log("exito");
-                }
+            $.post("/actualizar_actividad/" + tipo +"/"+ id +"/",{
+              fecha_inicio: start,
+              fecha_fin: end,
             });
         }
 
@@ -83,11 +70,13 @@
         $('#calendar').fullCalendar({
             lang: 'es',
             slotDuration: '00:15:00',
+            snapDuration: '00:01:00',
             header: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'month,agendaWeek,agendaDay'
             },
+            allDayDefault: false,
             editable: true,
             droppable: true, // this allows things to be dropped onto the calendar
             drop: function(date) {
@@ -103,15 +92,34 @@
             },
             eventReceive: function (event) {
                 event['calId'] = "1";
+                $('#calendar').fullCalendar('removeEvents', function (evento) {
+                  return (event.id === evento.id && event !== evento);
+                });
                 updateEvent(event);
             },
             eventResize: function (event) {
                 updateEvent(event);
+            },
+            eventClick: function (calEvent, jsEvent, view) {
+            },
+            eventAfterRender: function (event, element, view) {
+              $(element)
+              .popover({
+                html: true,
+                title: event.objeto.nombre,
+                content: function () {
+                  var cont_html = $('#popoverHiddenContent').html();
+                  return cont_html;
+                },
+                placement: 'top',
+              })
+              .on('shown.bs.popover', function() {
+                  $('.selectpicker').selectpicker();
+              });
             }
         });
 
-
-        $('#calendar-min').fullCalendar({
+        /*$('#calendar-min').fullCalendar({
             lang: 'es',
             header: {
                 left: 'prev,next today',
@@ -143,7 +151,7 @@
             eventResize: function (event) {
                 updateEvent(event);
             }
-        });
+        });*/
 
         function render_actividades(actividad, lista) {
             if (typeof actividad === 'undefined' || actividad === null){return;}
@@ -208,10 +216,10 @@
         }
 
         /*Pide la lista de los eventos*/
-        $.ajax({
+        /*$.ajax({
             url : '/buscar-actividades/',
             type: 'get',
-            data: {id:{{evento_id}}},
+            data: {id:{{encuentro_id}}},
             success : function (data) {
                 console.log(data);
                 var lista = $('#lista-eventos');
@@ -219,13 +227,161 @@
                 $('#calendar').fullCalendar( 'rerenderEvents' );
                 return;
             }
+        });*/
+
+        /*$('#lista-eventos').jstree({
+            'core': {
+                'data': {
+                    'url': function(node) {
+                        if (node.id === '#') {
+                            return '/encuentros/'+{{encuentro_id}}+'/';
+                        }else{
+                            return '/encuentros/'+{{encuentro_id}}+'/';
+                        };
+                    },
+                    'data': function(node) {
+                        console.log(node);
+                        return {'id':node.id, 'text':"hola"};
+                    }
+                },
+            },
+        });*/
+        $('#lista-eventos')
+        .on("select_node.jstree", function (e, data) {
+          console.log("select_node.jstree");
+        })
+        /*.on("load_node.jstree", function (e, data) {
+          console.log("load_node.jstree");
+        })
+        .on("model.jstree", function (e, data) {
+          console.log("model.jstree");
+        })
+        .on("show_node.jstree", function (e, data) {
+          console.log("show_node.jstree");
+        })
+        .on("refresh_node.jstree", function (e, data) {
+          console.log("refresh_node.jstree");
+        })*/
+        .on("before_open.jstree", function (e, data) {
+          //console.log("before_open.jstree");
+          reset_draggable();
+        })/*
+        .on("redraw.jstree", function (e, data) {
+          console.log("redraw.jstree");
+        })*/
+        .jstree({
+            'core' : {
+                'data' : function (node, callback) {
+                    //console.log(node);
+                    var url = '';
+                    if(node.id === '#'){
+                        url = '/encuentros/'+{{encuentro_id}}+'/';
+                    }else{
+                        var tipo = node.original.objeto.tipo;
+                        var id = node.original.objeto.id;
+                        url = '/hijos/'+tipo+"/"+id+"/";
+                        //console.log("pidiendo", node);
+                    };
+                    $.get(url, function (data) {
+                      //console.log(data);
+                      if (data['nombre']) {
+                        var nodo = {
+                          id: data.tipo + '-' +data.id,
+                          text: data.nombre,
+                          objeto: data,
+                          children: true,
+                          state: {opened: true},
+                        }
+                        callback.call(this, [nodo]);
+                        return;
+                      }
+                      var nodos = [];
+                      $(data).each(function (index, obj) {
+                        var nombre_categoria = Object.keys(obj)[0];
+                        var nodo_categoria = {
+                          text: _.capitalize(nombre_categoria),
+                          children: [], state: {opened: true}};
+                        $(obj[nombre_categoria]).each(function(index, elemento){
+                          //console.log('nodo', nodo);
+                          var nodo = {
+                            id: elemento.tipo + '-' +elemento.id,
+                            text: elemento.nombre,
+                            objeto: elemento,
+                            children: true,
+                            state: {opened: true},
+                          }
+                          if (elemento.fecha_inicio) {
+                            var fecha_fin = elemento.fecha_fin;
+                            if (typeof fecha_fin === 'undefined' || fecha_fin === null) {
+                              fecha_fin = null;
+                            }else{
+                              fecha_fin = moment.utc(fecha_fin);
+                            };
+                            nodo['li_attr'] = {
+                              class: 'draggable fc-event ui-draggable ui-draggable-handle',
+                              'z-index': 'auto',
+                            };
+                            var evento = {
+                              title: elemento.nombre,
+                              id: nodo.id,
+                              objeto: elemento,
+                              start: moment.utc(elemento.fecha_inicio),
+                              end: fecha_fin,
+                            };
+                            $("#calendar").fullCalendar('renderEvent', evento, true);
+                            $("#calendar").fullCalendar('unselect');
+                          }
+                          //console.log(elemento);
+                          nodo_categoria['children'].push(nodo);
+                          //console.log('nodo', nodo);
+                        });
+                        //console.log(nodo_categoria['children'])
+                        nodos.push(nodo_categoria);
+                      });
+                      callback.call(this, nodos);
+                    });
+                }
+            },
+            'search': {
+              'show_only_matches': true,
+              'show_only_matches_children': true,
+              "case_insensitive": true,
+            },
+            'plugins': ['search'],
         });
-
-
+        var to = false;
+        $('#busqueda-actividad').keyup(function () {
+          if (to) {clearTimeout(to);};
+          to = setTimeout(function () {
+            var v = $('#busqueda-actividad').val();
+            $('#lista-eventos').jstree('search', v);
+          }, 250);
+        });
 
     });
 
+    function reset_draggable() {
+      $('.draggable').each(function (i, objeto) {
+        var nodo = $('#lista-eventos').jstree().get_node(objeto.id).original;
+        var actividad = nodo.objeto;
+        $(objeto).data('event', {
+          stick: true,
+          id: nodo.id,
+          title: actividad.nombre,
+          start: actividad.fecha_inicio,
+          end: actividad.fecha_fin,
+          objeto: actividad,
+        });
+        $(objeto).draggable({
+          zIndex: 999,
+          revert: true,      // will cause the event to go back to its
+          revertDuration: 0
+        });
+      });
+    }
+
 </script>
+
 <style>
     #wrap {
         width: 1100px;
@@ -235,7 +391,7 @@
     #external-events {
         float: left;
         width: 250px;
-        padding: 0 10px;
+        padding: 0;
         border: 1px solid #ccc;
         background: #eee;
         text-align: left;
@@ -281,27 +437,48 @@
         cursor: pointer;
     }
 
+    #lista-eventos a{
+      white-space: normal;
+      height: auto;
+    }
+
+    #lista-eventos {
+      padding: 0;
+      max-width: 100%;
+    }
+
 </style>
 {% endblock %}
 
+{% block breadcrums %}
+  <li><a href="/inicio">Encuentros</a></li>
+  <li class="active"><a href="./">Logística</a></li>
+  <li></li>
+{% endblock breadcrums %}
+
 {% block content %}
-    <div id='wrap'>
-        <div id='external-events'>
-            <h4>Eventos arrastrables</h4>
-            <!--<p>
-                <input type='checkbox' id='drop-remove' checked="true" />
-                <label for='drop-remove'>remover al soltar</label>
-            </p>-->
-            <ul id="lista-eventos" class="tree">
-            </ul>
-        </div>
-        <div id='calendar' class="calendar"></div>
-        <div id="info-actividad">
-            <span></span><br>
-            <button>Editar</button>
-        </div>
-        <div style='clear:both'></div>
-        <div id='calendar-min' class="calendar"></div>
-        <div style='clear:both'></div>
+{{ block.super }}
+<div id="popoverHiddenContent" style="display:none">
+</div>
+<div id='wrap'>
+    <div id='external-events'>
+        <h4>Eventos arrastrables</h4>
+        <!--<p>
+            <input type='checkbox' id='drop-remove' checked="true" />
+            <label for='drop-remove'>remover al soltar</label>
+        </p>-->
+        <input id="busqueda-actividad" class="form-control" type="text" placeholder="Búsqueda...">
+        <ul id="lista-eventos" class="tree">
+        </ul>
     </div>
+    <div id='calendar' class="calendar"></div>
+    <div id="info-actividad">
+        <span></span><br>
+        <button>Editar</button>
+    </div>
+    <div style='clear:both'></div>
+
+    <!--<div id='calendar-min' class="calendar"></div>
+    <div style='clear:both'></div>-->
+</div>
 {% endblock %}

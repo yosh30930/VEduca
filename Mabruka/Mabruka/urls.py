@@ -16,12 +16,14 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+admin.autodiscover()
+
 urlpatterns = [
-    url(r'^', include(admin.site.urls)),
-    url(r'^', include('apps.sesion.urls')),
+    url(r'^', include('apps.actividades.urls')),
     url(r'^', include('apps.calendario.urls')),
-    url(r'^', include('apps.arbolActividades.urls')),
     url(r'^', include('apps.programaAcademico.urls')),
+    url(r'^', include('apps.sesion.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^docs/', include('rest_framework_docs.urls')),
+    url(r'^', include(admin.site.urls)),
 ]

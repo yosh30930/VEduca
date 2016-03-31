@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser, BaseUserManager, PermissionsMixin, User)
 # Create your models here.
 
 """
@@ -36,3 +37,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.nombre_usuario
 """
+
+
+class SecretarioGeneral(models.Model):
+    """
+    Indica los usuarios que tiene permisos del nivel de secretario
+    general
+    """
+    usuario = models.ForeignKey(User, models.CASCADE)

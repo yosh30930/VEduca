@@ -8,5 +8,5 @@ class ProgramaAcademico(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(ProgramaAcademico, self).get_context_data(**kwargs)
-        context['evento_id'] = kwargs['id']
+        context['encuentro_id'] = kwargs['id']
         return context

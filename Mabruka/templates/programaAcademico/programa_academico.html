@@ -1,55 +1,33 @@
 {% extends "programaAcademico/base.html" %}
 {% load static from staticfiles %}
+{% block header %}
+{{ block.super }}
+ <style type="text/css">
+    #tree1 li{
+      background-color: rgba(0,0,0,0.01);
+    }
+ </style>
+{% endblock header %}
 
-{% block header%}
-{% endblock %}
+{% block breadcrums %}
+  <li><a href="/inicio">Encuentros</a></li>
+  <li class="active"><a href="./">Programa académico</a></li>
+  <li></li>
+{% endblock breadcrums %}
 
 {% block content %}
+{{ block.super }}
+{% include "programaAcademico/actividades_modals.html" %}
 <!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Creación de Evento</h4>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="form-group">
-            <label for="recipient-name" class="control-label">Nombre del Evento</label>
-            <input id="nombre_evento_input" type="text" class="form-control" id="recipient-name" placeholder="Encuentro ...">
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button id="crea_evento_btn" type="button" class="btn btn-primary" disabled="disabled">Crear Evento</button>
-      </div>
-    </div>
-  </div>
-</div>
 <!-- Termina Modal -->
 <div id="tree1"></div>
 
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
 <script type="text/javascript">
-    var csrftoken = getCookie('csrftoken');
-    function csrfSafeMethod(method) {
-        // these HTTP methods do not require CSRF protection
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-    }
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-        }
-    });
-</script>
-<script type="text/javascript">
 $(function() {
     $('#tree1').tree({
+        autoOpen: true,
         dataUrl:  function(node) {
             var data = {};
             var url = '';
@@ -59,7 +37,7 @@ $(function() {
                 url = '/hijos/'+tipo+"/"+id+"/";
                 console.log("pidiendo", node);
             }else{
-              url = '/encuentros/'+{{evento_id}}+'/';
+              url = '/encuentros/'+{{encuentro_id}}+'/';
             }
             return {url: url, data: data};
        },
@@ -67,16 +45,19 @@ $(function() {
             console.log(data);
             if (data['nombre']) {
               var nodo = data;
-              nodo['label'] = nodo['nombre'];
+              nodo['label'] = nodo['nombre'] + " ";
               nodo['load_on_demand'] = true;
               return [nodo];
             }
             var nodos = [];
             $(data).each(function (index, obj) {
-              var nodo_categoria = {label:Object.keys(obj)[0], children: []};
-              $(obj[nodo_categoria['label']]).each(function(index, nodo){
+              var nombre_categoria = Object.keys(obj)[0];
+              var nodo_categoria = {
+                label: _.capitalize(nombre_categoria),
+                children: []};
+              $(obj[nombre_categoria]).each(function(index, nodo){
                 //console.log('nodo', nodo);
-                nodo['label'] = nodo['nombre'];
+                nodo['label'] = nodo['nombre'] + " ";
                 nodo['load_on_demand'] = true;
                 nodo_categoria['children'].push(nodo);
                 //console.log('nodo', nodo);
@@ -87,21 +68,103 @@ $(function() {
             return nodos;
         },
         selectable: false,
-        closedIcon: '+',
-        openedIcon: '-',
+        //closedIcon: '+',
+        //openedIcon: '-',
+        //autoOpen: true,
         onCreateLi: function (node, $li) {
             //console.log($li);
+            var excepciones = ['panel'];
             if (node.tipo) {
-              var boton_agregar = $("<a>",
-                {text:"+",
-                class:"btn btn-default btn-md",
-                href:"#" + node.id + "/"
+              /*Botón para agregar más actividades*/
+              if (excepciones.indexOf(node.tipo) < 0) {
+                var boton_agregar = $("<a>",
+                  {text:"Agregar",
+                  class:"btn btn-default btn-sm btn-agregar",
+                  href:"#" + node.id + "/"
+                });
+                $(boton_agregar).attr("data-toggle", "modal");
+                $(boton_agregar).attr("data-target", "#exampleModal");
+                $(boton_agregar).data("padre-id", node.id);
+                $(boton_agregar).data("padre-tipo", node.tipo);
+                $($li.children()[0]).append(boton_agregar);
+              };
+              /*Botón para editar las actividades*/
+              var url_edicion = "/modificacion_" + node.tipo + "/" + node.id + "/";
+              url_edicion += "?next={{ request.path }}"
+              var boton_editar = $("<a>",
+                {text:"Editar",
+                class:"btn btn-default btn-sm",
+                href: url_edicion
               });
-              $($li.children()[0]).append(boton_agregar);
+              $($li.children()[0]).append(boton_editar);
+              var boton_eliminar = $("<a>",
+                {text:"Eliminar",
+                class:"btn btn-danger btn-sm",
+                href: '#'
+              });
+              $($li.children()[0]).append(boton_eliminar);
               $li.addClass("list-group-item");
-            }
+            };
         }
     });
+  $("#tree1").on('click', ".btn-agregar",function(event){
+    var $arbol = $('#tree1');
+    var tipo = $(this).data("padre-tipo");
+    console.log(tipo);
+    //Obtenemos el tipo de objeto asociado al botón
+    switch(tipo){
+      case 'encuentro':
+        $('#modalForo').modal('show');
+        break;
+      case 'foro':
+        $('#modalSeminario').modal('show');
+        break;
+      case 'seminario':
+        $('#modalPanel').modal('show');
+        break;
+
+    }
+    //Mostramos algún modal asociado a algún hijo del tipo
+  });
 });
-</script
-{% endblock %}
+$('#exampleModal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var recipient = button.data('whatever') // Extract info from data-* attributes
+  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+  var modal = $(this)
+  modal.find('.modal-title').text('Agrega una actividad a ' + recipient)
+  modal.find('.modal-body input').val(recipient)
+  var boton_crear = $(modal.find('#btn-crear-actividad'));
+  boton_crear.data("padre-id", button.data('padre-id'));
+  boton_crear.data("padre-tipo", button.data('padre-tipo'));
+});
+
+$('#btn-crear-actividad').on('click', function (evento) {
+  var url = '/'
+  switch($('#select-crear-actividad').val()) {
+    case 'encuentro':
+      url += 'encuentros'; break;
+    case 'foro':
+      url += 'foros'; break;
+    case 'panel':
+      url += 'paneles'; break;
+    case 'seminario':
+      url += 'seminarios'; break;
+    default:
+        return;
+  }
+  url += '/';
+  var boton = $('#btn-crear-actividad');
+  $.post(url,{
+    padre_id: boton.data('padre-id'),
+    padre_tipo: boton.data('padre-tipo'),
+    nombre: $('#txt-crear-actividad').val(),
+  })
+  .done(function () {
+    $("#tree1").tree('reload');
+  });
+  $('.modal').modal('hide');
+});
+</script>
+{% endblock content %}

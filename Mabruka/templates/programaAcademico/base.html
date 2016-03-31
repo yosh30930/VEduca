@@ -1,30 +1,18 @@
+{% extends "base_menu.html" %}
 {% load static from staticfiles %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8' />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/javascript" src="{% static 'js/jquery-2.2.1.min.js' %}"></script>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="{% static 'js/mbraak-jqTree-ce47a98/tree.jquery.js' %}"></script>
-    <link href="{% static 'js/mbraak-jqTree-ce47a98/jqtree.css' %}" rel='stylesheet' />
-    <style type="text/css">body {padding: 20px;}</style>
-{% block header %}{% endblock header %}
-</head>
-<body>
-    <div class="container">
-    <a class="btn btn-default btn-lg" href="/actividades/">Regresar</a>
-    <!-- Justified tabs -->
-    <ul class="nav nav-tabs nav-justified">
-        <li {% if '/programa_academico/' in request.path %}class = "active" {% endif %}><a href="/programa_academico/{{evento_id}}/">Programa Académico</a></li>
-        <li {% if '/gestion_evento/' in request.path %}class = "active" {% endif %}><a href="/gestion_evento/{{evento_id}}/">Logística</a></li>
-    </ul>
-    {% block content %}{% endblock content %}
-    </div>
-</body>
-</html>
+{% block header %}
+{{ block.super }}
+<script type="text/javascript" src="{% static 'js/mbraak-jqTree-ce47a98/tree.jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap-select-1.10.0/js/bootstrap-select.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'js/bootstrap-select-1.10.0/css/bootstrap-select.min.css' %}">
+<link href="{% static 'js/mbraak-jqTree-ce47a98/jqtree.css' %}" rel='stylesheet' />
+{% endblock header %}
+
+{% block content %}
+{{ block.super }}
+<!-- Justified tabs -->
+<ul class="nav nav-tabs nav-justified">
+    <li {% if '/programa_academico/' in request.path %}class = "active" {% endif %}><a href="/programa_academico/{{encuentro_id}}">Programa Académico</a></li>
+    <li {% if '/gestion_encuentro/' in request.path %}class = "active" {% endif %}><a href="/gestion_encuentro/{{encuentro_id}}">Logística</a></li>
+</ul>
+{% endblock content %}

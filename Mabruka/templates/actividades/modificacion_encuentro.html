@@ -1,0 +1,92 @@
+{% extends "actividades/base.html" %}
+
+{% block header%}
+
+    <style type="text/css">
+        form {
+            margin: 20px 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="modal fade" id="eliminar-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">¡Cuidado! Estás a punto de borrar el encuentro</h4>
+      </div>
+      <div class="modal-body">
+        <p>Una vez eliminado este encuentro no podrá ser recuperado y toda la información será borrada</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id = "btn_eliminar_encuentro" type="button" class="btn btn-danger">Eliminar Encuentro</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<h1>{{ form.nombre.value }}</h1>
+<form style="position:relative;"action="./" method="POST">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="form-group {% if form.nombre.errors %} has-error{% endif %}">
+        <label for="id_nombre">Nombre del Encuentro</label>
+        {{ form.nombre }}
+        {% if form.nombre.errors %}
+            <label class="control-label" for="id_nombre">{{ form.nombre.errors }}</label>
+        {% endif %}
+   </div>
+    <div class="form-group {% if form.fecha_inicio.errors %} has-error{% endif %}" >
+        <label for="id_fecha_inicio">Fecha de inicio</label>
+        {{ form.fecha_inicio }}
+        {% if form.fecha_inicio.errors %}
+            <label class="control-label" for="id_fecha_inicio">{{ form.fecha_inicio.errors }}</label>
+        {% endif %}
+    </div>
+    <div class="form-group {% if form.fecha_fin.errors %} has-error{% endif %}">
+        <label for="id_fecha_fin">Fecha de término</label>
+        {{ form.fecha_fin }}
+        {% if form.fecha_fin.errors %}
+            <label class="control-label" for="id_fecha_fin">{{ form.fecha_fin.errors }}</label>
+        {% endif %}
+    </div>
+    <div class="form-group {% if form.responsables.errors %} has-error{% endif %}">
+        <label for="id_responsables">Responsables del programa</label>
+        {{ form.responsables }}
+        {% if form.responsables.errors %}
+            <label class="control-label" for="id_responsables">{{ form.responsables.errors }}</label>
+        {% endif %}
+    </div>
+    <a class="btn btn-default" href="{{ request.META.HTTP_REFERER }}">Regresar</a>
+    <button type="submit" class="btn btn-default">Guardar</button>
+    <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#eliminar-modal">
+        Eliminar Encuentro
+    </button>
+</form>
+<script type="text/javascript">
+    $(function () {
+        $('#id_fecha_inicio').datetimepicker({format: 'DD/MM/YYYY'});
+        $('#id_fecha_fin').datetimepicker({
+            format: 'DD/MM/YYYY', useCurrent: false});
+        $("#id_fecha_inicio").on("dp.change", function (e) {
+            $('#id_fecha_fin').data("DateTimePicker").minDate(e.date);
+        });
+        $("#id_fecha_fin").on("dp.change", function (e) {
+            $('#id_fecha_inicio').data("DateTimePicker").maxDate(e.date);
+        });
+    });
+    $('#btn_eliminar_encuentro').on('click', function (evento) {
+        console.log('hola');
+      var url = '/encuentros/' + {{ encuentro_id}} + '/';
+      $.ajax({
+        url: url,
+        type: 'DELETE',
+      })
+      .done(function () {
+        window.location.href = '/inicio/';
+      });
+    });
+</script>
+{% endblock %}

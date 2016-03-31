@@ -1,0 +1,102 @@
+<!-- Edición Encuentro Modal -->
+<div class="modal fade" id="encuentro_modal" tabindex="-1" role="dialog" aria-labelledby="encuentro_modal_label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="encuentro_modal_label">Edición de Encuentro</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Nombre del Encuentro</label>
+            <input id="encuentro_modal_nombre" type="text" class="form-control" id="recipient-name" placeholder="Ejemplo: Encuentro Internacional 2016 Costa Rica">
+          </div>
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="encuentro_modal_fecha_inicio" class="control-label">Fecha de inicio</label>
+                  <div id='encuentro_modal_fecha_inicio' class='input-group date'>
+                    <input type='text' class="form-control" placeholder="Ejemplo: 23/02/2017" />
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+              </div>
+            </div>
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="encuentro_modal_fecha_fin" class="control-label">Fecha de término</label>
+                  <div id='encuentro_modal_fecha_fin' class='input-group date'>
+                    <input type='text' class="form-control" placeholder="Ejemplo: 24/02/2017" />
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Responsables</label>
+            <select id="encuentro_modal_responsables" class="selectpicker form-control" data-live-search="true">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id="encuentro_modal_submit" type="button" class="btn btn-primary" disabled="disabled"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$('#encuentro_modal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var operacion = button.data('operacion');
+  var modal = $(this);
+  modal.find('#encuentro_modal_nombre').val('');
+  switch (operacion) {
+    case 'creacion':
+      modal.find('.modal-title').text('Creación de encuentro');
+      modal.find('#encuentro_modal_submit').text('Crear encuentro');
+      modal.find('#encuentro_modal_submit').data('operacion', operacion);
+      break;
+    case 'edicion':
+      modal.find('.modal-title').text('Edición de encuentro');
+      modal.find('#encuentro_modal_submit').text('Guardar modificaciones');
+      modal.find('#encuentro_modal_submit').data('operacion', operacion);
+      break;
+    default: //Evita que se abra el modal
+      return event.preventDefault();
+  }
+  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+});
+$('#encuentro_modal_submit').on('click', function (event) {
+  switch (operacion) {
+    case 'creacion':
+      $.post('/encuentros/', {
+        nombre: $('#encuentro_modal_nombre').val().trim(),
+        feach_inicio: ,
+        fecha_fin: ,
+        responsable: ,
+      });
+      break;
+    case 'edicion':
+      $.ajax('/encuentros/' + id + '/', {
+        nombre: $('#encuentro_modal_nombre').val().trim(),
+        feach_inicio: ,
+        fecha_fin: ,
+        responsable: ,
+      });
+      break;
+    default:
+      return;
+  }
+})
+</script>

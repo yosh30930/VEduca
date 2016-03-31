@@ -1,0 +1,116 @@
+<!-- Modal de Foro-->
+<div class="modal fade" id="modalForo" tabindex="-1" role="dialog" aria-labelledby="modalForoLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modalForoLabel">Agregar un Foro</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Tipo: </label>
+            <select id="select-crear-actividad" class="selectpicker" data-live-search="true">
+              <option value="foro" class="">Foro</option>
+              <!--<option value="taller" class="">Taller</option>-->
+              <option value="taller" class="">Taller</option>
+              <!--<option value="plenaria" class="">Plenaria</option>-->
+              <!--<option value="ponencia" class="">Ponencia</option>-->
+              <!--<option value="magistral" class="">Magistral</option>-->
+              <option value="reunion" class="">Reunion</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="control-label">Nombre:</label>
+            <input id="txt-crear-actividad" type="text" class="form-control" placeholder="Ejemplo: Educación para la era digital">
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="control-label">Nombre corto:</label>
+            <input id="txt-crear-actividad" type="text" class="form-control" placeholder="Ejemplo: Educación digital">
+          </div>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Responsables:</label>
+            <select id="select-crear-actividad" class="selectpicker" data-live-search="true">
+              <option value="seminario">Seminario</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id="btn-crear-actividad" type="button" class="btn btn-primary">Crear Foro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Seminario-->
+<div class="modal fade" id="modalSeminario" tabindex="-1" role="dialog" aria-labelledby="modalSeminarioLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modalSeminarioLabel">Agregar un Seminario</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Tipo: </label>
+            <select id="select-crear-actividad" class="selectpicker" data-live-search="true">
+              <option value="seminario" class="">Seminario</option>
+              <!--<option value="foro" class="">Foro</option>-->
+              <!--<option value="taller" class="">Taller</option>-->
+              <!--<option value="plenaria" class="">Plenaria</option>-->
+              <!--<option value="ponencia" class="">Ponencia</option>-->
+              <!--<option value="magistral" class="">Magistral</option>-->
+              <!--<option value="panel" class="">Panel</option>-->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="control-label">Nombre:</label>
+            <input id="txt-crear-actividad" type="text" class="form-control" placeholder="Ejemplo: Educación para la era digital">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id="btn-crear-actividad" type="button" class="btn btn-primary">Crear Seminario</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Panel-->
+<div class="modal fade" id="modalPanel" tabindex="-1" role="dialog" aria-labelledby="modalPanelLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modalPanelLabel">Agregar un Panel</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Tipo: </label>
+            <select id="select-crear-actividad" class="selectpicker" data-live-search="true">
+              <option value="panel" class="">Panel</option>
+              <option value="magistral" class="">Magistral</option>
+              <!--<option value="taller" class="">Taller</option>-->
+              <!--<option value="plenaria" class="">Plenaria</option>-->
+              <!--<option value="ponencia" class="">Ponencia</option>-->
+              <!--<option value="magistral" class="">Magistral</option>-->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="control-label">Nombre:</label>
+            <input id="txt-crear-actividad" type="text" class="form-control" placeholder="Ejemplo: Educación para la era digital">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id="btn-crear-actividad" type="button" class="btn btn-primary">Crear Panel</button>
+      </div>
+    </div>
+  </div>
+</div>

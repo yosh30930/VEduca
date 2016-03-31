@@ -36,3 +36,11 @@ if DEBUG:
     EMAIL_HOST_USER = 'sainoba@gmail.com'
     EMAIL_HOST_PASSWORD = 'gphesueuhkjicisv'
     DEFAULT_FROM_EMAIL = 'sainoba@gmail.com'
+
+# SwampDragon settings
+DRAGON_URL = 'http://localhost:9999/'
+
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+    'anon': '100/second',
+    'user': '100/second',
+}

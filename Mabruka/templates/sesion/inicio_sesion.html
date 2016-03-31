@@ -1,118 +1,128 @@
-{% extends "sesion/base.html" %}
+{% extends "base.html" %}
+{% load static from staticfiles %}
 
 {% block header%}
-    <style>
-        .form-signin
-{
-    max-width: 330px;
-    padding: 15px;
-    margin: 0 auto;
+{{ block.super }}
+<style type="text/css">
+body {
+    background-color: white;
 }
-.form-signin .form-signin-heading, .form-signin .checkbox
-{
+
+#loginbox {
+    margin-top: 30px;
+}
+
+#loginbox > div:first-child {
+    padding-bottom: 10px;
+}
+
+.iconmelon {
+    display: block;
+    margin: auto;
+}
+
+#form > div {
+    margin-bottom: 25px;
+}
+
+#form > div:last-child {
+    margin-top: 10px;
     margin-bottom: 10px;
 }
-.form-signin .checkbox
-{
-    font-weight: normal;
+
+.panel {
+    background-color: transparent;
 }
-.form-signin .form-control, #id_username, #id_password
-{
-    position: relative;
-    font-size: 16px;
-    height: auto;
-    padding: 10px;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+
+.panel-body {
+    padding-top: 30px;
+    background-color: rgba(2555,255,255,.3);
 }
-.form-signin .form-control:focus, #id_username:focus, #id_password:focus
-{
-    z-index: 2;
+
+#particles {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    z-index: -2;
 }
-.form-signin input[type="text"]
-{
-    margin-bottom: -1px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+
+.iconmelon,
+.im {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: block;
+  fill: #525151;
 }
-.form-signin input[type="password"]
-{
-    margin-bottom: 10px;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+
+.iconmelon:after,
+.im:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
-.account-wall
-{
-    margin: 0 auto;
-    margin-top: 20px;
-    padding: 40px 0px 20px 0px;
-    background-color: #f7f7f7;
-    -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-}
-.login-title
-{
-    color: #555;
-    font-size: 18px;
-    font-weight: 400;
-    display: block;
-}
-.profile-img
-{
-    width: 96px;
-    height: 96px;
-    margin: 0 auto 10px;
-    display: block;
-    -moz-border-radius: 50%;
-    -webkit-border-radius: 50%;
-    border-radius: 50%;
-}
-.need-help
-{
-    margin-top: 10px;
-}
-.new-account
-{
-    display: block;
-    margin-top: 10px;
-}
-    </style>
+</style>
 {% endblock %}
 
 {% block content %}
+{{ block.super }}
 {% if form.errors %}
 <p>Tu usario o contraseña no coincidieron. Intenta otra vez.</p>
 {% endif %}
 
 {% if user.is_authenticated %}
-    <p>Bienvenido '{{ request.user.username }}'</p>
-    <p>Tu cargo es '{{ request.user.last_name }}'</p>
-    {# Assumes you setup the password_reset view in your URLconf #}
-    <p><a href="{% url 'logout' %}">Cerrar Sesión</a></p>
 {% else %}
-    <div class="container">
-        <div class="row">
-            <div class=".col-sm-6 .col-sm-offset-3 col-md-6 .col-md-offset-3 col-lg-6 .col-lg-offset-3">
-                <h1 class="text-center login-title">Inicia sesión para continuar</h1>
-                <div class="account-wall">
-                    <form class="form-signin" method="post" action="{% url 'inicio_sesion' %}">
-                        {% csrf_token %}
-                        {{ form.username }}
-                        {{ form.password }}
-                        <!--<input type="text" class="form-control" placeholder="Email" required autofocus>-->
-                        <!--<input type="password" class="form-control" placeholder="Password" required>-->
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">Iniciar sesión</button>
-                        <a href="{% url 'restaura_contraseña' %}" class="pull-right need-help">¿Olvidaste tu contraseña?</a>
-                        <input type="hidden" name="next" value="{{ next }}" />
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endif %}
-{# Assumes you setup the password_reset view in your URLconf #}
-{# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
+<div id="loginbox" class="mainbox col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3">
 
+<div class="row">
+  <div class="iconmelon">
+    <img src="{% static 'img/logo-virtual-educa-institucional.png' %}">
+  </div>
+</div>
+
+<div class="panel panel-default" >
+  <div class="panel-heading">
+    <div class="panel-title text-center">Inicio de sesión</div>
+  </div>
+  <div class="panel-body">
+
+
+<form name="form" id="form" class="form-horizontal" enctype="multipart/form-data" method="POST">
+  {% csrf_token %}
+  <div id="username-group" class="input-group">
+    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+    {{ form.username }}
+  </div>
+  <div id="password-group" class="input-group">
+    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+    {{ form.password }}
+  </div>
+  <div class="form-group">
+  <!-- Button -->
+    <div class="col-sm-12 controls text-center">
+      <button type="submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-log-in"></i> Iniciar sesión</button>
+      <br>
+      <a href="{% url 'restaura_contraseña' %}" class="need-help">¿Olvidaste tu usuario o contraseña?</a>
+    </div>
+  </div>
+</form>
+
+  </div>
+</div>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $("input").addClass("form-control");
+    $("#username-group input").attr("placeholder", "Usuario");
+    $("#password-group input").attr("placeholder", "Contraseña");
+  });
+</script>
+{% endif %}
 {% endblock %}
