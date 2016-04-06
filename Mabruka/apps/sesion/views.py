@@ -18,7 +18,6 @@ class InicioSesionView(View):
             print(len(User.objects.all()))
         if len(Espacio.objects.all()) == 0:
             ResetEspacios()
-        ResetEspacios()
         if request.user.is_authenticated():
         #   return HttpResponseRedirect(reverse('login'))
             return HttpResponseRedirect('/inicio/')

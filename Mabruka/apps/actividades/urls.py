@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from .views import (
+    EspacioListView,
     InicioEncuentros,
     ModificacionEncuentroView,
     ModificacionForoView,
@@ -29,6 +30,8 @@ urlpatterns = [
     url(
         r'^modificacion_panel/(?P<id>\d+)/$',
         ModificacionPanelView.as_view()),
+    url(r'^espacios/(?P<encuentro_id>\d+)/$', EspacioListView.as_view(),
+        name='espacio-list'),
     url(r'^encuentros/$', EncuentroListView.as_view(), name='encuentro-list'),
     url(
         r'^encuentros/(?P<id>\d+)/$',

@@ -1,0 +1,200 @@
+<!-- Edición Panel Modal -->
+<div class="modal fade" id="panel_modal" tabindex="-1" role="dialog" aria-labelledby="panel_modal_label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="panel_modal_label">Título ___ de Panel</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Nombre del Panel</label>
+            <input id="panel_modal_nombre" type="text" class="form-control" id="recipient-name" placeholder="Ejemplo: Panel Internacional 2016 Costa Rica">
+          </div>
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="panel_modal_fecha_inicio" class="control-label">Fecha de inicio</label>
+                  <div class='input-group date'>
+                    <input id='panel_modal_fecha_inicio' type='text' class="form-control" placeholder="Ejemplo: 23/02/2017 11:23" />
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+              </div>
+            </div>
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="panel_modal_fecha_fin" class="control-label">Fecha de término</label>
+                  <div class='input-group date'>
+                    <input id='panel_modal_fecha_fin' type='text' class="form-control" placeholder="Ejemplo: 24/02/2017 20:23" />
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Espacio para el panel</label>
+            <select id="panel_modal_espacios" class="selectpicker form-control" data-live-search="true" title="Sin espacio seleccionado">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id="panel_modal_submit" type="button" class="btn btn-primary" ></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+$('#panel_modal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var operacion = button.data('operacion');
+  var id = button.data('id-actividad');
+  var modal = $(this);
+  //modal.find('#panel_modal_nombre').val('');
+  var prom_esp = $.get('/espacios/' + {{encuentro_id}} + "/");
+  modal.find('#panel_modal_submit').data('operacion', operacion);
+  modal.find('#panel_modal_submit').data('id-actividad', id);
+  modal.find('#panel_modal_submit').removeAttr('disabled');
+  var selector = $(modal.find('#panel_modal_espacios'));
+  selector.html("");
+  switch (operacion) {
+    case 'creacion':
+      prom_esp.done(function(espacios) {
+        $(espacios).each(function (idx, espacio) {
+          var selected = false;
+          selector.append($('<option>', {
+            text: espacio.nombre,
+            value: espacio.id,
+            selected: selected,
+          }));
+        });
+        selector.selectpicker('refresh');
+      });
+      modal.find('.modal-title').text('Creación de panel');
+      modal.find('#panel_modal_submit').text('Crear panel');
+      var tipo_padre = button.data('tipo-padre');
+      console.log(button);
+      console.log("tipo_padre", tipo_padre);
+      modal.find('#panel_modal_submit').data('tipo-padre', tipo_padre);
+      break;
+    case 'edicion':
+      modal.find('.modal-title').text('Edición de panel');
+      modal.find('#panel_modal_submit').text('Guardar modificaciones');
+      var prom_pan = $.get('/paneles/'+ id +'/');
+      $.when(prom_pan, prom_esp).done(function(res_pan, res_esp) {
+        var panel = res_pan[0];
+        var espacios = res_esp[0];
+        console.log(panel);
+        modal.find('#panel_modal_nombre').val(panel.nombre);
+        modal.find('#panel_modal_espacios').html('');
+        modal.find('#panel_modal_espacios').find('option').remove();
+        $(espacios).each(function (idx, espacio) {
+          var selected = espacio.id == panel.espacio;
+          selector.append($('<option>', {
+            text: espacio.nombre,
+            value: espacio.id,
+            selected: selected,
+          }));
+        });
+        var cal_inicio = $(modal.find('#panel_modal_fecha_inicio').closest(".date"));
+        var cal_fin = $(modal.find('#panel_modal_fecha_fin').closest(".date"));
+        cal_inicio.data("DateTimePicker").date(null);
+        cal_fin.data("DateTimePicker").date(null);
+        var fecha_inicio = moment.utc(panel.fecha_inicio);
+        if (fecha_inicio.isValid()) {
+          cal_inicio.data("DateTimePicker").date(fecha_inicio);
+        }
+        var fecha_fin = moment.utc(panel.fecha_fin);
+        if (fecha_fin.isValid()) {
+          cal_fin.data("DateTimePicker").date(fecha_fin);
+        }
+        selector.selectpicker('refresh');
+      });
+      break;
+    default: //Evita que se abra el modal
+      return event.preventDefault();
+  }
+  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+});
+$('#panel_modal_submit').on('click', function (event) {
+  var button = $(this); // Button that triggered the modal
+  var operacion = button.data('operacion');
+  var data = {
+    'nombre': $('#panel_modal_nombre').val().trim(),
+    'fecha_inicio': moment.utc($('#panel_modal_fecha_inicio').val(), "DD/MM/YYYY HH:mm").format('YYYY-MM-DDTHH:mmZ'),
+    'fecha_fin': moment.utc($('#panel_modal_fecha_fin').val(), "DD/MM/YYYY HH:mm").format('YYYY-MM-DDTHH:mmZ'),
+    'espacio': $("#panel_modal_espacios").val()
+  };
+  if(data.espacios === null){data.espacios=[]}
+  var promesa;
+  console.log("data", data, "/data");
+  switch (operacion) {
+    case 'creacion':
+      data["id_padre"] =button.data('id-actividad');
+      data["tipo_padre"] = button.data("tipo-padre");
+      console.log("data", data, "/data");
+      promesa = $.ajax({
+        url: '/paneles/',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+      });
+      break;
+    case 'edicion':
+      var id = button.data('id-actividad');
+      promesa = $.ajax({
+        url: '/paneles/' + id + '/',
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+      });
+      promesa
+  .fail(function(data) {
+    console.log(data);
+  })
+  .always(function(data) {
+    console.log(data);
+  });
+      break;
+    default:
+      return;
+  }
+  button.attr('disabled', 'disabled');
+})
+
+$(function () {
+    var cal_inicio = $('#panel_modal_fecha_inicio').closest(".date");
+    var cal_fin = $('#panel_modal_fecha_fin').closest(".date");
+    //Inicializa el calendario de la fecha de inicio
+    $(cal_inicio).datetimepicker({
+      //locale: 'es',
+      format: 'DD/MM/YYYY HH:mm',
+
+    });
+    //Inicializa el calendario de la fecha de fin
+    $(cal_fin).datetimepicker({
+      //locale: 'es',
+      format: 'DD/MM/YYYY HH:mm',
+      useCurrent: false, //Important! See issue #1075
+    });
+    //Se asegura que la fecha de inicio no se mayor
+    //a la fecha de fin
+    $(cal_inicio).on("dp.change", function (e) {
+      $(cal_fin).data("DateTimePicker").minDate(e.date);
+    });
+    //Se asegura que la fecha de fin no se menor
+    //a la fecha de inicio
+    $(cal_fin).on("dp.change", function (e) {
+      $(cal_inicio).data("DateTimePicker").maxDate(e.date);
+    });
+});
+</script>

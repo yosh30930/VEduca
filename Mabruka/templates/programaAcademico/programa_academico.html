@@ -2,6 +2,9 @@
 {% load static from staticfiles %}
 {% block header %}
 {{ block.super }}
+<script src="{% static 'js/fullcalendar-2.6.0/lib/moment.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.js' %}"></script>
+<link href="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css' %}" rel='stylesheet' />
  <style type="text/css">
     #tree1 li{
       background-color: rgba(0,0,0,0.01);
@@ -18,6 +21,10 @@
 {% block content %}
 {{ block.super }}
 {% include "programaAcademico/actividades_modals.html" %}
+{% include "actividades/modals/encuentro.html" %}
+{% include "actividades/modals/panel.html" %}
+{% include "actividades/modals/seminario.html" %}
+{% include "actividades/modals/foro.html" %}
 <!-- Modal -->
 <!-- Termina Modal -->
 <div id="tree1"></div>
@@ -35,14 +42,12 @@ $(function() {
                 var tipo = node.tipo;
                 var id = node.id;
                 url = '/hijos/'+tipo+"/"+id+"/";
-                console.log("pidiendo", node);
             }else{
               url = '/encuentros/'+{{encuentro_id}}+'/';
             }
             return {url: url, data: data};
        },
         dataFilter: function(data) {
-            console.log(data);
             if (data['nombre']) {
               var nodo = data;
               nodo['label'] = nodo['nombre'] + " ";
@@ -77,6 +82,42 @@ $(function() {
             if (node.tipo) {
               /*Botón para agregar más actividades*/
               if (excepciones.indexOf(node.tipo) < 0) {
+                var drop_agregar = $.parseHTML(
+                  '<div class="dropdown">' +
+                    '<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
+                      'Agregar' +
+                      '<span class="caret"></span>' +
+                    '</button>' +
+                    '<ul class="dropdown-menu" aria-labelledby="dropdownMenu1"></ul>'+
+                  '</div>'
+                  );
+                var drop_menu = $(drop_agregar).find(".dropdown-menu");
+                switch(node.tipo) {
+                  case "encuentro":
+                    var li = $.parseHTML(
+                      '<li><a href="#" data-toggle="modal" data-target="#foro_modal" data-operacion="creacion" >Foro</a></li>');
+                    $(li).find("a").attr("data-id-actividad", node.id),
+                    $(li).find("a").attr("data-tipo-padre", node.tipo),
+                    $(drop_menu).append(li);
+                    break;
+                  case "foro":
+                    var li = $.parseHTML(
+                      '<li><a href="#" data-toggle="modal" data-target="#seminario_modal" data-operacion="creacion" >Seminario</a></li>');
+                    $(li).find("a").attr("data-id-actividad", node.id),
+                    $(li).find("a").attr("dattipoipadre-actividad", node.tipo),
+                    $(drop_menu).append(li);
+                    break;
+                  case "seminario":
+                    var li = $.parseHTML(
+                      '<li><a href="#" data-toggle="modal" data-target="#panel_modal" data-operacion="creacion" >Panel</a></li>');
+                    $(li).find("a").attr("data-id-actividad", node.id),
+                    $(li).find("a").attr("data-tipo-padre", node.tipo),
+                    $(drop_menu).append(li);
+                    break;
+                }
+                if ($.inArray(node.tipo, ["encuentro", "foro", "seminario"]) > -1) {
+                  $($li.children()[0]).append(drop_agregar);
+                }
                 var boton_agregar = $("<a>",
                   {text:"Agregar",
                   class:"btn btn-default btn-sm btn-agregar",

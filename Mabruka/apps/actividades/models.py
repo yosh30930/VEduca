@@ -16,6 +16,16 @@ class Espacio(models.Model):
     encuentro = models.ForeignKey(
         'Encuentro', models.CASCADE)
 
+    def get_actividades(self):
+        lista_querys = []
+        relaciones = self._meta.related_objects
+        for relacion in relaciones:
+            Modelo = relacion.related_model
+            query_result = Modelo.objects.filter(espacio=self)
+            if query_result:  # Si hubo al menos un resultado
+                lista_querys.append(query_result)
+        return lista_querys
+
 
 class Nodo(MPTTModel):
     """
@@ -50,7 +60,9 @@ class ActividadManager(models.Manager):
     Gestor de actividades que se encarga de crear un nodo y asociarlo
     a la actividad que se está creando
     """
+
     def crear(self, **kwargs):
+        del(kwargs["fecha_fin"])
         padre = None
         if "padre" in kwargs:
             padre = kwargs.pop("padre", None)
@@ -79,6 +91,7 @@ class Actividad(models.Model):
         'Nodo', content_type_field='content_type',
         object_id_field='content_id')
     responsables = models.ManyToManyField(User, blank=True)
+    anotaciones = models.TextField(blank=True)
 
     class Meta:
         abstract = True
@@ -107,18 +120,44 @@ class ConLocacion(models.Model):
 class Encuentro(Actividad):
     fecha_inicio = models.DateField(default=datetime.date.today)
     fecha_fin = models.DateField(default=datetime.date.today)
+    tipo = "encuentro"
 
 
 class Foro(Actividad):
     nombre_corto = models.CharField(max_length=60, blank=True)
     descripcion = models.TextField(default="", blank=True)
+    tipo = "foro"
+
+
+class Taller(Actividad, Programables, ConLocacion):
+    tipo = "taller"
+
+    class Meta:
+        verbose_name_plural = "talleres"
+
+
+class Reunion(Actividad, Programables, ConLocacion):
+    tipo = "reunion"
+
+    class Meta:
+        verbose_name_plural = "reuniones"
+
+
+class Sesion(Actividad):
+    tipo = "sesion"
+
+    class Meta:
+        verbose_name_plural = "sesiones"
 
 
 class Seminario(Actividad):
+    tipo = "seminario"
+
     pass
 
 
 class Panel(Actividad, Programables, ConLocacion):
+    tipo = "panel"
 
     class Meta:
         verbose_name_plural = "paneles"

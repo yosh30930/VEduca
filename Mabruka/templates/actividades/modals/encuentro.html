@@ -1,0 +1,190 @@
+<!-- Edición Encuentro Modal -->
+<div class="modal fade" id="encuentro_modal" tabindex="-1" role="dialog" aria-labelledby="encuentro_modal_label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="encuentro_modal_label">Título Edición de Encuentro</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Nombre del Encuentro</label>
+            <input id="encuentro_modal_nombre" type="text" class="form-control" id="recipient-name" placeholder="Ejemplo: Encuentro Internacional 2016 Costa Rica">
+          </div>
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="encuentro_modal_fecha_inicio" class="control-label">Fecha de inicio</label>
+                  <div class='input-group date'>
+                    <input id='encuentro_modal_fecha_inicio' type='text' class="form-control" placeholder="Ejemplo: 23/02/2017" />
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+              </div>
+            </div>
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="encuentro_modal_fecha_fin" class="control-label">Fecha de término</label>
+                  <div class='input-group date'>
+                    <input id='encuentro_modal_fecha_fin' type='text' class="form-control" placeholder="Ejemplo: 24/02/2017" />
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Responsables de programa</label>
+            <select id="encuentro_modal_responsables" class="selectpicker form-control" data-live-search="true" multiple title="Sin responsables">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id="encuentro_modal_submit" type="button" class="btn btn-primary" ></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+$('#encuentro_modal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var operacion = button.data('operacion');
+  var id = button.data('id-actividad');
+  var modal = $(this);
+  //modal.find('#encuentro_modal_nombre').val('');
+  var prom_resp = $.get('/responsables/');
+  modal.find('#encuentro_modal_submit').data('operacion', operacion);
+  modal.find('#encuentro_modal_submit').data('id-actividad', id);
+  modal.find('#encuentro_modal_submit').removeAttr('disabled');
+  var selector = $(modal.find('#encuentro_modal_responsables'));
+  selector.html("");
+  switch (operacion) {
+    case 'creacion':
+      prom_resp.done(function(responsables) {
+        $(responsables).each(function (idx, responsable) {
+          var selected = false;
+          selector.append($('<option>', {
+            text: responsable.username,
+            value: responsable.id,
+            selected: selected,
+          }));
+        });
+        selector.selectpicker('refresh');
+      });
+      modal.find('.modal-title').text('Creación de encuentro');
+      modal.find('#encuentro_modal_submit').text('Crear encuentro');
+      break;
+    case 'edicion':
+      modal.find('.modal-title').text('Edición de encuentro');
+      modal.find('#encuentro_modal_submit').text('Guardar modificaciones');
+      var id = button.data('id-actividad');
+      var prom_enc = $.get('/encuentros/'+ id +'/');
+      $.when(prom_enc, prom_resp).done(function(res_enc, res_resp) {
+        var encuentro = res_enc[0];
+        var responsables = res_resp[0];
+        modal.find('#encuentro_modal_nombre').val(encuentro.nombre);
+        modal.find('#encuentro_modal_responsables').html('');
+        modal.find('#encuentro_modal_responsables').find('option').remove();
+        $(responsables).each(function (idx, responsable) {
+          var selected = false;
+          $(encuentro.responsables).each(function (i, resp_id) {
+            if (responsable.id == resp_id) {
+              selected = true;
+            }
+          })
+          selector.append($('<option>', {
+            text: responsable.username,
+            value: responsable.id,
+            selected: selected,
+          }));
+        });
+        var fecha_fin = moment.utc(encuentro.fecha_fin).format("DD/MM/YYYY");
+        var fecha_inicio = moment.utc(encuentro.fecha_inicio).format("DD/MM/YYYY");
+        modal.find('#encuentro_modal_fecha_inicio').val(fecha_inicio);
+        modal.find('#encuentro_modal_fecha_fin').val(fecha_fin);
+        selector.selectpicker('refresh');
+      });
+      break;
+    default: //Evita que se abra el modal
+      return event.preventDefault();
+  }
+  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+});
+$('#encuentro_modal_submit').on('click', function (event) {
+  var button = $(this); // Button that triggered the modal
+  var operacion = button.data('operacion');
+  var data = {
+    'nombre': $('#encuentro_modal_nombre').val().trim(),
+    'fecha_inicio': moment($('#encuentro_modal_fecha_inicio').val(), "DD/MM/YYYY").format('YYYY-MM-DD'),
+    'fecha_fin': moment($('#encuentro_modal_fecha_fin').val(), "DD/MM/YYYY").format('YYYY-MM-DD'),
+    'responsables': $("#encuentro_modal_responsables").val()
+  };
+  if(data.responsables === null){data.responsables=[]}
+  console.log(data);
+  var promesa;
+  console.log(data);
+  switch (operacion) {
+    case 'creacion':
+      promesa = $.ajax({
+        url: '/encuentros/',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+      });
+      break;
+    case 'edicion':
+      var id = button.data('id-actividad');
+      promesa = $.ajax({
+        url: '/encuentros/' + id + '/',
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+      });
+      promesa
+  .fail(function(data) {
+    console.log(data);
+  })
+  .always(function(data) {
+    console.log(data);
+  });
+      break;
+    default:
+      return;
+  }
+  button.attr('disabled', 'disabled');
+})
+
+$(function () {
+    var cal_inicio = $('#encuentro_modal_fecha_inicio').closest(".date");
+    var cal_fin = $('#encuentro_modal_fecha_fin').closest(".date");
+    //Inicializa el calendario de la fecha de inicio
+    $(cal_inicio).datetimepicker({
+      format: 'DD/MM/YYYY',
+      //locale: 'es',
+    });
+    //Inicializa el calendario de la fecha de fin
+    $(cal_fin).datetimepicker({
+      format: 'DD/MM/YYYY',
+      //locale: 'es',
+      useCurrent: false, //Important! See issue #1075
+    });
+    //Se asegura que la fecha de inicio no se mayor
+    //a la fecha de fin
+    $(cal_inicio).on("dp.change", function (e) {
+      $(cal_fin).data("DateTimePicker").minDate(e.date);
+    });
+    //Se asegura que la fecha de fin no se menor
+    //a la fecha de inicio
+    $(cal_fin).on("dp.change", function (e) {
+      $(cal_inicio).data("DateTimePicker").maxDate(e.date);
+    });
+});
+</script>

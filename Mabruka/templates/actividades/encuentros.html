@@ -37,7 +37,7 @@
 
 {% block content %}
 {{ block.super }}
-{% include "actividades/modals_actividades.html" %}
+{% include "actividades/modals/encuentro.html" %}
 
 {% block menu %}
 {% endblock %}
@@ -85,13 +85,11 @@
     $(function() {
         $('#tree1').tree({
             dataUrl:  function(node) {
-                var data = {};
                 if(node){
                     console.log(node);
                 }
                 return {
-                   url: '/encuentros/',
-                   data: data,
+                   url: '/encuentros/'
                 };
            },
             dataFilter: function(data) {
@@ -135,25 +133,6 @@
                 {% endif %}
                 $li.addClass("list-group-item");
             }
-        });
-    });
-</script>
-<script type="text/javascript">
-    $(function () {
-        $('#datetimepicker1').datetimepicker({
-          format: 'DD/MM/YYYY',
-          //locale: 'es',
-        });
-        $('#datetimepicker2').datetimepicker({
-          format: 'DD/MM/YYYY',
-          //locale: 'es',
-          useCurrent: false, //Important! See issue #1075
-        });
-        $("#datetimepicker1").on("dp.change", function (e) {
-          $('#datetimepicker2').data("DateTimePicker").minDate(e.date);
-        });
-        $("#datetimepicker2").on("dp.change", function (e) {
-          $('#datetimepicker1').data("DateTimePicker").maxDate(e.date);
         });
     });
 </script>

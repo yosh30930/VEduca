@@ -3,6 +3,9 @@
 
 {% block header %}
 {{ block.super }}
+<script src="{% static 'js/fullcalendar-2.6.0/lib/moment.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.js' %}"></script>
+<link href="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css' %}" rel='stylesheet' />
 <link href="{% static 'js/jstree-3.3.0/themes/default/style.min.css' %}" rel='stylesheet'/>
 <link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.css' %}" rel='stylesheet'/>
 <link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.print.css' %}" rel='stylesheet' media='print'/>
@@ -12,6 +15,9 @@
 <script src="{% static 'js/fullcalendar-2.6.0/lang/es.js' %}"></script>
 <script src="{% static 'js/jstree-3.3.0/jstree.min.js' %}"></script>
 <script>
+    var colores_calendario = ["#59ABE3", "#2C3E50", "#26A65B",
+    "#F2784B", "#F39C12", "#913D88", "#96281B", "#3498db",
+    "#AEA8D3", "#5C97BF",]
     function is_null_or_undefined(objeto) {
         return (typeof objeto === 'undefined' || objeto === null)
     }
@@ -51,7 +57,8 @@
             // store data so the calendar knows to render an event upon drop
             $(this).data('event', {
                 title: $.trim($(this).text()), // use the element's text as the event title
-                stick: true // maintain when user navigates (see docs on the renderEvent method)
+                stick: true, // maintain when user navigates (see docs on the renderEvent method)
+                backgroundColor: colores_calendario[0],
             });
 
             // make the event draggable using jQuery UI
@@ -100,22 +107,38 @@
             eventResize: function (event) {
                 updateEvent(event);
             },
-            eventClick: function (calEvent, jsEvent, view) {
-            },
             eventAfterRender: function (event, element, view) {
+              $(element).attr("role", "button");
               $(element)
               .popover({
-                html: true,
                 title: event.objeto.nombre,
                 content: function () {
-                  var cont_html = $('#popoverHiddenContent').html();
-                  return cont_html;
+                  var cont_html = $('#popoverHiddenContent').clone();
+                  var boton = $(cont_html).find("button");
+                  boton.attr("data-target","#panel_modal");
+                  boton.attr("data-operacion","edicion");
+                  boton.attr("data-id-actividad", event.objeto.id);
+                  boton.attr("data-tipo-actividad","panel");
+                  return cont_html.html();
                 },
-                placement: 'top',
+                html: true,
+                placement: 'left',
+                container: 'body',
               })
-              .on('shown.bs.popover', function() {
-                  $('.selectpicker').selectpicker();
+              .on('show.bs.popover', function(e) {/*
+                console.log(e);
+                var actividad_a = e.currentTarget;
+                console.log(actividad_a);
+                var popover = $(this).data('bs.popover');
+                var cont_html = $('#popoverHiddenContent').clone();
+                var boton = $(cont_html).find("button");
+                boton.attr("data-target","#panel_modal");
+                boton.attr("data-operacion","edicion");
+                boton.attr("data-id-actividad", 1);
+                boton.attr("data-tipo-actividad","panel");
+                popover.options.content = cont_html.html();*/
               });
+              $(element).attr("tabindex", -1);
             }
         });
 
@@ -321,12 +344,15 @@
                               class: 'draggable fc-event ui-draggable ui-draggable-handle',
                               'z-index': 'auto',
                             };
+                            var color_fondo = elemento.espacio ? colores_calendario[(elemento.espacio % colores_calendario.length)] : "#D24D57";
                             var evento = {
                               title: elemento.nombre,
                               id: nodo.id,
                               objeto: elemento,
                               start: moment.utc(elemento.fecha_inicio),
                               end: fecha_fin,
+                              stick: true,
+                              backgroundColor: color_fondo,
                             };
                             $("#calendar").fullCalendar('renderEvent', evento, true);
                             $("#calendar").fullCalendar('unselect');
@@ -371,6 +397,7 @@
           start: actividad.fecha_inicio,
           end: actividad.fecha_fin,
           objeto: actividad,
+          backgroundColor: colores_calendario[0],
         });
         $(objeto).draggable({
           zIndex: 999,
@@ -458,7 +485,16 @@
 
 {% block content %}
 {{ block.super }}
+{% include "actividades/modals/encuentro.html" %}
+{% include "actividades/modals/panel.html" %}
 <div id="popoverHiddenContent" style="display:none">
+  <span style="font-weight: bold">Hora Inicio: </span>
+  <span class="popover-hora-inicio-campo"></span><br>
+  <span style="font-weight: bold">Hora Fin: </span>
+  <span class="popover-hora-fin-campo"></span><br>
+  <span style="font-weight: bold">Espacio: </span>
+  <span class="popover-espacio-campo"></span><br>
+  <button class="btn btn-default" data-toggle="modal">Editar</button>
 </div>
 <div id='wrap'>
     <div id='external-events'>
@@ -472,10 +508,6 @@
         </ul>
     </div>
     <div id='calendar' class="calendar"></div>
-    <div id="info-actividad">
-        <span></span><br>
-        <button>Editar</button>
-    </div>
     <div style='clear:both'></div>
 
     <!--<div id='calendar-min' class="calendar"></div>

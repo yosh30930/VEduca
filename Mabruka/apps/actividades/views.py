@@ -1,4 +1,6 @@
-from django.contrib.auth.models import User
+import copy
+
+# from django.contrib.auth.models import User
 from django.http import Http404
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
@@ -13,14 +15,45 @@ from .forms import (
     EdicionEncuentroForm, EdicionForoForm, EdicionSeminarioForm,
     EdicionPanelForm)
 from .serializersDRF import (
-    EncuentroSerializer, ForoSerializer, SeminarioSerializer, PanelSerializer)
-from .models import Encuentro, Foro, Seminario, Panel
+    EncuentroSerializer, ForoSerializer, SeminarioSerializer,
+    PanelSerializer, EspacioSerializer)
+from .models import Encuentro, Foro, Seminario, Panel, Espacio
 from apps.usuarios.models import SecretarioGeneral
 
 modelo_dict = {
     'encuentro': Encuentro, 'foro': Foro, 'seminario': Seminario,
     'panel': Panel}
 
+
+class EspacioListView(generics.ListCreateAPIView):
+    """
+    Regresa una lista de todos los **espacios** (GET)
+
+    Agrega un nuevo espacio (POST)
+
+    Actualiza todos los espacios (PUT)
+
+    Elimina todos los espacios en el sistema (DELETE)
+    """
+    model = Espacio
+    serializer_class = EspacioSerializer
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        id = self.kwargs['encuentro_id']
+        return Espacio.objects.filter(encuentro=id)
+"""
+    def post(self, request, format=None):
+        serializer = EspacioSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+#           #publish_data(channel='notification', data=data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
 
 class HijosListView(MultipleModelAPIView):
     """
@@ -70,8 +103,7 @@ class EncuentroListView(generics.ListCreateAPIView):
     queryset = Encuentro.objects.all()
 
     def post(self, request, format=None):
-        data = {'nombre': request.data.get('nombre')}
-        serializer = EncuentroSerializer(data=data)
+        serializer = EncuentroSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
 #           #publish_data(channel='notification', data=data)
@@ -100,6 +132,7 @@ class EncuentroDetailView(APIView):
     def put(self, request, id, format=None):
         encuentro = self.get_object(id)
         serializer = EncuentroSerializer(encuentro, data=request.data)
+        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -231,12 +264,16 @@ class PanelListView(generics.ListCreateAPIView):
     queryset = Panel.objects.all()
 
     def post(self, request, format=None):
-        data = {'nombre': request.data.get('nombre')}
-        Modelo = modelo_dict[request.data.get('padre_tipo')]
-        padre = Modelo.objects.get(pk=request.data.get('padre_id'))
+        print("request.data", request.data)
+        data = request.data
         serializer = PanelSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(padre=padre)
+            if ("tipo_padre" in data) and ("id_padre" in data):
+                tipo_padre = data["tipo_padre"]
+                id_padre = data["id_padre"]
+                serializer.save(tipo_padre=tipo_padre, id_padre=id_padre)
+            else:
+                serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
