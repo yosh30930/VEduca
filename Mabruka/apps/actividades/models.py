@@ -55,37 +55,10 @@ class Nodo(MPTTModel):
         return nodo
 
 
-class ActividadManager(models.Manager):
-    """
-    Gestor de actividades que se encarga de crear un nodo y asociarlo
-    a la actividad que se está creando
-    """
-
-    def crear(self, **kwargs):
-        del(kwargs["fecha_fin"])
-        padre = None
-        if "padre" in kwargs:
-            padre = kwargs.pop("padre", None)
-        try:
-            actividad = self.create(**kwargs)
-            nodo = None
-            if padre is None:
-                nodo = Nodo(elemento=actividad).save()
-            else:
-                nodo = Nodo(
-                    parent=padre.nodos.all().first(),
-                    elemento=actividad).save()
-            actividad.nodo = nodo
-            return actividad
-        except Exception as e:
-            raise e
-
-
 class Actividad(models.Model):
     """
     Base de cualquier tipo de actividad(Encuentro, Foro, Seminario, ...)
     """
-    objects = ActividadManager()
     nombre = models.CharField(max_length=300)
     nodos = GenericRelation(
         'Nodo', content_type_field='content_type',
@@ -93,11 +66,35 @@ class Actividad(models.Model):
     responsables = models.ManyToManyField(User, blank=True)
     anotaciones = models.TextField(blank=True)
 
+    def save(self, *args, **kwargs):
+        es_creacion = self.pk is None
+        # Se obtiene el elemento padre
+        padre = None
+        if "padre" in kwargs:
+            padre = kwargs.pop("padre", None)
+        print("Salvando al soldado", self)
+        super(Actividad, self).save(*args, **kwargs)
+
+        # Le asigna un nodo a la actividad y se
+        # le asigna un padre si es que se especificó
+        if es_creacion:
+            # Se encarga del nodo
+            if padre is not None:
+                nodo = Nodo(
+                    parent=padre.nodos.all().first(),
+                    elemento=self)
+            else:
+                nodo = Nodo(elemento=self)
+            nodo.save()
+            self.nodo = nodo
+            # Se encarga de las horas
+            self.save()
+
     class Meta:
         abstract = True
 
 
-class Programables(models.Model):
+class ConFecha(Actividad):
     """
     Base de las actividades que pueden ser programadas a alguna hora
     en específico
@@ -109,9 +106,17 @@ class Programables(models.Model):
         abstract = True
 
 
-class ConLocacion(models.Model):
+class ConLocacion(Actividad):
     espacio = models.ForeignKey(
         'Espacio', models.SET_NULL, blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class ConLocacionYFecha(ConLocacion):
+    fecha_inicio = models.DateTimeField(auto_now_add=True)
+    fecha_fin = models.DateTimeField(null=True)
 
     class Meta:
         abstract = True
@@ -129,14 +134,14 @@ class Foro(Actividad):
     tipo = "foro"
 
 
-class Taller(Actividad, Programables, ConLocacion):
+class Taller(ConLocacionYFecha):
     tipo = "taller"
 
     class Meta:
         verbose_name_plural = "talleres"
 
 
-class Reunion(Actividad, Programables, ConLocacion):
+class Reunion(ConLocacionYFecha):
     tipo = "reunion"
 
     class Meta:
@@ -156,7 +161,7 @@ class Seminario(Actividad):
     pass
 
 
-class Panel(Actividad, Programables, ConLocacion):
+class Panel(ConLocacionYFecha):
     tipo = "panel"
 
     class Meta:

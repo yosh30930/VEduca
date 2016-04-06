@@ -1,0 +1,155 @@
+<!-- Edición Foro Modal -->
+<div class="modal fade" id="foro_modal" tabindex="-1" role="dialog" aria-labelledby="foro_modal_label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="foro_modal_label">Título ___ de Foro</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="foro_modal_nombre" class="control-label">Nombre del Foro</label>
+            <input id="foro_modal_nombre" type="text" class="form-control" placeholder="Ejemplo: VIII FORO ‘EDUCADORES PARA LA ERA DIGITAL’">
+          </div>
+          <div class="form-group">
+            <label for="foro_modal_nombre_corto" class="control-label">Nombre corto del Foro</label>
+            <input id="foro_modal_nombre_corto" type="text" class="form-control" placeholder="Ejemplo: FORO EDUCACIÓN BÁSICA">
+          </div>
+          <div class="form-group">
+            <label for="foro_modal_descripcion" class="control-label">Descripción del Foro</label>
+            <textarea id="foro_modal_descripcion" type="textarea" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="foro_modal_responsables" class="control-label">Responsables del Foro</label>
+            <select id="foro_modal_responsables" class="selectpicker form-control" data-live-search="true" multiple title="Sin responsables">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button id="foro_modal_submit" type="button" class="btn btn-primary" ></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+$('#foro_modal').on('show.bs.modal', function (event) {
+  //Botón que accionó el modal
+  var button = $(event.relatedTarget);
+  //Operación a realizar (creación o edición)
+  var operacion = button.data('operacion');
+  //Identificador:
+  //Si la operación es 'creación' es el id del padre
+  //Si la operación es 'ecición' es el id de foro
+  var id = button.data('id-actividad');
+  var modal = $(this);
+  //Se pide una lista de los responsables disponibles
+  var prom_resp = $.get('/responsables/');
+
+  var boton_submit = modal.find('#foro_modal_submit');
+  boton_submit.data('operacion', operacion);
+  boton_submit.data('id-actividad', id);
+  boton_submit.removeAttr('disabled');
+  var selector = $(modal.find('#foro_modal_responsables'));
+  selector.find('option').remove();
+  switch (operacion) {
+    case 'creacion':
+      prom_resp.done(function(responsables) {
+        $(responsables).each(function (idx, responsable) {
+          var selected = false;
+          selector.append($('<option>', {
+            text: responsable.username,
+            value: responsable.id,
+            selected: selected,
+          }));
+        });
+        selector.selectpicker('refresh');
+      });
+      modal.find('.modal-title').text('Creación de Foro');
+      boton_submit.text('Crear Foro');
+      var tipo_padre = button.data('tipo-padre');
+      boton_submit.data('tipo-padre', tipo_padre);
+      break;
+    case 'edicion':
+      modal.find('.modal-title').text('Edición de Foro');
+      boton_submit.text('Guardar modificaciones');
+      var prom_for = $.get('/foros/'+ id +'/');
+      $.when(prom_for, prom_resp).done(function(res_pos, res_resp) {
+        var foro = res_pos[0];
+        var responsables = res_resp[0];
+        modal.find('#foro_modal_nombre').val(foro.nombre);
+        modal.find('#foro_modal_nombre_corto').val(foro.nombre_corto);
+        modal.find('#foro_modal_descripcion').val(foro.descripcion);
+        modal.find("#foro_modal_responsables").val(foro.responsables);
+        $(responsables).each(function (idx, responsable) {
+          var selected = false;
+          $(foro.responsables).each(function (i, resp_id) {
+            if (responsable.id == resp_id) {
+              selected = true;
+            }
+          })
+          selector.append($('<option>', {
+            text: responsable.username,
+            value: responsable.id,
+            selected: selected,
+          }));
+        });
+        selector.selectpicker('refresh');
+      });
+      break;
+    default: //Evita que se abra el modal
+      return event.preventDefault();
+  }
+  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+});
+$('#foro_modal_submit').on('click', function (event) {
+  var button = $(this); // Button that triggered the modal
+  var operacion = button.data('operacion');
+  var data = {
+    'nombre': $('#foro_modal_nombre').val().trim(),
+    'nombre_corto': $('#foro_modal_nombre_corto').val().trim(),
+    'descripcion': $('#foro_modal_descripcion').val().trim(),
+    'responsables': $("#foro_modal_responsables").val(),
+  };
+  if(data.responsables === null){data.responsables=[]}
+  var promesa;
+  console.log("data", data, "/data");
+  switch (operacion) {
+    case 'creacion':
+      data["id_padre"] =button.data('id-actividad');
+      data["tipo_padre"] = button.data("tipo-padre");
+      console.log("data", data, "/data");
+      promesa = $.ajax({
+        url: '/foros/',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+      });
+      break;
+    case 'edicion':
+      var id = button.data('id-actividad');
+      promesa = $.ajax({
+        url: '/foros/' + id + '/',
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+      });
+      promesa
+  .fail(function(data) {
+    console.log(data);
+  })
+  .always(function(data) {
+    console.log(data);
+  });
+      break;
+    default:
+      return;
+  }
+  button.attr('disabled', 'disabled');
+});
+</script>

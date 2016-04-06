@@ -18,7 +18,6 @@ class ActividadSerializer(serializers.ModelSerializer):
     id_padre = serializers.SerializerMethodField('id_padre_fun')
 
     def create(self, validated_data):
-        Modelo = self.modelo
         print('validate', validated_data)
         # Se remueven los responsables de los datos
         responsables = []
@@ -40,14 +39,16 @@ class ActividadSerializer(serializers.ModelSerializer):
         print("id_padre", id_padre)
         if (tipo_padre is not None) and (id_padre is not None):
             try:
-                Modelo = apps.get_model(app_label='actividades', model_name=tipo_padre)
-                padre = Modelo.objects.get(id=id_padre)
+                Modelo_padre = apps.get_model(
+                    app_label='actividades', model_name=tipo_padre)
+                padre = Modelo_padre.objects.get(id=id_padre)
             except Exception as e:
                 raise e
+        actividad = self.modelo(**validated_data)
         if padre:
-            validated_data["padre"] = padre
-        print("padre", padre)
-        actividad = Modelo.objects.crear(**validated_data)
+            actividad.save(padre=padre)
+        else:
+            actividad.save()
         # Asignación de responsables
         if responsables:
             actividad.responsables.add(*responsables)
@@ -98,7 +99,8 @@ class ForoSerializer(ActividadSerializer):
 
     class Meta:
         model = Foro
-        fields = ("nombre", "id", "tipo", "tipo_padre", "id_padre")
+        fields = ("nombre", "id", "tipo", "tipo_padre", "id_padre",
+                  "descripcion", "nombre_corto", "responsables")
 
 
 class SeminarioSerializer(ActividadSerializer):
@@ -110,7 +112,8 @@ class SeminarioSerializer(ActividadSerializer):
 
     class Meta:
         model = Seminario
-        fields = ("nombre", "id", "tipo", "tipo_padre", "id_padre")
+        fields = ("nombre", "id", "tipo", "tipo_padre", "id_padre",
+                  "responsables")
 
 
 class PanelSerializer(ActividadSerializer):

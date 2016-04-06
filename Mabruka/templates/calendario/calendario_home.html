@@ -14,400 +14,6 @@
 <script src="{% static 'js/fullcalendar-2.6.0/fullcalendar.min.js' %}"></script>
 <script src="{% static 'js/fullcalendar-2.6.0/lang/es.js' %}"></script>
 <script src="{% static 'js/jstree-3.3.0/jstree.min.js' %}"></script>
-<script>
-    var colores_calendario = ["#59ABE3", "#2C3E50", "#26A65B",
-    "#F2784B", "#F39C12", "#913D88", "#96281B", "#3498db",
-    "#AEA8D3", "#5C97BF",]
-    function is_null_or_undefined(objeto) {
-        return (typeof objeto === 'undefined' || objeto === null)
-    }
-    var mapa_actividades = new Map();
-
-    $(document).ready(function() {
-
-        $('#external-events').on('click', '.actividad', function() {
-            var actividad = mapa_actividades.get($(this).data('map_id'));
-            var text = "";
-            text +=  actividad['fields']['nombre'] + " ";
-            if(! is_null_or_undefined(actividad['fields']['start'])){
-                text += "Inicia " + actividad['fields']['start'].format('llll') + " ";
-            }
-            $("#info-actividad span").text(text);
-        });
-
-        function updateEvent(event) {
-            //console.log(event,moment(event['start']).isValid() , event['start'].utc().format());
-            var actividad = event.objeto;
-            var tipo = actividad.tipo;
-            var id = actividad.id;
-            var start = event['start'].utc().format();
-            var end = moment(event['end']).isValid() ? event['end'].utc().format() : "null";
-            $.post("/actualizar_actividad/" + tipo +"/"+ id +"/",{
-              fecha_inicio: start,
-              fecha_fin: end,
-            });
-        }
-
-
-        /* initialize the external events
-        -----------------------------------------------------------------*/
-
-        $('#external-events .fc-event').each(function() {
-
-            // store data so the calendar knows to render an event upon drop
-            $(this).data('event', {
-                title: $.trim($(this).text()), // use the element's text as the event title
-                stick: true, // maintain when user navigates (see docs on the renderEvent method)
-                backgroundColor: colores_calendario[0],
-            });
-
-            // make the event draggable using jQuery UI
-            $(this).draggable({
-                zIndex: 999,
-                revert: true,      // will cause the event to go back to its
-                revertDuration: 0  //  original position after the drag
-            });
-
-        });
-
-
-        /* initialize the calendar
-        -----------------------------------------------------------------*/
-
-        $('#calendar').fullCalendar({
-            lang: 'es',
-            slotDuration: '00:15:00',
-            snapDuration: '00:01:00',
-            header: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'month,agendaWeek,agendaDay'
-            },
-            allDayDefault: false,
-            editable: true,
-            droppable: true, // this allows things to be dropped onto the calendar
-            drop: function(date) {
-                // is the "remove after drop" checkbox checked?
-                if ($('#drop-remove').is(':checked')) {
-                    // if so, remove the element from the "Draggable Events" list
-                    $(this).remove();
-                }
-            },
-            eventDrop: function(event) {
-                event['calId'] = "1";
-                updateEvent(event);
-            },
-            eventReceive: function (event) {
-                event['calId'] = "1";
-                $('#calendar').fullCalendar('removeEvents', function (evento) {
-                  return (event.id === evento.id && event !== evento);
-                });
-                updateEvent(event);
-            },
-            eventResize: function (event) {
-                updateEvent(event);
-            },
-            eventAfterRender: function (event, element, view) {
-              $(element).attr("role", "button");
-              $(element)
-              .popover({
-                title: event.objeto.nombre,
-                content: function () {
-                  var cont_html = $('#popoverHiddenContent').clone();
-                  var boton = $(cont_html).find("button");
-                  boton.attr("data-target","#panel_modal");
-                  boton.attr("data-operacion","edicion");
-                  boton.attr("data-id-actividad", event.objeto.id);
-                  boton.attr("data-tipo-actividad","panel");
-                  return cont_html.html();
-                },
-                html: true,
-                placement: 'left',
-                container: 'body',
-              })
-              .on('show.bs.popover', function(e) {/*
-                console.log(e);
-                var actividad_a = e.currentTarget;
-                console.log(actividad_a);
-                var popover = $(this).data('bs.popover');
-                var cont_html = $('#popoverHiddenContent').clone();
-                var boton = $(cont_html).find("button");
-                boton.attr("data-target","#panel_modal");
-                boton.attr("data-operacion","edicion");
-                boton.attr("data-id-actividad", 1);
-                boton.attr("data-tipo-actividad","panel");
-                popover.options.content = cont_html.html();*/
-              });
-              $(element).attr("tabindex", -1);
-            }
-        });
-
-        /*$('#calendar-min').fullCalendar({
-            lang: 'es',
-            header: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'month,agendaWeek,agendaDay'
-            },
-            editable: true,
-            droppable: true, // this allows things to be dropped onto the calendar
-            hiddenDays: [0,3,4,5,6],
-            firstDay: 1,
-            dayNames: ['Día 7', 'Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6'],
-            dayNamesShort: ['Día 7', 'Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6'],
-            columnFormat: "ddd",
-            drop: function(date) {
-                // is the "remove after drop" checkbox checked?
-                if ($('#drop-remove').is(':checked')) {
-                    // if so, remove the element from the "Draggable Events" list
-                    //$(this).remove();
-                }
-            },
-            eventDrop: function(event) {
-                event['calId'] = "2";
-                updateEvent(event);
-            },
-            eventReceive: function (event) {
-                event['calId'] = "2";
-                updateEvent(event);
-            },
-            eventResize: function (event) {
-                updateEvent(event);
-            }
-        });*/
-
-        function render_actividades(actividad, lista) {
-            if (typeof actividad === 'undefined' || actividad === null){return;}
-            var padre = actividad['padre'];
-            padre['fields']['map_id'] = mapa_actividades.size;
-            mapa_actividades.set(mapa_actividades.size, padre);
-            var div = null;
-            var li = $('<li>');
-            if(is_null_or_undefined(padre['fields']['start'])){
-                div = $("<div>", {class:'actividad'});
-                $(div).data('event', {actividad:actividad});
-                $(div).data('map_id', padre['fields']['map_id']);
-                $(div).text(padre['fields']['nombre']);
-                $(li).append(div);
-                $(lista).append(li);
-                var tmp_lista = $('<ul>');
-                $(lista).append(tmp_lista);
-                $(actividad['hijos']).each(function (index, value) {
-                    render_actividades(value, tmp_lista);
-                });
-            }else {
-                div = agrega_arrastrable(padre);
-                $(li).append(div);
-                $(lista).append(li);
-            }
-
-        }
-
-        function agrega_arrastrable(raw_actividad) {
-            var actividad = raw_actividad['fields'];
-            actividad['id'] = raw_actividad['pk'];
-            actividad['modelo'] = raw_actividad['model'];
-            actividad['title'] = actividad['nombre'];
-            var start = moment.utc(actividad['start']);
-            var end = (typeof actividad['end'] === 'undefined' || actividad['end'] === null) ? null : moment.utc(actividad['end']);
-            actividad['start'] = start;
-            actividad['end'] = end;
-            actividad['stick'] = true;
-            var tmp_div = $("<div>", {class:'fc-event actividad', text:actividad['nombre']});
-            $(tmp_div).data('event', {id:actividad['id'], title:actividad['nombre'], modelo:actividad['modelo'], actividad:actividad});
-            $(tmp_div).data('map_id', actividad['map_id']);
-            $(tmp_div).draggable({
-                zIndex: 999,
-                revert: true,      // will cause the event to go back to its
-                revertDuration: 0  //  original position after the drag
-            });
-            switch(actividad['calId']) {
-                case "0":
-                    break;
-                case "1":
-                    $("#calendar").fullCalendar('renderEvent', actividad, true);
-                    $("#calendar").fullCalendar('unselect');
-                    break;
-                case "2":
-                    $("#calendar-min").fullCalendar('renderEvent', actividad, true);
-                    $("#calendar-min").fullCalendar('unselect');
-                    break;
-                default:
-                    console.log("Error con", actividad);
-            }
-            return tmp_div;
-        }
-
-        /*Pide la lista de los eventos*/
-        /*$.ajax({
-            url : '/buscar-actividades/',
-            type: 'get',
-            data: {id:{{encuentro_id}}},
-            success : function (data) {
-                console.log(data);
-                var lista = $('#lista-eventos');
-                render_actividades(data, lista);
-                $('#calendar').fullCalendar( 'rerenderEvents' );
-                return;
-            }
-        });*/
-
-        /*$('#lista-eventos').jstree({
-            'core': {
-                'data': {
-                    'url': function(node) {
-                        if (node.id === '#') {
-                            return '/encuentros/'+{{encuentro_id}}+'/';
-                        }else{
-                            return '/encuentros/'+{{encuentro_id}}+'/';
-                        };
-                    },
-                    'data': function(node) {
-                        console.log(node);
-                        return {'id':node.id, 'text':"hola"};
-                    }
-                },
-            },
-        });*/
-        $('#lista-eventos')
-        .on("select_node.jstree", function (e, data) {
-          console.log("select_node.jstree");
-        })
-        /*.on("load_node.jstree", function (e, data) {
-          console.log("load_node.jstree");
-        })
-        .on("model.jstree", function (e, data) {
-          console.log("model.jstree");
-        })
-        .on("show_node.jstree", function (e, data) {
-          console.log("show_node.jstree");
-        })
-        .on("refresh_node.jstree", function (e, data) {
-          console.log("refresh_node.jstree");
-        })*/
-        .on("before_open.jstree", function (e, data) {
-          //console.log("before_open.jstree");
-          reset_draggable();
-        })/*
-        .on("redraw.jstree", function (e, data) {
-          console.log("redraw.jstree");
-        })*/
-        .jstree({
-            'core' : {
-                'data' : function (node, callback) {
-                    //console.log(node);
-                    var url = '';
-                    if(node.id === '#'){
-                        url = '/encuentros/'+{{encuentro_id}}+'/';
-                    }else{
-                        var tipo = node.original.objeto.tipo;
-                        var id = node.original.objeto.id;
-                        url = '/hijos/'+tipo+"/"+id+"/";
-                        //console.log("pidiendo", node);
-                    };
-                    $.get(url, function (data) {
-                      //console.log(data);
-                      if (data['nombre']) {
-                        var nodo = {
-                          id: data.tipo + '-' +data.id,
-                          text: data.nombre,
-                          objeto: data,
-                          children: true,
-                          state: {opened: true},
-                        }
-                        callback.call(this, [nodo]);
-                        return;
-                      }
-                      var nodos = [];
-                      $(data).each(function (index, obj) {
-                        var nombre_categoria = Object.keys(obj)[0];
-                        var nodo_categoria = {
-                          text: _.capitalize(nombre_categoria),
-                          children: [], state: {opened: true}};
-                        $(obj[nombre_categoria]).each(function(index, elemento){
-                          //console.log('nodo', nodo);
-                          var nodo = {
-                            id: elemento.tipo + '-' +elemento.id,
-                            text: elemento.nombre,
-                            objeto: elemento,
-                            children: true,
-                            state: {opened: true},
-                          }
-                          if (elemento.fecha_inicio) {
-                            var fecha_fin = elemento.fecha_fin;
-                            if (typeof fecha_fin === 'undefined' || fecha_fin === null) {
-                              fecha_fin = null;
-                            }else{
-                              fecha_fin = moment.utc(fecha_fin);
-                            };
-                            nodo['li_attr'] = {
-                              class: 'draggable fc-event ui-draggable ui-draggable-handle',
-                              'z-index': 'auto',
-                            };
-                            var color_fondo = elemento.espacio ? colores_calendario[(elemento.espacio % colores_calendario.length)] : "#D24D57";
-                            var evento = {
-                              title: elemento.nombre,
-                              id: nodo.id,
-                              objeto: elemento,
-                              start: moment.utc(elemento.fecha_inicio),
-                              end: fecha_fin,
-                              stick: true,
-                              backgroundColor: color_fondo,
-                            };
-                            $("#calendar").fullCalendar('renderEvent', evento, true);
-                            $("#calendar").fullCalendar('unselect');
-                          }
-                          //console.log(elemento);
-                          nodo_categoria['children'].push(nodo);
-                          //console.log('nodo', nodo);
-                        });
-                        //console.log(nodo_categoria['children'])
-                        nodos.push(nodo_categoria);
-                      });
-                      callback.call(this, nodos);
-                    });
-                }
-            },
-            'search': {
-              'show_only_matches': true,
-              'show_only_matches_children': true,
-              "case_insensitive": true,
-            },
-            'plugins': ['search'],
-        });
-        var to = false;
-        $('#busqueda-actividad').keyup(function () {
-          if (to) {clearTimeout(to);};
-          to = setTimeout(function () {
-            var v = $('#busqueda-actividad').val();
-            $('#lista-eventos').jstree('search', v);
-          }, 250);
-        });
-
-    });
-
-    function reset_draggable() {
-      $('.draggable').each(function (i, objeto) {
-        var nodo = $('#lista-eventos').jstree().get_node(objeto.id).original;
-        var actividad = nodo.objeto;
-        $(objeto).data('event', {
-          stick: true,
-          id: nodo.id,
-          title: actividad.nombre,
-          start: actividad.fecha_inicio,
-          end: actividad.fecha_fin,
-          objeto: actividad,
-          backgroundColor: colores_calendario[0],
-        });
-        $(objeto).draggable({
-          zIndex: 999,
-          revert: true,      // will cause the event to go back to its
-          revertDuration: 0
-        });
-      });
-    }
-
-</script>
 
 <style>
     #wrap {
@@ -494,7 +100,7 @@
   <span class="popover-hora-fin-campo"></span><br>
   <span style="font-weight: bold">Espacio: </span>
   <span class="popover-espacio-campo"></span><br>
-  <button class="btn btn-default" data-toggle="modal">Editar</button>
+  <button class="btn btn-default editar-btn" data-toggle="modal">Editar</button>
 </div>
 <div id='wrap'>
     <div id='external-events'>
@@ -513,4 +119,410 @@
     <!--<div id='calendar-min' class="calendar"></div>
     <div style='clear:both'></div>-->
 </div>
+
+<script>
+var colores_calendario = ["#59ABE3", "#2C3E50", "#26A65B",
+"#F2784B", "#F39C12", "#913D88", "#96281B", "#3498db",
+"#AEA8D3", "#5C97BF",]
+function is_null_or_undefined(objeto) {
+    return (typeof objeto === 'undefined' || objeto === null)
+}
+var mapa_actividades = new Map();
+
+$(document).ready(function() {
+
+    $('#external-events').on('click', '.actividad', function() {
+        var actividad = mapa_actividades.get($(this).data('map_id'));
+        var text = "";
+        text +=  actividad['fields']['nombre'] + " ";
+        if(! is_null_or_undefined(actividad['fields']['start'])){
+            text += "Inicia " + actividad['fields']['start'].format('llll') + " ";
+        }
+        $("#info-actividad span").text(text);
+    });
+
+    function updateEvent(event) {
+        //console.log(event,moment(event['start']).isValid() , event['start'].utc().format());
+        var actividad = event.objeto;
+        var tipo = actividad.tipo;
+        var id = actividad.id;
+        var start = event['start'].utc().format();
+        var end = moment(event['end']).isValid() ? event['end'].utc().format() : "null";
+        $.post("/actualizar_actividad/" + tipo +"/"+ id +"/",{
+          fecha_inicio: start,
+          fecha_fin: end,
+        });
+    }
+
+
+    /* initialize the external events
+    -----------------------------------------------------------------*/
+
+    $('#external-events .fc-event').each(function() {
+
+        // store data so the calendar knows to render an event upon drop
+        $(this).data('event', {
+            title: $.trim($(this).text()), // use the element's text as the event title
+            stick: true, // maintain when user navigates (see docs on the renderEvent method)
+            backgroundColor: colores_calendario[0],
+            className: ['tiene_popover'],
+        });
+
+        // make the event draggable using jQuery UI
+        $(this).draggable({
+            zIndex: 999,
+            revert: true,      // will cause the event to go back to its
+            revertDuration: 0  //  original position after the drag
+        });
+
+    });
+
+
+    /* initialize the calendar
+    -----------------------------------------------------------------*/
+    $('#calendar').on('blur', '.popover', function () {
+        $('.popover').popover('hide');
+    })
+    $('#calendar').fullCalendar({
+        lang: 'es',
+        slotDuration: '00:15:00',
+        snapDuration: '00:01:00',
+        allDaySlot: false,
+        header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'month,agendaWeek,agendaDay'
+        },
+        allDayDefault: false,
+        editable: true,
+        droppable: true,
+        eventClick: function (event, jsEvent, view) {
+            var evento_anchor = jsEvent.currentTarget;
+            $('.tiene_popover').not(evento_anchor).popover('hide');
+            $(evento_anchor).popover('toggle');
+        },
+        eventDrop: function(event) {
+            event['calId'] = "1";
+            updateEvent(event);
+        },
+        eventReceive: function (event) {
+            event['calId'] = "1";
+            $('#calendar').fullCalendar('removeEvents', function (evento) {
+              return (event.id === evento.id && event !== evento);
+            });
+            updateEvent(event);
+        },
+        eventResize: function (event) {
+            updateEvent(event);
+        },
+        eventRender: function (event, element) {
+          $(element).attr("role", "button");
+          $(element)
+          .popover({
+            title: event.objeto.nombre,
+            content: function () {
+              var cont_html = $('#popoverHiddenContent').clone();
+              var boton = $(cont_html).find("button");
+              boton.attr("data-target","#panel_modal");
+              boton.attr("data-operacion","edicion");
+              boton.attr("data-id-actividad", event.objeto.id);
+              boton.attr("data-tipo-actividad","panel");
+              return cont_html.html();
+            },
+            html: true,
+            placement: 'left',
+            trigger: 'manual',
+            container: '#calendar',
+          })
+          .on('show.bs.popover', function(e) {
+            //$(this).popover('hide');
+          /*console.log(e);
+            var actividad_a = e.currentTarget;
+            console.log(actividad_a);
+            var popover = $(this).data('bs.popover');
+            var cont_html = $('#popoverHiddenContent').clone();
+            var boton = $(cont_html).find("button");
+            boton.attr("data-target","#panel_modal");
+            boton.attr("data-operacion","edicion");
+            boton.attr("data-id-actividad", 1);
+            boton.attr("data-tipo-actividad","panel");
+            popover.options.content = cont_html.html();*/
+          });
+          $(element).attr('tabindex', -1);
+        }
+    });
+
+    /*$('#calendar-min').fullCalendar({
+        lang: 'es',
+        header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'month,agendaWeek,agendaDay'
+        },
+        editable: true,
+        droppable: true, // this allows things to be dropped onto the calendar
+        hiddenDays: [0,3,4,5,6],
+        firstDay: 1,
+        dayNames: ['Día 7', 'Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6'],
+        dayNamesShort: ['Día 7', 'Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6'],
+        columnFormat: "ddd",
+        drop: function(date) {
+            // is the "remove after drop" checkbox checked?
+            if ($('#drop-remove').is(':checked')) {
+                // if so, remove the element from the "Draggable Events" list
+                //$(this).remove();
+            }
+        },
+        eventDrop: function(event) {
+            event['calId'] = "2";
+            updateEvent(event);
+        },
+        eventReceive: function (event) {
+            event['calId'] = "2";
+            updateEvent(event);
+        },
+        eventResize: function (event) {
+            updateEvent(event);
+        }
+    });*/
+
+    function render_actividades(actividad, lista) {
+        if (typeof actividad === 'undefined' || actividad === null){return;}
+        var padre = actividad['padre'];
+        padre['fields']['map_id'] = mapa_actividades.size;
+        mapa_actividades.set(mapa_actividades.size, padre);
+        var div = null;
+        var li = $('<li>');
+        if(is_null_or_undefined(padre['fields']['start'])){
+            div = $("<div>", {class:'actividad'});
+            $(div).data('event', {actividad:actividad});
+            $(div).data('map_id', padre['fields']['map_id']);
+            $(div).text(padre['fields']['nombre']);
+            $(li).append(div);
+            $(lista).append(li);
+            var tmp_lista = $('<ul>');
+            $(lista).append(tmp_lista);
+            $(actividad['hijos']).each(function (index, value) {
+                render_actividades(value, tmp_lista);
+            });
+        }else {
+            div = agrega_arrastrable(padre);
+            $(li).append(div);
+            $(lista).append(li);
+        }
+
+    }
+
+    function agrega_arrastrable(raw_actividad) {
+        var actividad = raw_actividad['fields'];
+        actividad['id'] = raw_actividad['pk'];
+        actividad['modelo'] = raw_actividad['model'];
+        actividad['title'] = actividad['nombre'];
+        var start = moment.utc(actividad['start']);
+        var end = (typeof actividad['end'] === 'undefined' || actividad['end'] === null) ? null : moment.utc(actividad['end']);
+        actividad['start'] = start;
+        actividad['end'] = end;
+        actividad['stick'] = true;
+        actividad['className'] =  ['tiene_popover'];
+        var tmp_div = $("<div>", {class:'fc-event actividad', text:actividad['nombre']});
+        $(tmp_div).data('event', {id:actividad['id'], title:actividad['nombre'], modelo:actividad['modelo'], actividad:actividad});
+        $(tmp_div).data('map_id', actividad['map_id']);
+        $(tmp_div).draggable({
+            zIndex: 999,
+            revert: true,      // will cause the event to go back to its
+            revertDuration: 0  //  original position after the drag
+        });
+        switch(actividad['calId']) {
+            case "0":
+                break;
+            case "1":
+                $("#calendar").fullCalendar('renderEvent', actividad, true);
+                $("#calendar").fullCalendar('unselect');
+                break;
+            case "2":
+                $("#calendar-min").fullCalendar('renderEvent', actividad, true);
+                $("#calendar-min").fullCalendar('unselect');
+                break;
+            default:
+                console.log("Error con", actividad);
+        }
+        return tmp_div;
+    }
+
+    /*Pide la lista de los eventos*/
+    /*$.ajax({
+        url : '/buscar-actividades/',
+        type: 'get',
+        data: {id:{{encuentro_id}}},
+        success : function (data) {
+            console.log(data);
+            var lista = $('#lista-eventos');
+            render_actividades(data, lista);
+            $('#calendar').fullCalendar( 'rerenderEvents' );
+            return;
+        }
+    });*/
+
+    /*$('#lista-eventos').jstree({
+        'core': {
+            'data': {
+                'url': function(node) {
+                    if (node.id === '#') {
+                        return '/encuentros/'+{{encuentro_id}}+'/';
+                    }else{
+                        return '/encuentros/'+{{encuentro_id}}+'/';
+                    };
+                },
+                'data': function(node) {
+                    console.log(node);
+                    return {'id':node.id, 'text':"hola"};
+                }
+            },
+        },
+    });*/
+    $('#lista-eventos')
+    .on("select_node.jstree", function (e, data) {
+      console.log("select_node.jstree");
+    })
+    /*.on("load_node.jstree", function (e, data) {
+      console.log("load_node.jstree");
+    })
+    .on("model.jstree", function (e, data) {
+      console.log("model.jstree");
+    })
+    .on("show_node.jstree", function (e, data) {
+      console.log("show_node.jstree");
+    })
+    .on("refresh_node.jstree", function (e, data) {
+      console.log("refresh_node.jstree");
+    })*/
+    .on("before_open.jstree", function (e, data) {
+      //console.log("before_open.jstree");
+      reset_draggable();
+    })/*
+    .on("redraw.jstree", function (e, data) {
+      console.log("redraw.jstree");
+    })*/
+    .jstree({
+        'core' : {
+            'data' : function (node, callback) {
+                //console.log(node);
+                var url = '';
+                if(node.id === '#'){
+                    url = '/encuentros/'+{{encuentro_id}}+'/';
+                }else{
+                    var tipo = node.original.objeto.tipo;
+                    var id = node.original.objeto.id;
+                    url = '/hijos/'+tipo+"/"+id+"/";
+                    //console.log("pidiendo", node);
+                };
+                $.get(url, function (data) {
+                  //console.log(data);
+                  if (data['nombre']) {
+                    var nodo = {
+                      id: data.tipo + '-' +data.id,
+                      text: data.nombre,
+                      objeto: data,
+                      children: true,
+                      state: {opened: true},
+                    }
+                    callback.call(this, [nodo]);
+                    return;
+                  }
+                  var nodos = [];
+                  $(data).each(function (index, obj) {
+                    var nombre_categoria = Object.keys(obj)[0];
+                    var nodo_categoria = {
+                      text: _.capitalize(nombre_categoria),
+                      children: [], state: {opened: true}};
+                    $(obj[nombre_categoria]).each(function(index, elemento){
+                      //console.log('nodo', nodo);
+                      var nodo = {
+                        id: elemento.tipo + '-' +elemento.id,
+                        text: elemento.nombre,
+                        objeto: elemento,
+                        children: true,
+                        state: {opened: true},
+                      }
+                      if (elemento.fecha_inicio) {
+                        var fecha_fin = elemento.fecha_fin;
+                        if (typeof fecha_fin === 'undefined' || fecha_fin === null) {
+                          fecha_fin = null;
+                        }else{
+                          fecha_fin = moment.utc(fecha_fin);
+                        };
+                        nodo['li_attr'] = {
+                          class: 'draggable fc-event ui-draggable ui-draggable-handle',
+                          'z-index': 'auto',
+                        };
+                        var color_fondo = elemento.espacio ? colores_calendario[(elemento.espacio % colores_calendario.length)] : "#D24D57";
+                        var evento = {
+                          title: elemento.nombre,
+                          id: nodo.id,
+                          objeto: elemento,
+                          start: moment.utc(elemento.fecha_inicio),
+                          end: fecha_fin,
+                          stick: true,
+                          backgroundColor: color_fondo,
+                          className: ['tiene_popover'],
+                        };
+                        $("#calendar").fullCalendar('renderEvent', evento, true);
+                        $("#calendar").fullCalendar('unselect');
+                      }
+                      //console.log(elemento);
+                      nodo_categoria['children'].push(nodo);
+                      //console.log('nodo', nodo);
+                    });
+                    //console.log(nodo_categoria['children'])
+                    nodos.push(nodo_categoria);
+                  });
+                  callback.call(this, nodos);
+                });
+            }
+        },
+        'search': {
+          'show_only_matches': true,
+          'show_only_matches_children': true,
+          "case_insensitive": true,
+        },
+        'plugins': ['search'],
+    });
+    var to = false;
+    $('#busqueda-actividad').keyup(function () {
+      if (to) {clearTimeout(to);};
+      to = setTimeout(function () {
+        var v = $('#busqueda-actividad').val();
+        $('#lista-eventos').jstree('search', v);
+      }, 250);
+    });
+
+});
+
+function reset_draggable() {
+  $('.draggable').each(function (i, objeto) {
+    var nodo = $('#lista-eventos').jstree().get_node(objeto.id).original;
+    var actividad = nodo.objeto;
+    $(objeto).data('event', {
+      stick: true,
+      id: nodo.id,
+      title: actividad.nombre,
+      start: actividad.fecha_inicio,
+      end: actividad.fecha_fin,
+      objeto: actividad,
+      backgroundColor: colores_calendario[0],
+      className: ['tiene_popover'],
+    });
+    $(objeto).draggable({
+      zIndex: 999,
+      revert: true,      // will cause the event to go back to its
+      revertDuration: 0
+    });
+  });
+}
+
+$("#calendar").on('click', '.editar-btn', function () {
+    $('.tiene_popover').popover('hide');
+})
+
+</script>
 {% endblock %}

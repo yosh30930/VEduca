@@ -104,7 +104,7 @@ $(function() {
                     var li = $.parseHTML(
                       '<li><a href="#" data-toggle="modal" data-target="#seminario_modal" data-operacion="creacion" >Seminario</a></li>');
                     $(li).find("a").attr("data-id-actividad", node.id),
-                    $(li).find("a").attr("dattipoipadre-actividad", node.tipo),
+                    $(li).find("a").attr("data-tipo-padre", node.tipo),
                     $(drop_menu).append(li);
                     break;
                   case "seminario":
@@ -118,30 +118,23 @@ $(function() {
                 if ($.inArray(node.tipo, ["encuentro", "foro", "seminario"]) > -1) {
                   $($li.children()[0]).append(drop_agregar);
                 }
-                var boton_agregar = $("<a>",
-                  {text:"Agregar",
-                  class:"btn btn-default btn-sm btn-agregar",
-                  href:"#" + node.id + "/"
-                });
-                $(boton_agregar).attr("data-toggle", "modal");
-                $(boton_agregar).attr("data-target", "#exampleModal");
-                $(boton_agregar).data("padre-id", node.id);
-                $(boton_agregar).data("padre-tipo", node.tipo);
-                $($li.children()[0]).append(boton_agregar);
               };
               /*Botón para editar las actividades*/
-              var url_edicion = "/modificacion_" + node.tipo + "/" + node.id + "/";
-              url_edicion += "?next={{ request.path }}"
               var boton_editar = $("<a>",
                 {text:"Editar",
-                class:"btn btn-default btn-sm",
-                href: url_edicion
+                class:"btn btn-default btn-sm btn-editar",
+                href: "#"
               });
+              $(boton_editar).attr("data-toggle", "modal")
+              $(boton_editar).attr("data-target", "#" + node.tipo + "_modal")
+              $(boton_editar).attr("data-operacion", "edicion")
+              $(boton_editar).attr("data-id-actividad", node.id);
               $($li.children()[0]).append(boton_editar);
+
               var boton_eliminar = $("<a>",
                 {text:"Eliminar",
                 class:"btn btn-danger btn-sm",
-                href: '#'
+                href:"#"
               });
               $($li.children()[0]).append(boton_eliminar);
               $li.addClass("list-group-item");

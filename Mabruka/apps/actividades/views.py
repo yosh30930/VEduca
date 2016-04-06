@@ -156,12 +156,15 @@ class ForoListView(generics.ListCreateAPIView):
     queryset = Foro.objects.all()
 
     def post(self, request, format=None):
-        data = {'nombre': request.data.get('nombre')}
-        Modelo = modelo_dict[request.data.get('padre_tipo')]
-        padre = Modelo.objects.get(pk=request.data.get('padre_id'))
+        data = request.data
         serializer = ForoSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(padre=padre)
+            if ("tipo_padre" in data) and ("id_padre" in data):
+                tipo_padre = data["tipo_padre"]
+                id_padre = data["id_padre"]
+                serializer.save(tipo_padre=tipo_padre, id_padre=id_padre)
+            else:
+                serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -210,12 +213,15 @@ class SeminarioListView(generics.ListCreateAPIView):
     queryset = Seminario.objects.all()
 
     def post(self, request, format=None):
-        data = {'nombre': request.data.get('nombre')}
-        Modelo = modelo_dict[request.data.get('padre_tipo')]
-        padre = Modelo.objects.get(pk=request.data.get('padre_id'))
+        data = request.data
         serializer = SeminarioSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(padre=padre)
+            if ("tipo_padre" in data) and ("id_padre" in data):
+                tipo_padre = data["tipo_padre"]
+                id_padre = data["id_padre"]
+                serializer.save(tipo_padre=tipo_padre, id_padre=id_padre)
+            else:
+                serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
