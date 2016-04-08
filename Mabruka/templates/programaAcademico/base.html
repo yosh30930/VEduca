@@ -12,7 +12,14 @@
 {{ block.super }}
 <!-- Justified tabs -->
 <ul class="nav nav-tabs nav-justified">
-    <li {% if '/programa_academico/' in request.path %}class = "active" {% endif %}><a href="/programa_academico/{{encuentro_id}}">Programa Académico</a></li>
-    <li {% if '/gestion_encuentro/' in request.path %}class = "active" {% endif %}><a href="/gestion_encuentro/{{encuentro_id}}">Logística</a></li>
+    {% if puede_programa_academico %}
+        <li {% if '/programa_academico/' in request.path %}class = "active" {% endif %}><a href="/programa_academico/{{encuentro_id}}">Programa Académico</a></li>
+    {% endif %}
+    {% if puede_logistica %}
+        <li {% if '/gestion_encuentro/' in request.path %}class = "active" {% endif %}><a href="/gestion_encuentro/{{encuentro_id}}">Logística</a></li>
+    {% endif %}
+    {% if puede_espacios %}
+        <li {% if '/gestion_espacios/' in request.path %}class = "active" {% endif %}><a href="/gestion_espacios/{{encuentro_id}}">Espacios</a></li>
+    {% endif %}
 </ul>
 {% endblock content %}

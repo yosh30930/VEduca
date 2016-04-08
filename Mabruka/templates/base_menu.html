@@ -32,9 +32,10 @@
         <a href="/"><img src="{% static 'img/logo-virtual-educa-institucional.png' %}"></a>-->
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li ><a href="/inicio/">Encuentros</a></li>
-        <li><a href="#">Conflictos<span class="badge">1</span></a></li>
-        <li><a href="{% url 'logout' %}">Salir</a></li>
+        <li style="text-align: center">
+          <a href="{% url 'logout' %}">Salir</a>
+          <span style="font-size: 12px">Hola {{ request.user.username }}</span>
+        </li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->

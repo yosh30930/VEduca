@@ -10,7 +10,7 @@
         <form>
           <div class="form-group">
             <label for="seminario_modal_nombre" class="control-label">Nombre del Seminario</label>
-            <input id="seminario_modal_nombre" type="text" class="form-control" placeholder="Ejemplo: VIII FORO ‘EDUCADORES PARA LA ERA DIGITAL’">
+            <input id="seminario_modal_nombre" type="text" class="form-control" placeholder="Ejemplo: VIII Seminario ‘EDUCADORES PARA LA ERA DIGITAL’">
           </div>
           <div class="form-group">
             <label for="seminario_modal_responsables" class="control-label">Responsables del Seminario</label>
@@ -99,6 +99,7 @@ $('#seminario_modal').on('show.bs.modal', function (event) {
 });
 $('#seminario_modal_submit').on('click', function (event) {
   var button = $(this); // Button that triggered the modal
+  button.attr('disabled', 'disabled');
   var operacion = button.data('operacion');
   var data = {
     'nombre': $('#seminario_modal_nombre').val().trim(),
@@ -118,6 +119,17 @@ $('#seminario_modal_submit').on('click', function (event) {
         contentType: 'application/json',
         data: JSON.stringify(data),
       });
+      promesa
+      .fail(function(data) {
+        console.log(data);
+      })
+      .done(function(data){
+        $(document).trigger( "actividadCreada", data);
+        $("#seminario_modal").modal('hide');
+      })
+      .always(function(data) {
+        console.log(data);
+      });
       break;
     case 'edicion':
       var id = button.data('id-actividad');
@@ -128,16 +140,19 @@ $('#seminario_modal_submit').on('click', function (event) {
         data: JSON.stringify(data),
       });
       promesa
-  .fail(function(data) {
-    console.log(data);
-  })
-  .always(function(data) {
-    console.log(data);
-  });
+      .fail(function(data) {
+        console.log(data);
+      })
+      .done(function(data){
+        $(document).trigger( "actividadModificada", data);
+        button.removeAttr('disabled');
+      })
+      .always(function(data) {
+        console.log(data);
+      });
       break;
     default:
       return;
   }
-  button.attr('disabled', 'disabled');
 });
 </script>

@@ -11,33 +11,36 @@ from braces.views import LoginRequiredMixin, UserPassesTestMixin
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-
-@api_view(['GET', 'POST'])
-def get_encuentros(request):
-    """
-    Regresa una lista de todos los encuentros.
-    """
-    if request.method == "GET":
-        encuentros = Encuentro.objects.all()
-        serializer = EncuentroSerializer(encuentros, many=True)
-        return Response(serializer.data)
-    elif request.method == "POST":
-        serializer = EncuentroSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from apps.programaAcademico.views import set_context_tab_menu
+from apps.actividades.models import Encuentro
+from apps.usuarios.models import SecretarioGeneral
 
 
-class CalendarioHome(TemplateView):
+class CalendarioHome(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = "calendario/calendario_home.html"
+
+    def test_func(self, user):
+        if not user.is_staff:
+            return False
+        if (SecretarioGeneral.objects.filter(usuario=user) or
+                user.is_superuser):
+            return True
+        try:
+            encuentro = Encuentro.objects.get(id=self.kwargs['id'])
+            if encuentro.responsables.filter(pk=user.pk):
+                return True
+        except Encuentro.ObjectDoesNotExist:
+            raise Http404
+        return False
 
     def get_context_data(self, **kwargs):
         context = super(CalendarioHome, self).get_context_data(**kwargs)
         context['encuentro_id'] = kwargs['id']
-#       context['latest_articles'] = Article.objects.all()[:5]
+        try:
+            encuentro = Encuentro.objects.get(id=kwargs['id'])
+        except Encuentro.ObjectDoesNotExist:
+            raise Http404
+        set_context_tab_menu(context, self.request.user, encuentro)
         return context
 
 

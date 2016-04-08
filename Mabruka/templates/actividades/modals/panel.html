@@ -127,6 +127,7 @@ $('#panel_modal').on('show.bs.modal', function (event) {
 });
 $('#panel_modal_submit').on('click', function (event) {
   var button = $(this); // Button that triggered the modal
+  button.attr('disabled', 'disabled');
   var operacion = button.data('operacion');
   var data = {
     'nombre': $('#panel_modal_nombre').val().trim(),
@@ -148,6 +149,17 @@ $('#panel_modal_submit').on('click', function (event) {
         contentType: 'application/json',
         data: JSON.stringify(data),
       });
+      promesa
+      .fail(function(data) {
+        console.log(data);
+      })
+      .done(function(data){
+        $(document).trigger( "actividadCreada", data);
+        $("#panel_modal").modal('hide');
+      })
+      .always(function(data) {
+        console.log(data);
+      });
       break;
     case 'edicion':
       var id = button.data('id-actividad');
@@ -158,17 +170,20 @@ $('#panel_modal_submit').on('click', function (event) {
         data: JSON.stringify(data),
       });
       promesa
-  .fail(function(data) {
-    console.log(data);
-  })
-  .always(function(data) {
-    console.log(data);
-  });
+      .fail(function(data) {
+        console.log(data);
+      })
+      .done(function(data){
+        $(document).trigger( "actividadModificada", data);
+        button.removeAttr('disabled');
+      })
+      .always(function(data) {
+        console.log(data);
+      });
       break;
     default:
       return;
   }
-  button.attr('disabled', 'disabled');
 })
 
 $(function () {

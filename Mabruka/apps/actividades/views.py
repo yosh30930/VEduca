@@ -1,5 +1,3 @@
-import copy
-
 # from django.contrib.auth.models import User
 from django.http import Http404
 from django.views.generic import TemplateView
@@ -18,6 +16,7 @@ from .serializersDRF import (
     EncuentroSerializer, ForoSerializer, SeminarioSerializer,
     PanelSerializer, EspacioSerializer)
 from .models import Encuentro, Foro, Seminario, Panel, Espacio
+from .models import modelosActividades
 from apps.usuarios.models import SecretarioGeneral
 
 modelo_dict = {
@@ -55,6 +54,7 @@ class EspacioListView(generics.ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 """
 
+
 class HijosListView(MultipleModelAPIView):
     """
     Regresa una lista de todos los hijos de una actividad
@@ -68,17 +68,20 @@ class HijosListView(MultipleModelAPIView):
         if tipo_padre not in modelo_dict:
             raise Http404
         Modelo = modelo_dict[tipo_padre]
-        print(tipo_padre, Modelo, id_padre)
         padre = Modelo.objects.get(id=id_padre)
         nodo = padre.nodos.all().first()
         nodos_hijos = nodo.get_children()
+        nodos_hijos_permitidos = []
+        for nodo_hijo in nodos_hijos:
+            if nodo_hijo.elemento.puede_ver_nodo(self.request.user):
+                nodos_hijos_permitidos.append(nodo_hijo)
         conjunto_hijos = {
             Foro: ([], ForoSerializer, 'foros'),
             Encuentro: ([], EncuentroSerializer, 'encuentros'),
             Panel: ([], PanelSerializer, 'paneles'),
             Seminario: ([], SeminarioSerializer, 'seminarios'),
         }
-        for nodo_hijo in nodos_hijos:
+        for nodo_hijo in nodos_hijos_permitidos:
             hijo = nodo_hijo.elemento
             conjunto_hijos[type(hijo)][0].append(hijo)
 
@@ -100,7 +103,6 @@ class EncuentroListView(generics.ListCreateAPIView):
     """
     model = Encuentro
     serializer_class = EncuentroSerializer
-    queryset = Encuentro.objects.all()
 
     def post(self, request, format=None):
         serializer = EncuentroSerializer(data=request.data)
@@ -109,6 +111,41 @@ class EncuentroListView(generics.ListCreateAPIView):
 #           #publish_data(channel='notification', data=data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        queryset = Encuentro.objects.none()
+        if not user.is_authenticated():
+            queryset = Encuentro.objects.all()
+        elif tiene_permiso_absoluto(user):
+            queryset = Encuentro.objects.all()
+        else:
+            encuentros_id = set()
+            for Modelo in modelosActividades:
+                query_results = []
+                try:
+                    query_result = Modelo.objects.filter(responsables=user)
+                    query_results.append(query_result)
+                except Modelo.FieldDoesNotExist:
+                    continue
+                for query_result in query_results:
+                    for actividad in query_result:
+                        nodo = actividad.nodos.first()
+                        ancestros = nodo.get_ancestors(include_self=True)
+                        ancestro_raiz = ancestros.first()
+                        actividad_raiz = ancestro_raiz.elemento
+                        if type(actividad_raiz) == Encuentro:
+                            encuentros_id.add(actividad_raiz.pk)
+                        else:
+                            return None
+                        # encuentros_id.add()
+            queryset = Encuentro.objects.filter(pk__in=encuentros_id)
+        # return Purchase.objects.filter(purchaser=user)
+        return queryset.order_by('-fecha_creacion')
 
 
 class EncuentroDetailView(APIView):
@@ -132,7 +169,6 @@ class EncuentroDetailView(APIView):
     def put(self, request, id, format=None):
         encuentro = self.get_object(id)
         serializer = EncuentroSerializer(encuentro, data=request.data)
-        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -153,7 +189,6 @@ class ForoListView(generics.ListCreateAPIView):
     """
     model = Foro
     serializer_class = ForoSerializer
-    queryset = Foro.objects.all()
 
     def post(self, request, format=None):
         data = request.data
@@ -167,6 +202,41 @@ class ForoListView(generics.ListCreateAPIView):
                 serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        queryset = Foro.objects.none()
+        if not user.is_authenticated():
+            queryset = Foro.objects.all()
+        elif tiene_permiso_absoluto(user):
+            queryset = Foro.objects.all()
+        else:
+            foros_id = set()
+            for Modelo in modelosActividades:
+                query_results = []
+                try:
+                    query_result = Modelo.objects.filter(responsables=user)
+                    query_results.append(query_result)
+                except Modelo.FieldDoesNotExist:
+                    continue
+                for query_result in query_results:
+                    for actividad in query_result:
+                        nodo = actividad.nodos.first()
+                        ancestros = nodo.get_ancestors(include_self=True)
+                        ancestro_raiz = ancestros.first()
+                        actividad_raiz = ancestro_raiz.elemento
+                        if type(actividad_raiz) == Foro:
+                            foros_id.add(actividad_raiz.pk)
+                        else:
+                            return None
+                        # foros_id.add()
+            queryset = Foro.objects.filter(pk__in=foros_id)
+        # return Purchase.objects.filter(purchaser=user)
+        return queryset.order_by('-fecha_creacion')
 
 
 class ForoDetailView(APIView):
@@ -270,7 +340,6 @@ class PanelListView(generics.ListCreateAPIView):
     queryset = Panel.objects.all()
 
     def post(self, request, format=None):
-        print("request.data", request.data)
         data = request.data
         serializer = PanelSerializer(data=data)
         if serializer.is_valid():
@@ -378,7 +447,6 @@ class ModificacionEncuentroView(LoginRequiredMixin,
             form = form_class(instance=encuentro, **self.get_form_kwargs())
         except Encuentro.DoesNotExist:
             form = form_class(**self.get_form_kwargs())
-        # print("form", form)
         return form
 
     def get_context_data(self, **kwargs):
@@ -388,12 +456,9 @@ class ModificacionEncuentroView(LoginRequiredMixin,
         return context
 
     def form_invalid(self, form):
-        # print("invalido", form.errors)
-        print(form.cleaned_data)
         return super(ModificacionEncuentroView, self).form_invalid(form)
 
     def form_valid(self, form):
-        print(form.cleaned_data)
         form.save()
         return super(ModificacionEncuentroView, self).form_valid(form)
 
@@ -419,13 +484,10 @@ class ModificacionActividadView(LoginRequiredMixin,
         return False
 
     def form_valid(self, form):
-        print(form.cleaned_data)
         form.save()
         return super(ModificacionActividadView, self).form_valid(form)
 
     def form_invalid(self, form):
-        print("invalido", form.errors)
-        print(form.cleaned_data)
         return super(ModificacionActividadView, self).form_invalid(form)
 
     def get_context_data(self, **kwargs):
@@ -453,7 +515,6 @@ class ModificacionForoView(ModificacionActividadView):
             form = form_class(instance=foro, **self.get_form_kwargs())
         except Foro.DoesNotExist:
             form = form_class(**self.get_form_kwargs())
-        # print("form", form)
         return form
 
     def get_context_data(self, **kwargs):
@@ -481,7 +542,6 @@ class ModificacionSeminarioView(ModificacionActividadView):
             form = form_class(instance=seminario, **self.get_form_kwargs())
         except Seminario.DoesNotExist:
             form = form_class(**self.get_form_kwargs())
-        # print("form", form)
         return form
 
     def get_context_data(self, **kwargs):
@@ -509,7 +569,6 @@ class ModificacionPanelView(ModificacionActividadView):
             form = form_class(instance=panel, **self.get_form_kwargs())
         except Panel.DoesNotExist:
             form = form_class(**self.get_form_kwargs())
-        # print("form", form)
         return form
 
     def get_context_data(self, **kwargs):

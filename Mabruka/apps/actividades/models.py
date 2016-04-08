@@ -1,10 +1,14 @@
+import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+
 from mptt.models import MPTTModel, TreeForeignKey
-import datetime
+
+from apps.usuarios.models import SecretarioGeneral
 
 
 class Espacio(models.Model):
@@ -65,6 +69,8 @@ class Actividad(models.Model):
         object_id_field='content_id')
     responsables = models.ManyToManyField(User, blank=True)
     anotaciones = models.TextField(blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_edicion = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         es_creacion = self.pk is None
@@ -72,7 +78,6 @@ class Actividad(models.Model):
         padre = None
         if "padre" in kwargs:
             padre = kwargs.pop("padre", None)
-        print("Salvando al soldado", self)
         super(Actividad, self).save(*args, **kwargs)
 
         # Le asigna un nodo a la actividad y se
@@ -89,6 +94,74 @@ class Actividad(models.Model):
             self.nodo = nodo
             # Se encarga de las horas
             self.save()
+
+    def es_responsable(self, usuario, actividad, checar_padres=False):
+        if not usuario.is_authenticated():
+            return False
+        if actividad.responsables.filter(pk=usuario.pk):
+            return True
+        if checar_padres and self.es_super_responsable(usuario, actividad):
+            return True
+        return False
+
+    def es_super_responsable(self, usuario, actividad):
+        if not usuario.is_authenticated():
+            return False
+        if (usuario.is_superuser or
+                SecretarioGeneral.objects.filter(usuario=usuario)):
+            return True
+        # Se verifica si es responsable de alguna actividad de mayor
+        # jerarquía
+        nodo_actividad = actividad.nodos.first()
+        ancestros_actividad = nodo_actividad.get_ancestors()
+        if ancestros_actividad:
+            query_results = []  # Querys donde es responsable de alguna actividad
+            for Modelo in modelosActividades:
+                query_result = Modelo.objects.filter(responsables=usuario)
+                query_results.append(query_result)
+                for query_result in query_results:
+                    for actividad_tmp in query_result:
+                        nodo_tmp = actividad_tmp.nodos.first()
+                        arbol_actividad_tmp = nodo_tmp.get_ancestors()
+                        if nodo_actividad in arbol_actividad_tmp:
+                            return True
+        return False
+
+    def puede_ver_actividad(self, usuario):
+        return self.puede_ver_nodo(usuario)
+
+    def puede_ver_nodo(self, usuario):
+        nodo_actividad = self.nodos.first()
+        if not usuario.is_authenticated():
+            return True
+        # Verifica si el usuario es super usuario o Secretari General
+        if (usuario.is_superuser or
+                SecretarioGeneral.objects.filter(usuario=usuario)):
+            return True
+        # Verifica si el usuario es responsable de alguno
+        # de los hijos de la actividad
+        ancestros_actividad = nodo_actividad.get_ancestors(include_self=True)
+
+        query_results = []  # Querys donde es responsable de alguna actividad
+        for Modelo in modelosActividades:
+            try:
+                query_result = Modelo.objects.filter(responsables=usuario)
+                query_results.append(query_result)
+            except Modelo.FieldDoesNotExist:
+                continue
+            for query_result in query_results:
+                for actividad_tmp in query_result:
+                    nodo_tmp = actividad_tmp.nodos.first()
+                    # Pregunta si es responsable de una actividad
+                    # de mayor jerarquía
+                    if nodo_tmp in ancestros_actividad:
+                        return True
+                    arbol_actividad_tmp = nodo_tmp.get_ancestors(
+                        include_self=True)
+                    if nodo_actividad in arbol_actividad_tmp:
+                        return True
+        # Verifica si es responsable de los espacios del encuentro
+        return False
 
     class Meta:
         abstract = True
@@ -158,11 +231,11 @@ class Sesion(Actividad):
 class Seminario(Actividad):
     tipo = "seminario"
 
-    pass
-
 
 class Panel(ConLocacionYFecha):
     tipo = "panel"
 
     class Meta:
         verbose_name_plural = "paneles"
+
+modelosActividades = [Encuentro, Foro, Seminario, Panel]

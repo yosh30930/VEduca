@@ -44,7 +44,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
         <button id="encuentro_modal_submit" type="button" class="btn btn-primary" ></button>
       </div>
     </div>
@@ -120,6 +120,7 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
 });
 $('#encuentro_modal_submit').on('click', function (event) {
   var button = $(this); // Button that triggered the modal
+  button.attr('disabled', 'disabled');
   var operacion = button.data('operacion');
   var data = {
     'nombre': $('#encuentro_modal_nombre').val().trim(),
@@ -139,6 +140,17 @@ $('#encuentro_modal_submit').on('click', function (event) {
         contentType: 'application/json',
         data: JSON.stringify(data),
       });
+      promesa
+      .fail(function(data) {
+        console.log(data);
+      })
+      .done(function(data){
+        $(document).trigger( "actividadCreada", data);
+        $("#encuentro_modal").modal('hide');
+      })
+      .always(function(data) {
+        console.log(data);
+      });
       break;
     case 'edicion':
       var id = button.data('id-actividad');
@@ -149,17 +161,20 @@ $('#encuentro_modal_submit').on('click', function (event) {
         data: JSON.stringify(data),
       });
       promesa
-  .fail(function(data) {
-    console.log(data);
-  })
-  .always(function(data) {
-    console.log(data);
-  });
+      .fail(function(data) {
+        console.log(data);
+      })
+      .done(function(data){
+        $(document).trigger( "actividadModificada", data);
+        button.removeAttr('disabled');
+      })
+      .always(function(data) {
+        console.log(data);
+      });
       break;
     default:
       return;
   }
-  button.attr('disabled', 'disabled');
 })
 
 $(function () {

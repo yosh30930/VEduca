@@ -3,6 +3,7 @@ from django.apps import apps
 from rest_framework import serializers
 
 from .models import Encuentro, Foro, Seminario, Panel, Espacio
+from apps.usuarios.models import SecretarioGeneral
 
 
 class EspacioSerializer(serializers.ModelSerializer):
@@ -16,9 +17,10 @@ class ActividadSerializer(serializers.ModelSerializer):
     tipo = serializers.SerializerMethodField('tipo_modelo')
     tipo_padre = serializers.SerializerMethodField('tipo_padre_fun')
     id_padre = serializers.SerializerMethodField('id_padre_fun')
+    permisos_edicion = serializers.SerializerMethodField(
+        'permisos_edicion_fun')
 
     def create(self, validated_data):
-        print('validate', validated_data)
         # Se remueven los responsables de los datos
         responsables = []
         if 'responsables' in validated_data:
@@ -28,15 +30,12 @@ class ActividadSerializer(serializers.ModelSerializer):
         padre = None
         tipo_padre = None
         id_padre = None
-        print("validated_data", validated_data)
         if "tipo_padre" in validated_data:
             tipo_padre = validated_data["tipo_padre"]
             del(validated_data["tipo_padre"])
         if "id_padre" in validated_data:
             id_padre = validated_data["id_padre"]
             del(validated_data["id_padre"])
-        print("tipo_padre", tipo_padre)
-        print("id_padre", id_padre)
         if (tipo_padre is not None) and (id_padre is not None):
             try:
                 Modelo_padre = apps.get_model(
@@ -75,6 +74,27 @@ class ActividadSerializer(serializers.ModelSerializer):
         else:
             return None
 
+    def permisos_edicion_fun(self, obj):
+        permisos_edicion = []
+        request = self.context.get('request', None)
+        print("contexto", self.context)
+        if request is None:
+            return permisos_edicion
+        usuario = request.user
+        cualquier_permiso = False
+        if (usuario.is_superuser or
+                SecretarioGeneral.objects.filter(usuario=usuario)):
+            cualquier_permiso = True
+        if cualquier_permiso:
+            permisos_edicion.append("eliminar")
+        if cualquier_permiso:
+            permisos_edicion.append("editar como responsable")
+        if cualquier_permiso:
+            permisos_edicion.append("editar como super responsable")
+        if cualquier_permiso:
+            permisos_edicion.append("agregar hijos")
+        return permisos_edicion
+
 
 class EncuentroSerializer(ActividadSerializer):
     """
@@ -87,7 +107,7 @@ class EncuentroSerializer(ActividadSerializer):
         model = Encuentro
         fields = ("nombre", "id",
                   "fecha_inicio", "fecha_fin", "tipo", "responsables",
-                  "tipo_padre", "id_padre")
+                  "tipo_padre", "id_padre", "permisos_edicion")
 
 
 class ForoSerializer(ActividadSerializer):
@@ -100,7 +120,8 @@ class ForoSerializer(ActividadSerializer):
     class Meta:
         model = Foro
         fields = ("nombre", "id", "tipo", "tipo_padre", "id_padre",
-                  "descripcion", "nombre_corto", "responsables")
+                  "descripcion", "nombre_corto", "responsables",
+                  "permisos_edicion")
 
 
 class SeminarioSerializer(ActividadSerializer):
@@ -113,7 +134,7 @@ class SeminarioSerializer(ActividadSerializer):
     class Meta:
         model = Seminario
         fields = ("nombre", "id", "tipo", "tipo_padre", "id_padre",
-                  "responsables")
+                  "responsables", "permisos_edicion")
 
 
 class PanelSerializer(ActividadSerializer):
@@ -126,4 +147,4 @@ class PanelSerializer(ActividadSerializer):
     class Meta:
         model = Panel
         fields = ("nombre", "id", "tipo", "fecha_inicio", "fecha_fin",
-                  "espacio", "tipo_padre", "id_padre")
+                  "espacio", "tipo_padre", "id_padre", "permisos_edicion")

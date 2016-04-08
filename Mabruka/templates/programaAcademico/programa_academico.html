@@ -6,8 +6,19 @@
 <script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.js' %}"></script>
 <link href="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css' %}" rel='stylesheet' />
  <style type="text/css">
-    #tree1 li{
+    #arbol-actividades li{
       background-color: rgba(0,0,0,0.01);
+    }
+
+    #arbol-actividades ul div.dropdown {
+      display: inline-block;
+      float: right;
+      margin: 2px;
+      margin-top: 5px;
+    }
+    #arbol-actividades ul a.btn {
+      float: right;
+      margin: 2px;
     }
  </style>
 {% endblock header %}
@@ -20,20 +31,19 @@
 
 {% block content %}
 {{ block.super }}
-{% include "programaAcademico/actividades_modals.html" %}
 {% include "actividades/modals/encuentro.html" %}
 {% include "actividades/modals/panel.html" %}
 {% include "actividades/modals/seminario.html" %}
 {% include "actividades/modals/foro.html" %}
 <!-- Modal -->
 <!-- Termina Modal -->
-<div id="tree1"></div>
+<div id="arbol-actividades"></div>
 
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
 <script type="text/javascript">
 $(function() {
-    $('#tree1').tree({
+    $('#arbol-actividades').tree({
         autoOpen: true,
         dataUrl:  function(node) {
             var data = {};
@@ -77,72 +87,27 @@ $(function() {
         //openedIcon: '-',
         //autoOpen: true,
         onCreateLi: function (node, $li) {
-            //console.log($li);
-            var excepciones = ['panel'];
             if (node.tipo) {
-              /*Botón para agregar más actividades*/
-              if (excepciones.indexOf(node.tipo) < 0) {
-                var drop_agregar = $.parseHTML(
-                  '<div class="dropdown">' +
-                    '<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
-                      'Agregar' +
-                      '<span class="caret"></span>' +
-                    '</button>' +
-                    '<ul class="dropdown-menu" aria-labelledby="dropdownMenu1"></ul>'+
-                  '</div>'
-                  );
-                var drop_menu = $(drop_agregar).find(".dropdown-menu");
-                switch(node.tipo) {
-                  case "encuentro":
-                    var li = $.parseHTML(
-                      '<li><a href="#" data-toggle="modal" data-target="#foro_modal" data-operacion="creacion" >Foro</a></li>');
-                    $(li).find("a").attr("data-id-actividad", node.id),
-                    $(li).find("a").attr("data-tipo-padre", node.tipo),
-                    $(drop_menu).append(li);
-                    break;
-                  case "foro":
-                    var li = $.parseHTML(
-                      '<li><a href="#" data-toggle="modal" data-target="#seminario_modal" data-operacion="creacion" >Seminario</a></li>');
-                    $(li).find("a").attr("data-id-actividad", node.id),
-                    $(li).find("a").attr("data-tipo-padre", node.tipo),
-                    $(drop_menu).append(li);
-                    break;
-                  case "seminario":
-                    var li = $.parseHTML(
-                      '<li><a href="#" data-toggle="modal" data-target="#panel_modal" data-operacion="creacion" >Panel</a></li>');
-                    $(li).find("a").attr("data-id-actividad", node.id),
-                    $(li).find("a").attr("data-tipo-padre", node.tipo),
-                    $(drop_menu).append(li);
-                    break;
-                }
-                if ($.inArray(node.tipo, ["encuentro", "foro", "seminario"]) > -1) {
-                  $($li.children()[0]).append(drop_agregar);
-                }
+              switch(node.tipo) {
+                case "encuentro":
+                  set_botones_encuentro(node, $li);
+                  break;
+                case "foro":
+                  set_botones_foro(node, $li);
+                  break;
+                case "seminario":
+                  set_botones_seminario(node, $li);
+                  break;
+                case "panel":
+                  set_botones_panel(node, $li);
+                  break;
               };
-              /*Botón para editar las actividades*/
-              var boton_editar = $("<a>",
-                {text:"Editar",
-                class:"btn btn-default btn-sm btn-editar",
-                href: "#"
-              });
-              $(boton_editar).attr("data-toggle", "modal")
-              $(boton_editar).attr("data-target", "#" + node.tipo + "_modal")
-              $(boton_editar).attr("data-operacion", "edicion")
-              $(boton_editar).attr("data-id-actividad", node.id);
-              $($li.children()[0]).append(boton_editar);
-
-              var boton_eliminar = $("<a>",
-                {text:"Eliminar",
-                class:"btn btn-danger btn-sm",
-                href:"#"
-              });
-              $($li.children()[0]).append(boton_eliminar);
-              $li.addClass("list-group-item");
+              $li.find(".jqtree-element").append($("<div style=clear:both></div>"));
             };
         }
     });
-  $("#tree1").on('click', ".btn-agregar",function(event){
-    var $arbol = $('#tree1');
+  $("#arbol-actividades").on('click', ".btn-agregar",function(event){
+    var $arbol = $('#arbol-actividades');
     var tipo = $(this).data("padre-tipo");
     console.log(tipo);
     //Obtenemos el tipo de objeto asociado al botón
@@ -161,44 +126,148 @@ $(function() {
     //Mostramos algún modal asociado a algún hijo del tipo
   });
 });
-$('#exampleModal').on('show.bs.modal', function (event) {
-  var button = $(event.relatedTarget) // Button that triggered the modal
-  var recipient = button.data('whatever') // Extract info from data-* attributes
-  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-  var modal = $(this)
-  modal.find('.modal-title').text('Agrega una actividad a ' + recipient)
-  modal.find('.modal-body input').val(recipient)
-  var boton_crear = $(modal.find('#btn-crear-actividad'));
-  boton_crear.data("padre-id", button.data('padre-id'));
-  boton_crear.data("padre-tipo", button.data('padre-tipo'));
-});
 
-$('#btn-crear-actividad').on('click', function (evento) {
-  var url = '/'
-  switch($('#select-crear-actividad').val()) {
-    case 'encuentro':
-      url += 'encuentros'; break;
-    case 'foro':
-      url += 'foros'; break;
-    case 'panel':
-      url += 'paneles'; break;
-    case 'seminario':
-      url += 'seminarios'; break;
-    default:
-        return;
-  }
-  url += '/';
-  var boton = $('#btn-crear-actividad');
-  $.post(url,{
-    padre_id: boton.data('padre-id'),
-    padre_tipo: boton.data('padre-tipo'),
-    nombre: $('#txt-crear-actividad').val(),
-  })
-  .done(function () {
-    $("#tree1").tree('reload');
+function set_botones_encuentro(node, $li) {
+  var drop_agregar = $.parseHTML(
+  '<div class="dropdown">' +
+    '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
+      'Agregar una actividad' +
+      '<span class="caret"></span>' +
+    '</button>' +
+    '<ul class="dropdown-menu"></ul>'+
+  '</div>'
+  );
+  var drop_menu = $(drop_agregar).find(".dropdown-menu");
+  var li = $.parseHTML(
+    '<li><a href="#" data-toggle="modal" data-target="#foro_modal" data-operacion="creacion" >Foro</a></li>');
+  $(li).find("a").attr("data-id-actividad", node.id),
+  $(li).find("a").attr("data-tipo-padre", node.tipo),
+  $(drop_menu).append(li);
+  var li = $.parseHTML(
+    '<li><a href="#" data-toggle="modal" data-target="#plenaria_modal" data-operacion="creacion" >Plenaria</a></li>');
+  $(li).find("a").attr("data-id-actividad", node.id),
+  $(li).find("a").attr("data-tipo-padre", node.tipo),
+  $(drop_menu).append(li);
+  var li = $.parseHTML(
+    '<li><a href="#" data-toggle="modal" data-target="#taller_modal" data-operacion="creacion" >Taller</a></li>');
+  $(li).find("a").attr("data-id-actividad", node.id),
+  $(li).find("a").attr("data-tipo-padre", node.tipo),
+  $(drop_menu).append(li);
+  $($li.find(".jqtree-element")).append(drop_agregar);
+};
+
+function set_botones_foro(node, $li) {
+  var nodo_arbol = $li.find(".jqtree-element")
+
+  var boton_editar = $("<a>",
+    {text:"Editar foro",
+    class:"btn btn-default btn-sm btn-editar",
+    href: "#"
   });
-  $('.modal').modal('hide');
-});
+  $(boton_editar).attr("data-toggle", "modal")
+  $(boton_editar).attr("data-target", "#foro_modal")
+  $(boton_editar).attr("data-operacion", "edicion")
+  $(boton_editar).attr("data-id-actividad", node.id);
+
+  var boton_eliminar = $("<a>",
+    {text:"Eliminar foro",
+    class:"btn btn-default btn-sm btn-editar",
+    href: "#"
+  });
+  //$(boton_editar).attr("data-toggle", "modal")
+  //$(boton_editar).attr("data-target", "#foro_modal")
+  //$(boton_editar).attr("data-operacion", "edicion")
+  //$(boton_editar).attr("data-id-actividad", node.id);
+
+  var boton_agregar = $("<a>",
+    {text:"Agregar un seminario",
+    class:"btn btn-default btn-sm btn-editar",
+    href: "#"
+  });
+  $(boton_agregar).attr("data-toggle", "modal")
+  $(boton_agregar).attr("data-target", "#seminario_modal")
+  $(boton_agregar).attr("data-operacion", "creacion")
+  $(boton_agregar).attr("data-id-actividad", node.id),
+  $(boton_agregar).attr("data-tipo-padre", node.tipo),
+
+  $(nodo_arbol).append(boton_eliminar);
+  $(nodo_arbol).append(boton_editar);
+  $li.find(".jqtree-element").append($("<div style=clear:right></div>"));
+  $(nodo_arbol).append(boton_agregar);
+}
+
+function set_botones_seminario(node, $li) {
+  var nodo_arbol = $li.find(".jqtree-element");
+
+  var drop_agregar = $.parseHTML(
+  '<div class="dropdown">' +
+    '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
+      'Agregar una actividad' +
+      '<span class="caret"></span>' +
+    '</button>' +
+    '<ul class="dropdown-menu"></ul>'+
+  '</div>'
+  );
+  var drop_menu = $(drop_agregar).find(".dropdown-menu");
+  var li = $.parseHTML(
+    '<li><a href="#" data-toggle="modal" data-target="#panel_modal" data-operacion="creacion" >Panel</a></li>');
+  $(li).find("a").attr("data-id-actividad", node.id),
+  $(li).find("a").attr("data-tipo-padre", node.tipo),
+  $(drop_menu).append(li);
+  var li = $.parseHTML(
+    '<li><a href="#" data-toggle="modal" data-target="#mesa_redonda_modal" data-operacion="creacion" >Mesa redonda</a></li>');
+  $(li).find("a").attr("data-id-actividad", node.id),
+  $(li).find("a").attr("data-tipo-padre", node.tipo),
+  $(drop_menu).append(li);
+  var li = $.parseHTML(
+    '<li><a href="#" data-toggle="modal" data-target="#ponencia_modal" data-operacion="creacion" >Ponencia</a></li>');
+  $(li).find("a").attr("data-id-actividad", node.id),
+  $(li).find("a").attr("data-tipo-padre", node.tipo),
+  $(drop_menu).append(li);
+
+  var boton_editar = $("<a>",
+    {text:"Editar seminario",
+    class:"btn btn-default btn-sm btn-editar",
+    href: "#"
+  });
+  $(boton_editar).attr("data-toggle", "modal")
+  $(boton_editar).attr("data-target", "#seminario_modal")
+  $(boton_editar).attr("data-operacion", "edicion")
+  $(boton_editar).attr("data-id-actividad", node.id);
+
+  var boton_eliminar = $("<a>",
+    {text:"Eliminar seminario",
+    class:"btn btn-default btn-sm btn-editar",
+    href: "#"
+  });
+
+  $(nodo_arbol).append(boton_eliminar);
+  $(nodo_arbol).append(boton_editar);
+  $li.find(".jqtree-element").append($("<div style=clear:right></div>"));
+  $(nodo_arbol).append(drop_agregar);
+}
+
+function set_botones_panel(node, $li) {
+  var nodo_arbol = $li.find(".jqtree-element");
+  var boton_editar = $("<a>",
+    {text:"Editar panel",
+    class:"btn btn-default btn-sm btn-editar",
+    href: "#"
+  });
+  $(boton_editar).attr("data-toggle", "modal")
+  $(boton_editar).attr("data-target", "#panel_modal")
+  $(boton_editar).attr("data-operacion", "edicion")
+  $(boton_editar).attr("data-id-actividad", node.id);
+
+  var boton_eliminar = $("<a>",
+    {text:"Eliminar panel",
+    class:"btn btn-default btn-sm btn-editar",
+    href: "#"
+  });
+
+  $(nodo_arbol).append(boton_eliminar);
+  $(nodo_arbol).append(boton_editar);
+}
+
 </script>
 {% endblock content %}

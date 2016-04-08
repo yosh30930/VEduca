@@ -27,6 +27,15 @@
             padding-left: 0;
             list-style-type: none;
         }
+        #tree1 li {
+            overflow: hidden;
+        }
+        #tree1 li a.btn{
+            float: right;
+        }
+        #tree1 li div.jqtree-title{
+            float: left;
+        }
     </style>
 {% endblock %}
 
@@ -44,9 +53,11 @@
 
 <!-- Termina Modal -->
 {% if es_secretario %}
-<button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#encuentro_modal" data-operacion="creacion">
+<h4>
+<a data-toggle="modal" data-target="#encuentro_modal" data-operacion="creacion" href="#">
   <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Crear Encuentro
-</button>
+</a>
+</h4>
 {% endif %}
 <div id="jstree_demo_div"></div>
 <div id="tree1"></div>
@@ -106,13 +117,21 @@
             openedIcon: '-',
             onCreateLi: function (node, $li) {
                 //console.log($li);
-                var boton_gestion = $("<a>",
-                    {text:"Gestionar",
-                    class:"btn btn-default btn-md",
+                var $div = $li.find("div");
+                var $span = $div.find("span");
+                var anchor_gestion = $("<a>",
+                    {text:$span.text(),
                     href:"/programa_academico/" + node.id + "/"
                 });
-                $li.append(boton_gestion);
+                $span.html(anchor_gestion);
+                //$div.append(boton_gestion);
                 {% if es_secretario %}
+                var boton_eliminacion = $("<a>",
+                    {text:"Eliminar",
+                    class:"btn btn-default btn-md",
+                    href:"#"
+                });
+                $div.append(boton_eliminacion);
                 var boton_modificacion = $("<a>",
                     {text:"Modificar",
                     class:"btn btn-default btn-md",
@@ -123,16 +142,13 @@
                 boton_modificacion.data('tipo-actividad', node.tipo);
                 boton_modificacion.attr('data-toggle', 'modal');
                 boton_modificacion.attr('data-target', '#encuentro_modal');
-                $li.append(boton_modificacion);
-                var boton_eliminacion = $("<a>",
-                    {text:"Eliminar",
-                    class:"btn btn-danger btn-md",
-                    href:"#"
-                });
-                $li.append(boton_eliminacion);
+                $div.append(boton_modificacion);
                 {% endif %}
                 $li.addClass("list-group-item");
             }
+        });
+        $(document).on('actividadCreada', function(){
+            $("#tree1").tree('reload');
         });
     });
 </script>
