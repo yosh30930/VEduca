@@ -8,8 +8,14 @@
  <style type="text/css">
     #arbol-actividades li{
       background-color: rgba(0,0,0,0.01);
+      padding: 0;
+      padding-right: 0;
+      border-right: 0;
+      margin: 0;
     }
-
+    #arbol-actividades {
+      border-right: solid 1px #ddd;
+    }
     #arbol-actividades ul div.dropdown {
       display: inline-block;
       float: right;
@@ -19,6 +25,10 @@
     #arbol-actividades ul a.btn {
       float: right;
       margin: 2px;
+    }
+    .btns-actividades {
+      display: inline-block;
+      float: right;
     }
  </style>
 {% endblock header %}
@@ -87,22 +97,29 @@ $(function() {
         //openedIcon: '-',
         //autoOpen: true,
         onCreateLi: function (node, $li) {
+            $li.addClass("list-group-item");
+            $li.closest("ul").addClass("list-group");
+            console.log($li.closest("ul"));
             if (node.tipo) {
+              var botones = null;
               switch(node.tipo) {
                 case "encuentro":
-                  set_botones_encuentro(node, $li);
+                  botones = set_botones_encuentro(node, $li);
                   break;
                 case "foro":
-                  set_botones_foro(node, $li);
+                  botones = set_botones_foro(node, $li);
                   break;
                 case "seminario":
-                  set_botones_seminario(node, $li);
+                  botones = set_botones_seminario(node, $li);
                   break;
                 case "panel":
-                  set_botones_panel(node, $li);
+                  botones = set_botones_panel(node, $li);
                   break;
               };
-              $li.find(".jqtree-element").append($("<div style=clear:both></div>"));
+              if (botones != null) {
+                $li.find(".jqtree-element").prepend(botones);
+                $li.find(".jqtree-element").append($("<div style=clear:both></div>"));
+              }
             };
         }
     });
@@ -125,148 +142,178 @@ $(function() {
     }
     //Mostramos algún modal asociado a algún hijo del tipo
   });
+  $(document).on('actividadCreada', function(){
+      $("#arbol-actividades").tree('reload');
+  });
 });
 
 function set_botones_encuentro(node, $li) {
-  var drop_agregar = $.parseHTML(
-  '<div class="dropdown">' +
-    '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
-      'Agregar una actividad' +
-      '<span class="caret"></span>' +
-    '</button>' +
-    '<ul class="dropdown-menu"></ul>'+
-  '</div>'
-  );
-  var drop_menu = $(drop_agregar).find(".dropdown-menu");
-  var li = $.parseHTML(
-    '<li><a href="#" data-toggle="modal" data-target="#foro_modal" data-operacion="creacion" >Foro</a></li>');
-  $(li).find("a").attr("data-id-actividad", node.id),
-  $(li).find("a").attr("data-tipo-padre", node.tipo),
-  $(drop_menu).append(li);
-  var li = $.parseHTML(
-    '<li><a href="#" data-toggle="modal" data-target="#plenaria_modal" data-operacion="creacion" >Plenaria</a></li>');
-  $(li).find("a").attr("data-id-actividad", node.id),
-  $(li).find("a").attr("data-tipo-padre", node.tipo),
-  $(drop_menu).append(li);
-  var li = $.parseHTML(
-    '<li><a href="#" data-toggle="modal" data-target="#taller_modal" data-operacion="creacion" >Taller</a></li>');
-  $(li).find("a").attr("data-id-actividad", node.id),
-  $(li).find("a").attr("data-tipo-padre", node.tipo),
-  $(drop_menu).append(li);
-  $($li.find(".jqtree-element")).append(drop_agregar);
+  var permisos = node.permisos_edicion;
+  var btns_actividades = $("<div>", {class: "btns-actividades"});
+  if ($.inArray('agregar hijos', permisos) > -1) {
+    var drop_agregar = $.parseHTML(
+    '<div class="dropdown">' +
+      '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
+        'Agregar una actividad' +
+        '<span class="caret"></span>' +
+      '</button>' +
+      '<ul class="dropdown-menu"></ul>'+
+    '</div>'
+    );
+    var drop_menu = $(drop_agregar).find(".dropdown-menu");
+    var li = $.parseHTML(
+      '<li><a href="#" data-toggle="modal" data-target="#foro_modal" data-operacion="creacion" >Foro</a></li>');
+    $(li).find("a").attr("data-id-actividad", node.id),
+    $(li).find("a").attr("data-tipo-padre", node.tipo),
+    $(drop_menu).append(li);
+    var li = $.parseHTML(
+      '<li><a href="#" data-toggle="modal" data-target="#plenaria_modal" data-operacion="creacion" >Plenaria</a></li>');
+    $(li).find("a").attr("data-id-actividad", node.id),
+    $(li).find("a").attr("data-tipo-padre", node.tipo),
+    $(drop_menu).append(li);
+    var li = $.parseHTML(
+      '<li><a href="#" data-toggle="modal" data-target="#taller_modal" data-operacion="creacion" >Taller</a></li>');
+    $(li).find("a").attr("data-id-actividad", node.id),
+    $(li).find("a").attr("data-tipo-padre", node.tipo),
+    $(drop_menu).append(li);
+    $(btns_actividades).append(drop_agregar);
+  }
+  return btns_actividades;
 };
 
 function set_botones_foro(node, $li) {
-  var nodo_arbol = $li.find(".jqtree-element")
+  var permisos = node.permisos_edicion;
+  var btns_actividades = $("<div>", {class: "btns-actividades"});
+  if (($.inArray('editar como responsable', permisos) > -1) ||
+      ($.inArray('editar como super responsable', permisos) > -1)) {
+    var boton_editar = $("<a>",
+      {text:"Editar foro",
+      class:"btn btn-default btn-sm btn-editar",
+      href: "#"
+    });
+    $(boton_editar).attr("data-toggle", "modal")
+    $(boton_editar).attr("data-target", "#foro_modal")
+    $(boton_editar).attr("data-operacion", "edicion")
+    $(boton_editar).attr("data-id-actividad", node.id);
+    $(btns_actividades).append(boton_editar);
 
-  var boton_editar = $("<a>",
-    {text:"Editar foro",
-    class:"btn btn-default btn-sm btn-editar",
-    href: "#"
-  });
-  $(boton_editar).attr("data-toggle", "modal")
-  $(boton_editar).attr("data-target", "#foro_modal")
-  $(boton_editar).attr("data-operacion", "edicion")
-  $(boton_editar).attr("data-id-actividad", node.id);
+  }
 
-  var boton_eliminar = $("<a>",
-    {text:"Eliminar foro",
-    class:"btn btn-default btn-sm btn-editar",
-    href: "#"
-  });
+  if ($.inArray('eliminar', permisos) > -1) {
+    var boton_eliminar = $("<a>",
+      {text:"Eliminar foro",
+      class:"btn btn-default btn-sm btn-editar",
+      href: "#"
+    });
+    $(btns_actividades).append(boton_eliminar);
+  }
   //$(boton_editar).attr("data-toggle", "modal")
   //$(boton_editar).attr("data-target", "#foro_modal")
   //$(boton_editar).attr("data-operacion", "edicion")
   //$(boton_editar).attr("data-id-actividad", node.id);
-
-  var boton_agregar = $("<a>",
-    {text:"Agregar un seminario",
-    class:"btn btn-default btn-sm btn-editar",
-    href: "#"
-  });
-  $(boton_agregar).attr("data-toggle", "modal")
-  $(boton_agregar).attr("data-target", "#seminario_modal")
-  $(boton_agregar).attr("data-operacion", "creacion")
-  $(boton_agregar).attr("data-id-actividad", node.id),
-  $(boton_agregar).attr("data-tipo-padre", node.tipo),
-
-  $(nodo_arbol).append(boton_eliminar);
-  $(nodo_arbol).append(boton_editar);
-  $li.find(".jqtree-element").append($("<div style=clear:right></div>"));
-  $(nodo_arbol).append(boton_agregar);
+  if ($.inArray('agregar hijos', permisos) > -1) {
+    $(btns_actividades).append($("<div style=clear:right></div>"));
+    var boton_agregar = $("<a>",
+      {text:"Agregar un seminario",
+      class:"btn btn-default btn-sm btn-editar",
+      href: "#"
+    });
+    $(boton_agregar).attr("data-toggle", "modal")
+    $(boton_agregar).attr("data-target", "#seminario_modal")
+    $(boton_agregar).attr("data-operacion", "creacion")
+    $(boton_agregar).attr("data-id-actividad", node.id),
+    $(boton_agregar).attr("data-tipo-padre", node.tipo),
+    $(btns_actividades).append(boton_agregar);
+  }
+  return btns_actividades;
 }
 
 function set_botones_seminario(node, $li) {
-  var nodo_arbol = $li.find(".jqtree-element");
+  var permisos = node.permisos_edicion;
+  var btns_actividades = $("<div>", {class: "btns-actividades"});
+  if ($.inArray('eliminar', permisos) > -1) {
+    var boton_eliminar = $("<a>",
+      {text:"Eliminar seminario",
+      class:"btn btn-default btn-sm btn-editar",
+      href: "#"
+    });
+    $(btns_actividades).append(boton_eliminar);
+  }
 
-  var drop_agregar = $.parseHTML(
-  '<div class="dropdown">' +
-    '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
-      'Agregar una actividad' +
-      '<span class="caret"></span>' +
-    '</button>' +
-    '<ul class="dropdown-menu"></ul>'+
-  '</div>'
-  );
-  var drop_menu = $(drop_agregar).find(".dropdown-menu");
-  var li = $.parseHTML(
-    '<li><a href="#" data-toggle="modal" data-target="#panel_modal" data-operacion="creacion" >Panel</a></li>');
-  $(li).find("a").attr("data-id-actividad", node.id),
-  $(li).find("a").attr("data-tipo-padre", node.tipo),
-  $(drop_menu).append(li);
-  var li = $.parseHTML(
-    '<li><a href="#" data-toggle="modal" data-target="#mesa_redonda_modal" data-operacion="creacion" >Mesa redonda</a></li>');
-  $(li).find("a").attr("data-id-actividad", node.id),
-  $(li).find("a").attr("data-tipo-padre", node.tipo),
-  $(drop_menu).append(li);
-  var li = $.parseHTML(
-    '<li><a href="#" data-toggle="modal" data-target="#ponencia_modal" data-operacion="creacion" >Ponencia</a></li>');
-  $(li).find("a").attr("data-id-actividad", node.id),
-  $(li).find("a").attr("data-tipo-padre", node.tipo),
-  $(drop_menu).append(li);
+  if (($.inArray('editar como responsable', permisos) > -1) ||
+      ($.inArray('editar como super responsable', permisos) > -1)) {
+    var boton_editar = $("<a>",
+      {text:"Editar seminario",
+      class:"btn btn-default btn-sm btn-editar",
+      href: "#"
+    });
+    $(boton_editar).attr("data-toggle", "modal")
+    $(boton_editar).attr("data-target", "#seminario_modal")
+    $(boton_editar).attr("data-operacion", "edicion")
+    $(boton_editar).attr("data-id-actividad", node.id);
+    $(btns_actividades).append(boton_editar);
+  }
 
-  var boton_editar = $("<a>",
-    {text:"Editar seminario",
-    class:"btn btn-default btn-sm btn-editar",
-    href: "#"
-  });
-  $(boton_editar).attr("data-toggle", "modal")
-  $(boton_editar).attr("data-target", "#seminario_modal")
-  $(boton_editar).attr("data-operacion", "edicion")
-  $(boton_editar).attr("data-id-actividad", node.id);
 
-  var boton_eliminar = $("<a>",
-    {text:"Eliminar seminario",
-    class:"btn btn-default btn-sm btn-editar",
-    href: "#"
-  });
-
-  $(nodo_arbol).append(boton_eliminar);
-  $(nodo_arbol).append(boton_editar);
-  $li.find(".jqtree-element").append($("<div style=clear:right></div>"));
-  $(nodo_arbol).append(drop_agregar);
+  if ($.inArray('agregar hijos', permisos) > -1) {
+    $(btns_actividades).append($("<div style=clear:right></div>"));
+    var drop_agregar = $.parseHTML(
+    '<div class="dropdown">' +
+      '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
+        'Agregar una actividad' +
+        '<span class="caret"></span>' +
+      '</button>' +
+      '<ul class="dropdown-menu"></ul>'+
+    '</div>'
+    );
+    var drop_menu = $(drop_agregar).find(".dropdown-menu");
+    var li = $.parseHTML(
+      '<li><a href="#" data-toggle="modal" data-target="#panel_modal" data-operacion="creacion" >Panel</a></li>');
+    $(li).find("a").attr("data-id-actividad", node.id),
+    $(li).find("a").attr("data-tipo-padre", node.tipo),
+    $(drop_menu).append(li);
+    var li = $.parseHTML(
+      '<li><a href="#" data-toggle="modal" data-target="#mesa_redonda_modal" data-operacion="creacion" >Mesa redonda</a></li>');
+    $(li).find("a").attr("data-id-actividad", node.id),
+    $(li).find("a").attr("data-tipo-padre", node.tipo),
+    $(drop_menu).append(li);
+    var li = $.parseHTML(
+      '<li><a href="#" data-toggle="modal" data-target="#ponencia_modal" data-operacion="creacion" >Ponencia</a></li>');
+    $(li).find("a").attr("data-id-actividad", node.id),
+    $(li).find("a").attr("data-tipo-padre", node.tipo),
+    $(drop_menu).append(li);
+    $(btns_actividades).append(drop_agregar);
+  }
+  return btns_actividades;
 }
 
 function set_botones_panel(node, $li) {
-  var nodo_arbol = $li.find(".jqtree-element");
+  var permisos = node.permisos_edicion;
+  var btns_actividades = $("<div>", {class: "btns-actividades"});
+  if ($.inArray('eliminar', permisos) > -1) {
+    var boton_eliminar = $("<a>",
+      {text:"Eliminar panel",
+      class:"btn btn-default btn-sm btn-editar",
+      href: "#"
+    });
+    $(btns_actividades).append(boton_eliminar);
+  }
+
   var boton_editar = $("<a>",
     {text:"Editar panel",
     class:"btn btn-default btn-sm btn-editar",
     href: "#"
   });
-  $(boton_editar).attr("data-toggle", "modal")
-  $(boton_editar).attr("data-target", "#panel_modal")
-  $(boton_editar).attr("data-operacion", "edicion")
-  $(boton_editar).attr("data-id-actividad", node.id);
 
-  var boton_eliminar = $("<a>",
-    {text:"Eliminar panel",
-    class:"btn btn-default btn-sm btn-editar",
-    href: "#"
-  });
-
-  $(nodo_arbol).append(boton_eliminar);
-  $(nodo_arbol).append(boton_editar);
+  if (($.inArray('editar como responsable', permisos) > -1) ||
+      ($.inArray('editar como super responsable', permisos) > -1)) {
+    $(boton_editar).attr("data-toggle", "modal")
+    $(boton_editar).attr("data-target", "#panel_modal")
+    $(boton_editar).attr("data-operacion", "edicion")
+    $(boton_editar).attr("data-id-actividad", node.id);
+    $(btns_actividades).append(boton_editar);
+  }
+  return btns_actividades;
 }
 
 </script>

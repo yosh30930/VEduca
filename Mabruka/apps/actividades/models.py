@@ -95,16 +95,16 @@ class Actividad(models.Model):
             # Se encarga de las horas
             self.save()
 
-    def es_responsable(self, usuario, actividad, checar_padres=False):
+    def es_responsable(self, usuario, checar_padres=False):
         if not usuario.is_authenticated():
             return False
-        if actividad.responsables.filter(pk=usuario.pk):
+        if self.responsables.filter(pk=usuario.pk):
             return True
-        if checar_padres and self.es_super_responsable(usuario, actividad):
+        if checar_padres and self.es_super_responsable(usuario):
             return True
         return False
 
-    def es_super_responsable(self, usuario, actividad):
+    def es_super_responsable(self, usuario):
         if not usuario.is_authenticated():
             return False
         if (usuario.is_superuser or
@@ -112,7 +112,7 @@ class Actividad(models.Model):
             return True
         # Se verifica si es responsable de alguna actividad de mayor
         # jerarquía
-        nodo_actividad = actividad.nodos.first()
+        nodo_actividad = self.nodos.first()
         ancestros_actividad = nodo_actividad.get_ancestors()
         if ancestros_actividad:
             query_results = []  # Querys donde es responsable de alguna actividad
@@ -122,8 +122,7 @@ class Actividad(models.Model):
                 for query_result in query_results:
                     for actividad_tmp in query_result:
                         nodo_tmp = actividad_tmp.nodos.first()
-                        arbol_actividad_tmp = nodo_tmp.get_ancestors()
-                        if nodo_actividad in arbol_actividad_tmp:
+                        if nodo_tmp in ancestros_actividad:
                             return True
         return False
 

@@ -46,7 +46,7 @@ class EspacioListView(generics.ListCreateAPIView):
         return Espacio.objects.filter(encuentro=id)
 """
     def post(self, request, format=None):
-        serializer = EspacioSerializer(data=request.data)
+        serializer = EspacioSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
 #           #publish_data(channel='notification', data=data)
@@ -105,7 +105,8 @@ class EncuentroListView(generics.ListCreateAPIView):
     serializer_class = EncuentroSerializer
 
     def post(self, request, format=None):
-        serializer = EncuentroSerializer(data=request.data)
+        serializer = EncuentroSerializer(
+            data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
 #           #publish_data(channel='notification', data=data)
@@ -163,12 +164,14 @@ class EncuentroDetailView(APIView):
 
     def get(self, request, id, format=None):
         encuentro = self.get_object(id)
-        serializer = EncuentroSerializer(encuentro)
+        serializer = EncuentroSerializer(
+            encuentro, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request, id, format=None):
         encuentro = self.get_object(id)
-        serializer = EncuentroSerializer(encuentro, data=request.data)
+        serializer = EncuentroSerializer(
+            encuentro, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -189,10 +192,11 @@ class ForoListView(generics.ListCreateAPIView):
     """
     model = Foro
     serializer_class = ForoSerializer
+    queryset = Foro.objects.all().order_by('-fecha_creacion')
 
     def post(self, request, format=None):
         data = request.data
-        serializer = ForoSerializer(data=data)
+        serializer = ForoSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             if ("tipo_padre" in data) and ("id_padre" in data):
                 tipo_padre = data["tipo_padre"]
@@ -202,41 +206,6 @@ class ForoListView(generics.ListCreateAPIView):
                 serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def get_queryset(self):
-        """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
-        """
-        user = self.request.user
-        queryset = Foro.objects.none()
-        if not user.is_authenticated():
-            queryset = Foro.objects.all()
-        elif tiene_permiso_absoluto(user):
-            queryset = Foro.objects.all()
-        else:
-            foros_id = set()
-            for Modelo in modelosActividades:
-                query_results = []
-                try:
-                    query_result = Modelo.objects.filter(responsables=user)
-                    query_results.append(query_result)
-                except Modelo.FieldDoesNotExist:
-                    continue
-                for query_result in query_results:
-                    for actividad in query_result:
-                        nodo = actividad.nodos.first()
-                        ancestros = nodo.get_ancestors(include_self=True)
-                        ancestro_raiz = ancestros.first()
-                        actividad_raiz = ancestro_raiz.elemento
-                        if type(actividad_raiz) == Foro:
-                            foros_id.add(actividad_raiz.pk)
-                        else:
-                            return None
-                        # foros_id.add()
-            queryset = Foro.objects.filter(pk__in=foros_id)
-        # return Purchase.objects.filter(purchaser=user)
-        return queryset.order_by('-fecha_creacion')
 
 
 class ForoDetailView(APIView):
@@ -254,12 +223,13 @@ class ForoDetailView(APIView):
 
     def get(self, request, id, format=None):
         foro = self.get_object(id)
-        serializer = ForoSerializer(foro)
+        serializer = ForoSerializer(foro, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request, id, format=None):
         foro = self.get_object(id)
-        serializer = ForoSerializer(foro, data=request.data)
+        serializer = ForoSerializer(
+            foro, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -280,11 +250,12 @@ class SeminarioListView(generics.ListCreateAPIView):
     """
     model = Seminario
     serializer_class = SeminarioSerializer
-    queryset = Seminario.objects.all()
+    queryset = Seminario.objects.all().order_by('-fecha_creacion')
 
     def post(self, request, format=None):
         data = request.data
-        serializer = SeminarioSerializer(data=data)
+        serializer = SeminarioSerializer(
+            data=data, context={'request': request})
         if serializer.is_valid():
             if ("tipo_padre" in data) and ("id_padre" in data):
                 tipo_padre = data["tipo_padre"]
@@ -311,12 +282,14 @@ class SeminarioDetailView(APIView):
 
     def get(self, request, id, format=None):
         seminario = self.get_object(id)
-        serializer = SeminarioSerializer(seminario)
+        serializer = SeminarioSerializer(
+            seminario, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request, id, format=None):
         seminario = self.get_object(id)
-        serializer = SeminarioSerializer(seminario, data=request.data)
+        serializer = SeminarioSerializer(
+            seminario, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -337,11 +310,11 @@ class PanelListView(generics.ListCreateAPIView):
     """
     model = Panel
     serializer_class = PanelSerializer
-    queryset = Panel.objects.all()
+    queryset = Panel.objects.all().order_by('-fecha_creacion')
 
     def post(self, request, format=None):
         data = request.data
-        serializer = PanelSerializer(data=data)
+        serializer = PanelSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             if ("tipo_padre" in data) and ("id_padre" in data):
                 tipo_padre = data["tipo_padre"]
@@ -368,12 +341,13 @@ class PanelDetailView(APIView):
 
     def get(self, request, id, format=None):
         panel = self.get_object(id)
-        serializer = PanelSerializer(panel)
+        serializer = PanelSerializer(panel, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request, id, format=None):
         panel = self.get_object(id)
-        serializer = PanelSerializer(panel, data=request.data)
+        serializer = PanelSerializer(
+            panel, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

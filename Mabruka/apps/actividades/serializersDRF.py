@@ -77,7 +77,6 @@ class ActividadSerializer(serializers.ModelSerializer):
     def permisos_edicion_fun(self, obj):
         permisos_edicion = []
         request = self.context.get('request', None)
-        print("contexto", self.context)
         if request is None:
             return permisos_edicion
         usuario = request.user
@@ -85,13 +84,12 @@ class ActividadSerializer(serializers.ModelSerializer):
         if (usuario.is_superuser or
                 SecretarioGeneral.objects.filter(usuario=usuario)):
             cualquier_permiso = True
-        if cualquier_permiso:
+        if cualquier_permiso or obj.es_super_responsable(usuario):
             permisos_edicion.append("eliminar")
-        if cualquier_permiso:
-            permisos_edicion.append("editar como responsable")
-        if cualquier_permiso:
             permisos_edicion.append("editar como super responsable")
-        if cualquier_permiso:
+            permisos_edicion.append("agregar hijos")
+        elif obj.es_responsable(usuario):
+            permisos_edicion.append("editar como responsable")
             permisos_edicion.append("agregar hijos")
         return permisos_edicion
 
