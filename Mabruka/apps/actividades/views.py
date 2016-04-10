@@ -342,10 +342,12 @@ class PanelDetailView(APIView):
     def get(self, request, id, format=None):
         panel = self.get_object(id)
         serializer = PanelSerializer(panel, context={'request': request})
+        print("$$data panel", serializer.data)
         return Response(serializer.data)
 
     def put(self, request, id, format=None):
         panel = self.get_object(id)
+        print("@@data panel", request.data)
         serializer = PanelSerializer(
             panel, data=request.data, context={'request': request})
         if serializer.is_valid():

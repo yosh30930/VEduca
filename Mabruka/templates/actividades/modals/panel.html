@@ -44,7 +44,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
         <button id="panel_modal_submit" type="button" class="btn btn-primary" ></button>
       </div>
     </div>
@@ -52,6 +52,15 @@
 </div>
 
 <script type="text/javascript">
+
+function crea_alert(){
+   var alert = $.parseHTML(
+        '<div class="alert alert-dismissible" role="alert">' +
+          '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+          '<span class ="mensaje_alert"></span>' +
+        '</div>')
+  return alert;
+}
 
 $('#panel_modal').on('show.bs.modal', function (event) {
   var button = $(event.relatedTarget) // Button that triggered the modal
@@ -108,11 +117,11 @@ $('#panel_modal').on('show.bs.modal', function (event) {
         var cal_fin = $(modal.find('#panel_modal_fecha_fin').closest(".date"));
         cal_inicio.data("DateTimePicker").date(null);
         cal_fin.data("DateTimePicker").date(null);
-        var fecha_inicio = moment.utc(panel.fecha_inicio);
+        var fecha_inicio = moment(panel.fecha_inicio);
         if (fecha_inicio.isValid()) {
           cal_inicio.data("DateTimePicker").date(fecha_inicio);
         }
-        var fecha_fin = moment.utc(panel.fecha_fin);
+        var fecha_fin = moment(panel.fecha_fin);
         if (fecha_fin.isValid()) {
           cal_fin.data("DateTimePicker").date(fecha_fin);
         }
@@ -131,8 +140,8 @@ $('#panel_modal_submit').on('click', function (event) {
   var operacion = button.data('operacion');
   var data = {
     'nombre': $('#panel_modal_nombre').val().trim(),
-    'fecha_inicio': moment.utc($('#panel_modal_fecha_inicio').val(), "DD/MM/YYYY HH:mm").format('YYYY-MM-DDTHH:mmZ'),
-    'fecha_fin': moment.utc($('#panel_modal_fecha_fin').val(), "DD/MM/YYYY HH:mm").format('YYYY-MM-DDTHH:mmZ'),
+    'fecha_inicio': moment($('#panel_modal_fecha_inicio').val(), "DD/MM/YYYY HH:mm").format(),
+    'fecha_fin': moment($('#panel_modal_fecha_fin').val(), "DD/MM/YYYY HH:mm").format(),
     'espacio': $("#panel_modal_espacios").val()
   };
   if(data.espacios === null){data.espacios=[]}
@@ -155,7 +164,11 @@ $('#panel_modal_submit').on('click', function (event) {
       })
       .done(function(data){
         $(document).trigger( "actividadCreada", data);
-        $("#panel_modal").modal('hide');
+        var alert = crea_alert();
+        $(alert).addClass("alert-success");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("Panel creado exitosamente!!!");
+        $("#panel_modal").find(".modal-body").append(alert);
       })
       .always(function(data) {
         console.log(data);
@@ -175,6 +188,11 @@ $('#panel_modal_submit').on('click', function (event) {
       })
       .done(function(data){
         $(document).trigger( "actividadModificada", data);
+        var alert = crea_alert();
+        $(alert).addClass("alert-success");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("Panel modificado exitosamente!!!");
+        $("#panel_modal").find(".modal-body").append(alert);
         button.removeAttr('disabled');
       })
       .always(function(data) {

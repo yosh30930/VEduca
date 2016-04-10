@@ -28,7 +28,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
         <button id="foro_modal_submit" type="button" class="btn btn-primary" ></button>
       </div>
     </div>
@@ -36,6 +36,15 @@
 </div>
 
 <script type="text/javascript">
+
+function crea_alert(){
+   var alert = $.parseHTML(
+        '<div class="alert alert-dismissible" role="alert">' +
+          '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+          '<span class ="mensaje_alert"></span>' +
+        '</div>')
+  return alert;
+}
 
 $('#foro_modal').on('show.bs.modal', function (event) {
   //Botón que accionó el modal
@@ -137,7 +146,11 @@ $('#foro_modal_submit').on('click', function (event) {
       })
       .done(function(data){
         $(document).trigger( "actividadCreada", data);
-        $("#foro_modal").modal('hide');
+        var alert = crea_alert();
+        $(alert).addClass("alert-success");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("Foro creado exitosamente!!!");
+        $("#foro_modal").find(".modal-body").append(alert);
       })
       .always(function(data) {
         console.log(data);
@@ -157,6 +170,11 @@ $('#foro_modal_submit').on('click', function (event) {
       })
       .done(function(data){
         $(document).trigger( "actividadModificada", data);
+        var alert = crea_alert();
+        $(alert).addClass("alert-success");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("Foro modificado exitosamente!!!");
+        $("#foro_modal").find(".modal-body").append(alert);
         button.removeAttr('disabled');
       })
       .always(function(data) {

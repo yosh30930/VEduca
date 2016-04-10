@@ -1,6 +1,6 @@
 import datetime
 
-from django.db import models
+from django.db import models, transaction, IntegrityError
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
@@ -78,22 +78,26 @@ class Actividad(models.Model):
         padre = None
         if "padre" in kwargs:
             padre = kwargs.pop("padre", None)
-        super(Actividad, self).save(*args, **kwargs)
-
         # Le asigna un nodo a la actividad y se
         # le asigna un padre si es que se especificó
         if es_creacion:
             # Se encarga del nodo
-            if padre is not None:
-                nodo = Nodo(
-                    parent=padre.nodos.all().first(),
-                    elemento=self)
-            else:
-                nodo = Nodo(elemento=self)
-            nodo.save()
-            self.nodo = nodo
-            # Se encarga de las horas
-            self.save()
+            try:
+                with transaction.atomic():
+                    super(Actividad, self).save(*args, **kwargs)
+                    if padre is not None:
+                        nodo = Nodo(
+                            parent=padre.nodos.all().first(),
+                            elemento=self)
+                    else:
+                        nodo = Nodo(elemento=self)
+                    nodo.save()
+                    self.nodo = nodo
+                    self.save()
+            except IntegrityError as e:
+                raise e
+        else:
+            super(Actividad, self).save(*args, **kwargs)
 
     def es_responsable(self, usuario, checar_padres=False):
         if not usuario.is_authenticated():
@@ -187,8 +191,8 @@ class ConLocacion(Actividad):
 
 
 class ConLocacionYFecha(ConLocacion):
-    fecha_inicio = models.DateTimeField(auto_now_add=True)
-    fecha_fin = models.DateTimeField(null=True)
+    fecha_inicio = models.DateTimeField(null=True, blank=True)
+    fecha_fin = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

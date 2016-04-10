@@ -1,3 +1,5 @@
+{% load static from staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
 <!-- Edición Encuentro Modal -->
 <div class="modal fade" id="encuentro_modal" tabindex="-1" role="dialog" aria-labelledby="encuentro_modal_label">
   <div class="modal-dialog" role="document">
@@ -7,6 +9,9 @@
         <h4 class="modal-title" id="encuentro_modal_label">Título Edición de Encuentro</h4>
       </div>
       <div class="modal-body">
+        <div class="modal-cargando-div">
+          <div class='uil-ring-css' style="margin: 0 auto"><div></div></div>
+        </div>
         <form>
           <div class="form-group">
             <label for="encuentro_modal_nombre" class="control-label">Nombre del Encuentro</label>
@@ -53,45 +58,102 @@
 
 <script type="text/javascript">
 
+function crea_alert(){
+   var alert = $.parseHTML(
+        '<div class="alert alert-dismissible" role="alert">' +
+          '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+          '<span class ="mensaje_alert"></span>' +
+        '</div>')
+  return alert;
+}
+
+$(function(){
+
+// Limpia el modal del encuentro
+function reset_modal(){
+  var $modal = $("#encuentro_modal");
+  var $modal_body = $modal.find(".modal-body").eq(0);
+  // Se cierran las alertas anteriores
+  $modal_body.find(".alert").alert('close');
+  // Se hace el reset del nombre del encuentro
+  $modal.find('#encuentro_modal_nombre').val("");
+  // Se hace el reset de las fechas del encuentro
+  var $cal_inicio = $modal.find('#encuentro_modal_fecha_inicio').closest(".date");
+  var $cal_fin = $modal.find('#encuentro_modal_fecha_fin').closest(".date");
+  $cal_inicio.data("DateTimePicker").date(null);
+  $cal_fin.data("DateTimePicker").date(null);
+  // Se hace el reset de los responsables del encuentro
+  var $selector = $modal.find('#encuentro_modal_responsables');
+  $selector.find('option').remove();
+  $selector.selectpicker('refresh');
+  // Se oculta el form
+  $modal_body.find("form").hide();
+  // Se desbloqué el botón submit
+  var $boton_submit = $modal.find('#encuentro_modal_submit');
+  $boton_submit.attr('disabled', 'disabled');
+  // Se muestra la imágen de carga
+  $modal_body.find(".modal-cargando-div").show();
+}
+
+// Se ejecuta cuando se muestra el modal
 $('#encuentro_modal').on('show.bs.modal', function (event) {
-  var button = $(event.relatedTarget) // Button that triggered the modal
-  var operacion = button.data('operacion');
-  var id = button.data('id-actividad');
-  var modal = $(this);
-  //modal.find('#encuentro_modal_nombre').val('');
+  var $button = $(event.relatedTarget) // Botón que mostró el  modal
+  reset_modal();
+  var operacion = $button.data('operacion');
+  var id = $button.data('id-actividad');
+  var $modal = $(this);
+  var $form = $modal.find(".modal-content form");
+  // Se obtiene la lista de los posibles responsables que están registrados
   var prom_resp = $.get('/responsables/');
-  modal.find('#encuentro_modal_submit').data('operacion', operacion);
-  modal.find('#encuentro_modal_submit').data('id-actividad', id);
-  modal.find('#encuentro_modal_submit').removeAttr('disabled');
-  var selector = $(modal.find('#encuentro_modal_responsables'));
-  selector.html("");
+  //Se buscan los elementos a modificar
+  var $boton_submit = $modal.find('#encuentro_modal_submit');
+  var $selector = $modal.find('#encuentro_modal_responsables');
+  // Se le asignan datos al botón submit para cuando se realice la creación
+  // o edicion del encuentro
+  $boton_submit.data('operacion', operacion);
+  $boton_submit.data('id-actividad', id);
+  // Se checa la operación que se va a querer realizar para preparar
+  // al modal con las etiquetas e información correspondiente
   switch (operacion) {
     case 'creacion':
+      // Se ejecuta cuando se obtiene la lista de responsables
       prom_resp.done(function(responsables) {
+        // Se el selector con los responsables
         $(responsables).each(function (idx, responsable) {
-          var selected = false;
-          selector.append($('<option>', {
+          $selector.append($('<option>', {
             text: responsable.username,
             value: responsable.id,
-            selected: selected,
+            selected: false,
           }));
         });
-        selector.selectpicker('refresh');
+        $selector.selectpicker('refresh');
+        // Se muestra una animación de carga en lo que se cargan los responsables
+        $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+          $form.fadeIn(400);
+        });
       });
-      modal.find('.modal-title').text('Creación de encuentro');
-      modal.find('#encuentro_modal_submit').text('Crear encuentro');
+      // Se modifica el título del modal
+      $modal.find('.modal-title').text('Creación de encuentro');
+      // Se modifica el texto del botón submit
+      $boton_submit.text('Crear encuentro');
       break;
     case 'edicion':
-      modal.find('.modal-title').text('Edición de encuentro');
-      modal.find('#encuentro_modal_submit').text('Guardar modificaciones');
-      var id = button.data('id-actividad');
+      // Se modifica el título del modal
+      $modal.find('.modal-title').text('Edición de encuentro');
+      // Se modifica el texto del botón submit
+      $boton_submit.text('Guardar modificaciones');
+      // Se pide la información del encuentro a modificar
       var prom_enc = $.get('/encuentros/'+ id +'/');
+      // Se ejecuta cuando se termina de pedir la lista de responsables
+      // y la información del encuentro
       $.when(prom_enc, prom_resp).done(function(res_enc, res_resp) {
+        // res___ =  [ data, statusText, jqXHR ]
         var encuentro = res_enc[0];
         var responsables = res_resp[0];
-        modal.find('#encuentro_modal_nombre').val(encuentro.nombre);
-        modal.find('#encuentro_modal_responsables').html('');
-        modal.find('#encuentro_modal_responsables').find('option').remove();
+        // Rellena el campo del nombre del encuentro
+        $modal.find('#encuentro_modal_nombre').val(encuentro.nombre);
+        // Llena la lista de responsables marcando los que son
+        // responsables del encuentro
         $(responsables).each(function (idx, responsable) {
           var selected = false;
           $(encuentro.responsables).each(function (i, resp_id) {
@@ -99,42 +161,83 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
               selected = true;
             }
           })
-          selector.append($('<option>', {
+          // Se agregan los responsables a la lista de responsables
+          $selector.append($('<option>', {
             text: responsable.username,
             value: responsable.id,
             selected: selected,
           }));
+          // Se muestra una animación de carga en lo que se carga el encuentro
+          $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+            $form.fadeIn(400);
+          });
         });
-        var fecha_fin = moment.utc(encuentro.fecha_fin).format("DD/MM/YYYY");
-        var fecha_inicio = moment.utc(encuentro.fecha_inicio).format("DD/MM/YYYY");
-        modal.find('#encuentro_modal_fecha_inicio').val(fecha_inicio);
-        modal.find('#encuentro_modal_fecha_fin').val(fecha_fin);
-        selector.selectpicker('refresh');
+        // Se actualiza el selector con los responsables agregados
+        $selector.selectpicker('refresh');
+        // Se obtienen las fechas del encuentro, si es que las tiene
+        var fecha_fin = moment(encuentro.fecha_fin);
+        var fecha_inicio = moment(encuentro.fecha_inicio);
+        var cal_inicio = $modal.find('#encuentro_modal_fecha_inicio').closest(".date");
+        var cal_fin = $modal.find('#encuentro_modal_fecha_fin').closest(".date");
+        var fecha_inicio = moment(fecha_inicio);
+        // Si la fecha de inicio es válida se llena el campo correspondiente
+        if (fecha_inicio.isValid()) {
+          cal_inicio.data("DateTimePicker").date(fecha_inicio);
+        }
+        // Si la fecha de fin es válida se llena el campo correspondiente
+        var fecha_fin = moment(fecha_fin);
+        if (fecha_fin.isValid()) {
+          cal_fin.data("DateTimePicker").date(fecha_fin);
+        }
       });
       break;
     default: //Evita que se abra el modal
       return event.preventDefault();
   }
-  // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-  // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 });
+
+function verifica_inputs() {
+  $modal = $("#encuentro_modal");
+  $modal_body = $modal.find(".modal-body");
+  $boton_submit = $modal.find("#encuentro_modal_submit");
+  var son_validos = true;
+  // Verifica nombre del encuentro
+  if ($("#encuentro_modal_nombre").val().trim() === "") { son_validos = false;}
+  // Verifica la fecha de inicio
+  var fecha_inicio = moment($('#encuentro_modal_fecha_inicio').val(), "DD/MM/YYYY");
+  if (!fecha_inicio.isValid()) {son_validos = false};
+  // Verifica la fecha de fin
+  var fecha_fin = moment($('#encuentro_modal_fecha_fin').val(), "DD/MM/YYYY");
+  if (!fecha_fin.isValid()) {son_validos = false};
+  // Bloquea el botón submit si faltan datos
+  if (son_validos) {
+    $boton_submit.removeAttr('disabled', 'disabled');
+  }else {
+    $boton_submit.attr('disabled', 'disabled');
+  }
+}
+
+$('#encuentro_modal_nombre').on('input', function (event) {
+  verifica_inputs();
+});
+
 $('#encuentro_modal_submit').on('click', function (event) {
-  var button = $(this); // Button that triggered the modal
-  button.attr('disabled', 'disabled');
-  var operacion = button.data('operacion');
+  // Boton submit que contiene información para crear/editar el encuentro
+  var $boton_submit = $(this);
+  // Se bloquea el botón en lo que se procesa la creación/edición
+  $boton_submit.attr('disabled', 'disabled');
+  // Datos a ser enviados al servidor
   var data = {
     'nombre': $('#encuentro_modal_nombre').val().trim(),
-    'fecha_inicio': moment($('#encuentro_modal_fecha_inicio').val(), "DD/MM/YYYY").format('YYYY-MM-DD'),
-    'fecha_fin': moment($('#encuentro_modal_fecha_fin').val(), "DD/MM/YYYY").format('YYYY-MM-DD'),
+    'fecha_inicio': moment($('#encuentro_modal_fecha_inicio').val(), "DD/MM/YYYY").format("YYYY-MM-DD"),
+    'fecha_fin': moment($('#encuentro_modal_fecha_fin').val(), "DD/MM/YYYY").format("YYYY-MM-DD"),
     'responsables': $("#encuentro_modal_responsables").val()
   };
   if(data.responsables === null){data.responsables=[]}
-  console.log(data);
-  var promesa;
-  console.log(data);
+  var operacion = $boton_submit.data('operacion');
   switch (operacion) {
     case 'creacion':
-      promesa = $.ajax({
+      var promesa = $.ajax({
         url: '/encuentros/',
         type: 'POST',
         contentType: 'application/json',
@@ -142,19 +245,32 @@ $('#encuentro_modal_submit').on('click', function (event) {
       });
       promesa
       .fail(function(data) {
-        console.log(data);
+        // Se crea un mensaje para avisar que hubo un problema en la creación
+        var alert = crea_alert();
+        $(alert).addClass("alert-danger");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("¡Hubo un problema al intentar crear el encuentro! "+
+          "Recargue la página y vuelva a intentarlo");
+        $("#encuentro_modal").find(".modal-body").append(alert);
       })
       .done(function(data){
+        // Se lanza un evento indicando que se creó un actividad con éxito
         $(document).trigger( "actividadCreada", data);
-        $("#encuentro_modal").modal('hide');
+        // Se crea un mensaje para avisar que se creó el encuentro
+        var alert = crea_alert();
+        $(alert).addClass("alert-success");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("¡Encuentro creado exitosamente!");
+        $("#encuentro_modal").find(".modal-body").append(alert);
       })
       .always(function(data) {
-        console.log(data);
+        //console.log(data);
       });
       break;
     case 'edicion':
-      var id = button.data('id-actividad');
-      promesa = $.ajax({
+      // Se obtiene el id del encuentro a mofificar
+      var id = $boton_submit.data('id-actividad');
+      var promesa = $.ajax({
         url: '/encuentros/' + id + '/',
         type: 'PUT',
         contentType: 'application/json',
@@ -162,11 +278,26 @@ $('#encuentro_modal_submit').on('click', function (event) {
       });
       promesa
       .fail(function(data) {
+        // Se crea un mensaje para avisar que hubo un problema en la edición
+        var alert = crea_alert();
+        $(alert).addClass("alert-danger");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("¡Hubo un problema al intentar editar el encuentro! "+
+          "Recargue la página y vuelva a intentarlo");
+        $("#encuentro_modal").find(".modal-body").append(alert);
         console.log(data);
       })
       .done(function(data){
+        // Se lanza un evento indicando que se editó un actividad con éxito
         $(document).trigger( "actividadModificada", data);
-        button.removeAttr('disabled');
+        // Se crea un mensaje para avisar que se editó el encuentro
+        var alert = crea_alert();
+        $(alert).addClass("alert-success");
+        var mensaje = $(alert).find('.mensaje_alert');
+        mensaje.text("Encuentro modificado exitosamente!!!");
+        $("#encuentro_modal").find(".modal-body").append(alert);
+        // Se desbloqué el botón para guardar cambios
+        $boton_submit.removeAttr('disabled');
       })
       .always(function(data) {
         console.log(data);
@@ -175,31 +306,33 @@ $('#encuentro_modal_submit').on('click', function (event) {
     default:
       return;
   }
-})
+});
 
-$(function () {
-    var cal_inicio = $('#encuentro_modal_fecha_inicio').closest(".date");
-    var cal_fin = $('#encuentro_modal_fecha_fin').closest(".date");
-    //Inicializa el calendario de la fecha de inicio
-    $(cal_inicio).datetimepicker({
-      format: 'DD/MM/YYYY',
-      //locale: 'es',
-    });
-    //Inicializa el calendario de la fecha de fin
-    $(cal_fin).datetimepicker({
-      format: 'DD/MM/YYYY',
-      //locale: 'es',
-      useCurrent: false, //Important! See issue #1075
-    });
-    //Se asegura que la fecha de inicio no se mayor
-    //a la fecha de fin
-    $(cal_inicio).on("dp.change", function (e) {
-      $(cal_fin).data("DateTimePicker").minDate(e.date);
-    });
-    //Se asegura que la fecha de fin no se menor
-    //a la fecha de inicio
-    $(cal_fin).on("dp.change", function (e) {
-      $(cal_inicio).data("DateTimePicker").maxDate(e.date);
-    });
+// Se buscan los selectores de fechas en el DOM del modal
+var cal_inicio = $('#encuentro_modal_fecha_inicio').closest(".date");
+var cal_fin = $('#encuentro_modal_fecha_fin').closest(".date");
+// Inicializa el calendario de la fecha de inicio
+$(cal_inicio).datetimepicker({
+  format: 'DD/MM/YYYY',
+  locale: 'es',
+});
+// Inicializa el calendario de la fecha de fin
+$(cal_fin).datetimepicker({
+  format: 'DD/MM/YYYY',
+  locale: 'es',
+  useCurrent: false, //Important! See issue #1075
+});
+$(cal_inicio).on("dp.change", function (e) {
+  // Se asegura que la fecha de inicio no se mayor a la fecha de fin
+  $(cal_fin).data("DateTimePicker").minDate(e.date);
+  // Verifica si los input son válidos para el encuentro
+  verifica_inputs();
+});
+$(cal_fin).on("dp.change", function (e) {
+  // Se asegura que la fecha de fin no se menor a la fecha de inicio
+  $(cal_inicio).data("DateTimePicker").maxDate(e.date);
+  // Verifica si los input son válidos para el encuentro
+  verifica_inputs();
+});
 });
 </script>
