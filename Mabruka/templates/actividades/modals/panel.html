@@ -15,7 +15,7 @@
           <div class="row">
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="panel_modal_fecha_inicio" class="control-label">Fecha de inicio</label>
+                <label for="panel_modal_fecha_inicio" class="control-label">Fecha y hora de inicio</label>
                   <div class='input-group date'>
                     <input id='panel_modal_fecha_inicio' type='text' class="form-control" placeholder="Ejemplo: 23/02/2017 11:23" />
                     <span class="input-group-addon">
@@ -26,7 +26,7 @@
             </div>
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="panel_modal_fecha_fin" class="control-label">Fecha de término</label>
+                <label for="panel_modal_fecha_fin" class="control-label">Fecha y hora de término</label>
                   <div class='input-group date'>
                     <input id='panel_modal_fecha_fin' type='text' class="form-control" placeholder="Ejemplo: 24/02/2017 20:23" />
                     <span class="input-group-addon">
@@ -115,25 +115,34 @@ $('#panel_modal').on('show.bs.modal', function (event) {
         var cal_inicio = $(modal.find('#panel_modal_fecha_inicio').closest(".date"));
         var cal_fin = $(modal.find('#panel_modal_fecha_fin').closest(".date"));
         cal_inicio.data("DateTimePicker").maxDate(false);
+        cal_inicio.data("DateTimePicker").minDate(false);
+        cal_fin.data("DateTimePicker").maxDate(false);
         cal_fin.data("DateTimePicker").minDate(false);
         var min_fecha = moment(encuentro.fecha_inicio);
         var max_fecha = moment(encuentro.fecha_fin);
         cal_inicio.data("DateTimePicker").minDate(min_fecha);
-        cal_inicio.data("DateTimePicker").maxDate(max_fecha);
         cal_fin.data("DateTimePicker").minDate(min_fecha);
+        cal_inicio.data("DateTimePicker").maxDate(max_fecha);
         cal_fin.data("DateTimePicker").maxDate(max_fecha);
-        cal_inicio.data("DateTimePicker").date(min_fecha);
-        cal_fin.data("DateTimePicker").date(max_fecha);
         console.log(encuentro.fecha_inicio, encuentro.fecha_fin);
         console.log(panel);
         var fecha_inicio = moment(panel.fecha_inicio);
         if (fecha_inicio.isValid()) {
+          fecha_inicio = moment.min(fecha_inicio, max_fecha);
+          fecha_inicio = moment.max(fecha_inicio, min_fecha);
           cal_inicio.data("DateTimePicker").date(fecha_inicio);
+        }else{
+          cal_inicio.data("DateTimePicker").date(null);
         }
         var fecha_fin = moment(panel.fecha_fin);
         if (fecha_fin.isValid()) {
+          fecha_fin = moment.max(fecha_fin, min_fecha);
+          fecha_fin = moment.min(fecha_fin, max_fecha);
           cal_fin.data("DateTimePicker").date(fecha_fin);
+        }else{
+          cal_fin.data("DateTimePicker").date(null);
         }
+        console.log(fecha_fin, fecha_fin.isValid())
         selector.selectpicker('refresh');
       });
       break;
@@ -153,7 +162,7 @@ $('#panel_modal_submit').on('click', function (event) {
     'fecha_fin': moment($('#panel_modal_fecha_fin').val(), "DD/MM/YYYY HH:mm").format(),
     'espacio': $("#panel_modal_espacios").val()
   };
-  if(data.espacios === null){data.espacios=[]}
+  if(data.espacios == null){data.espacios=[]}
   var promesa;
   console.log("data", data, "/data");
   switch (operacion) {
@@ -220,31 +229,48 @@ $(function () {
     $(cal_inicio).datetimepicker({
       //locale: 'es',
       format: 'DD/MM/YYYY HH:mm',
-      toolbarPlacement: 'top',
+      toolbarPlacement: 'bottom',
       focusOnShow: false,
+      sideBySide: true,
+      showClear: true,
+      useCurrent: false,
 
     });
     //Inicializa el calendario de la fecha de fin
     $(cal_fin).datetimepicker({
       //locale: 'es',
       format: 'DD/MM/YYYY HH:mm',
-      toolbarPlacement: 'top',
+      toolbarPlacement: 'bottom',
       focusOnShow: false,
+      sideBySide: true,
+      showClear: true,
       useCurrent: false, //Important! See issue #1075
     });
     //Se asegura que la fecha de inicio no se mayor
     //a la fecha de fin
     $(cal_inicio).on("dp.change", function (e) {
-      var fecha_min = moment.max($(cal_inicio).data("DateTimePicker").date(),
-        $(cal_inicio).data("DateTimePicker").minDate());
-      $(cal_fin).data("DateTimePicker").minDate(fecha_min);
+      return; //@@pendiente
+      if(e.date == null){return;};
+      var fecha_min = $(cal_inicio).data("DateTimePicker").minDate();
+      var fecha_max = $(cal_fin).data("DateTimePicker").maxDate();
+      if (!(fecha_min && fecha_max)) {return;}
+      if (e.date === false || e.date == null || !moment(e.date).isValid()) {return;}
+      var fecha = moment.max(e.date, fecha_min);
+      fecha = moment.min(fecha, fecha_max);
+      $(cal_fin).data("DateTimePicker").minDate(fecha);
     });
     //Se asegura que la fecha de fin no se menor
     //a la fecha de inicio
     $(cal_fin).on("dp.change", function (e) {
-      var fecha_max = moment.min($(cal_fin).data("DateTimePicker").date(),
-        $(cal_fin).data("DateTimePicker").maxDate());
-      $(cal_inicio).data("DateTimePicker").maxDate(fecha_max);
+      return; //@@pendiente
+      if(e === false || e.date == null){return;};
+      var fecha_min = $(cal_inicio).data("DateTimePicker").minDate();
+      var fecha_max = $(cal_fin).data("DateTimePicker").maxDate();
+      if (!(fecha_min && fecha_max)) {return;}
+      if (e.date === false || e.date == null || !moment(e.date).isValid()) {return;}
+      var fecha = moment.min(e.date, fecha_max);
+      fecha = moment.max(fecha, fecha_min);
+      $(cal_inicio).data("DateTimePicker").maxDate(fecha);
     });
 });
 </script>

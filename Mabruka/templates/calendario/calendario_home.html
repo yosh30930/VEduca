@@ -8,7 +8,6 @@
 <link href="{% static 'js/jstree-3.3.0/themes/default/style.min.css' %}" rel='stylesheet'/>
 <link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.css' %}" rel='stylesheet'/>
 <link href="{% static 'js/fullcalendar-2.6.0/fullcalendar.print.css' %}" rel='stylesheet' media='print'/>
-<script src="{% static 'js/fullcalendar-2.6.0/lib/moment.min.js' %}"></script>
 <script src="{% static 'js/fullcalendar-2.6.0/lib/jquery-ui.custom.min.js' %}"></script>
 <script src="{% static 'js/fullcalendar-2.6.0/fullcalendar.min.js' %}"></script>
 <script src="{% static 'js/fullcalendar-2.6.0/lang/es.js' %}"></script>
@@ -192,6 +191,7 @@ $(document).ready(function() {
             center: 'title',
             right: 'month,agendaWeek,agendaDay'
         },
+        defaultView: 'agendaWeek',
         allDayDefault: false,
         editable: true,
         droppable: true,
@@ -250,6 +250,12 @@ $(document).ready(function() {
           $(element).attr('tabindex', -1);
         }
     });
+
+    $.get('/encuentros/'+{{encuentro_id}}+'/')
+    .success(function (data) {
+        $('#calendar').fullCalendar('gotoDate', moment(data.fecha_inicio));
+    })
+
 
     /*$('#calendar-min').fullCalendar({
         lang: 'es',
