@@ -139,10 +139,11 @@ class EncuentroListView(generics.ListCreateAPIView):
                         ancestros = nodo.get_ancestors(include_self=True)
                         ancestro_raiz = ancestros.first()
                         actividad_raiz = ancestro_raiz.elemento
+                        print(actividad.nombre)
                         if type(actividad_raiz) == Encuentro:
                             encuentros_id.add(actividad_raiz.pk)
                         else:
-                            return None
+                            continue
                         # encuentros_id.add()
             queryset = Encuentro.objects.filter(pk__in=encuentros_id)
         # return Purchase.objects.filter(purchaser=user)
