@@ -3,44 +3,51 @@
 {% load staticfiles%}
 
 {% block header%}
-  {{ block.super }}
-  <script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.js' %}"></script>
-  <link href="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css' %}" rel='stylesheet' />
-  <script type="text/javascript" src="{% static 'js/mbraak-jqTree-ce47a98/tree.jquery.js' %}"></script>
-  <link href="{% static 'js/mbraak-jqTree-ce47a98/jqtree.css' %}" rel='stylesheet' />
-    <style type="text/css">
-        .jstree-children {
-            padding: 0;
-            margin: 0;
-            border: 0;
-        }
-        .jstree-node:nth-child(odd) {background: rgba(0,0,0,.1);}
-        .jstree-node:nth-child(even) {background: rgba(0,0,0,.2);}
-        .jstree-node {
-            color: white;
-            padding: 25px;
-            width: auto;
-            height: auto;
-            font-size: 18pt;
-            padding-right: 0;
-            padding-left: 0;
-            list-style-type: none;
-        }
-        #tree1 li {
-            overflow: hidden;
-        }
-        #tree1 li a.btn{
-            float: right;
-        }
-        #tree1 li div.jqtree-title{
-            float: left;
-        }
-    </style>
+{{ block.super }}
+<script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.js' %}"></script>
+<link href="{% static 'js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css' %}" rel='stylesheet' />
+<script type="text/javascript" src="{% static 'js/mbraak-jqTree-ce47a98/tree.jquery.js' %}"></script>
+<link href="{% static 'js/mbraak-jqTree-ce47a98/jqtree.css' %}" rel='stylesheet' />
+<style type="text/css">
+  .jstree-children {
+    padding: 0;
+    margin: 0;
+    border: 0;
+  }
+  .jstree-node:nth-child(odd) {background: rgba(0,0,0,.1);}
+  .jstree-node:nth-child(even) {background: rgba(0,0,0,.2);}
+  .jstree-node {
+    color: white;
+    padding: 25px;
+    width: auto;
+    height: auto;
+    font-size: 18pt;
+    padding-right: 0;
+    padding-left: 0;
+    list-style-type: none;
+  }
+  #tree1 li {
+    overflow: hidden;
+  }
+  #tree1 li a.btn{
+    float: right;
+  }
+  #tree1 li div.jqtree-title{
+    float: left;
+  }
+  .btns-actividades {
+    display: inline-block;
+    float: right;
+  }
+  #tree1  ul li div span a {
+    text-decoration: underline;
+  }
+</style>
 {% endblock %}
 
 {% block breadcrums %}
-  <li class="active"><a href="./">Encuentros</a></li>
-  <li></li>
+<li class="active"><a href="./">Encuentros</a></li>
+<li></li>
 {% endblock breadcrums %}
 
 {% block content %}
@@ -53,9 +60,9 @@
 <!-- Termina Modal -->
 {% if es_secretario %}
 <h4>
-<a data-toggle="modal" data-target="#encuentro_modal" data-operacion="creacion" href="#">
-  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Crear Encuentro
-</a>
+  <a data-toggle="modal" data-target="#encuentro_modal" data-operacion="creacion" href="#">
+    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Crear Encuentro
+  </a>
 </h4>
 {% endif %}
 <div id="jstree_demo_div"></div>
@@ -63,92 +70,99 @@
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
 <script type="text/javascript">
-    $('#nombre_encuentro_input').on('input propertychange paste', function () {
-        var nombre_encuentro = $.trim($(this).val());
-        if(nombre_encuentro === ""){
-            $('#crea_encuentro_btn').attr("disabled", "disabled");
-        }else {
-            $('#crea_encuentro_btn').removeAttr("disabled");
-        };
-    });
-    $('#crea_encuentro_btn').on('click', function () {
+  $('#nombre_encuentro_input').on('input propertychange paste', function () {
+    var nombre_encuentro = $.trim($(this).val());
+    if(nombre_encuentro === ""){
+      $('#crea_encuentro_btn').attr("disabled", "disabled");
+    }else {
+      $('#crea_encuentro_btn').removeAttr("disabled");
+    };
+  });
+  $('#crea_encuentro_btn').on('click', function () {
         //$(this).button('complete') // button text will be "finished!"
         var nombre_encuentro = $.trim($("#nombre_encuentro_input").val());
         console.log(typeof nombre_encuentro, nombre_encuentro);
         if(nombre_encuentro === ""){
-            return;
+          return;
         }
         $.post( "/encuentros/", {nombre:nombre_encuentro}, function() {
           console.log( "success" );
         })
-          .done(function() {
-            location.reload();
-            console.log( "second success" );
-          })
-          .fail(function() {
-            console.log( "error" );
-          })
-          .always(function() {
-            console.log( "finished" );
+        .done(function() {
+          location.reload();
+          console.log( "second success" );
+        })
+        .fail(function() {
+          console.log( "error" );
+        })
+        .always(function() {
+          console.log( "finished" );
         });
-    });
-    $(function() {
-        $('#tree1').tree({
-            dataUrl:  function(node) {
-                if(node){
-                    console.log(node);
-                }
-                return {
-                   url: '/encuentros/'
-                };
-           },
-            dataFilter: function(data) {
-                var nodos = [];
-                $(data).each(function (index, nodo) {
-                    nodo['label'] = nodo['nombre'];
+      });
+  $(function() {
+    $('#tree1').tree({
+      dataUrl:  function(node) {
+        if(node){
+          console.log(node);
+        }
+        return {
+         url: '/encuentros/'
+       };
+     },
+     dataFilter: function(data) {
+      var nodos = [];
+      $(data).each(function (index, nodo) {
+        nodo['label'] = nodo['nombre'];
                     //nodo['load_on_demand'] = true;
                     nodos.push(nodo);
-                });
-                return nodos;
-            },
-            selectable: false,
-            closedIcon: '+',
-            openedIcon: '-',
-            onCreateLi: function (node, $li) {
-                //console.log($li);
-                var $div = $li.find("div");
-                var $span = $div.find("span");
-                var anchor_gestion = $("<a>",
-                    {text:$span.text(),
-                    href:"/programa_academico/" + node.id + "/"
-                });
-                $span.html(anchor_gestion);
-                //$div.append(boton_gestion);
-                {% if es_secretario %}
-                var boton_eliminacion = $("<a>",
-                    {text:"Eliminar",
-                    class:"btn btn-default btn-md",
-                    href:"#"
-                });
-                $div.append(boton_eliminacion);
-                var boton_modificacion = $("<a>",
-                    {text:"Modificar",
-                    class:"btn btn-default btn-md",
-                    //href:"/modificacion_encuentro/" + node.id + "/"
-                });
-                boton_modificacion.data('operacion', 'edicion');
-                boton_modificacion.data('id-actividad', node.id);
-                boton_modificacion.data('tipo-actividad', node.tipo);
-                boton_modificacion.attr('data-toggle', 'modal');
-                boton_modificacion.attr('data-target', '#encuentro_modal');
-                $div.append(boton_modificacion);
-                {% endif %}
-                $li.addClass("list-group-item");
-            }
+                  });
+      return nodos;
+    },
+    selectable: false,
+    closedIcon: '+',
+    openedIcon: '-',
+    onCreateLi: function (node, $li) {
+      $li.addClass("list-group-item");
+      var $div = $li.find("div");
+      var $span = $div.find("span");
+      var permisos = node.permisos_edicion;
+      var $anchor_gestion = $("<a>",
+        {text:$span.text(),
+          href:"/programa_academico/" + node.id + "/"
         });
-        $(document).on('actividadCreada', function(){
-            $("#tree1").tree('reload');
+      $span.html($anchor_gestion);
+      if ($.inArray('editar como super responsable', permisos) > -1) {
+        var $btns_actividades = $("<div>", {class: "btns-actividades"});
+
+        var $boton_eliminacion = $("<a>",
+          {text:"Eliminar",
+          class:"btn btn-default btn-md",
+          href:"#"
         });
+        $btns_actividades.append($boton_eliminacion);
+        var $boton_modificacion = $("<a>",
+          {text:"Modificar",
+          class:"btn btn-default btn-md",
+                        //href:"/modificacion_encuentro/" + node.id + "/"
+                      });
+        $boton_modificacion.data('operacion', 'edicion');
+        $boton_modificacion.data('id-actividad', node.id);
+        $boton_modificacion.data('tipo-actividad', node.tipo);
+        $boton_modificacion.attr('data-toggle', 'modal');
+        $boton_modificacion.attr('data-target', '#encuentro_modal');
+        $btns_actividades.append($boton_modificacion);
+
+        $div.prepend($btns_actividades);
+        $div.append($("<div style=clear:right></div>"));
+      }
+    }
+  });
+    $(document).on('actividadCreada', function(){
+      $("#tree1").tree('reload');
     });
+    $(document).on('actividadModificada', function(){
+      $("#tree1").tree('reload');
+    });
+  });
 </script>
 {% endblock %}

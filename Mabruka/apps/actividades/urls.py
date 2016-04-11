@@ -14,7 +14,8 @@ from .views import (
     SeminarioDetailView,
     PanelListView,
     PanelDetailView,
-    HijosListView,)
+    HijosListView,
+    AncestrosListView,)
 
 urlpatterns = [
     url(r'^inicio/$', InicioEncuentros.as_view()),
@@ -49,4 +50,7 @@ urlpatterns = [
     url(
         r'^hijos/(?P<tipo_padre>\w+)/(?P<id_padre>\d+)/$',
         HijosListView.as_view(), name='hijos-list'),
+    url(
+        r'^ancestros/(?P<tipo_actividad>\w+)/(?P<id_actividad>\d+)/$',
+        AncestrosListView.as_view(), name='ancestros-list'),
 ]

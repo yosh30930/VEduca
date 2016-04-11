@@ -90,18 +90,17 @@ $('#panel_modal').on('show.bs.modal', function (event) {
       modal.find('.modal-title').text('Creación de panel');
       modal.find('#panel_modal_submit').text('Crear panel');
       var tipo_padre = button.data('tipo-padre');
-      console.log(button);
-      console.log("tipo_padre", tipo_padre);
       modal.find('#panel_modal_submit').data('tipo-padre', tipo_padre);
       break;
     case 'edicion':
       modal.find('.modal-title').text('Edición de panel');
       modal.find('#panel_modal_submit').text('Guardar modificaciones');
-      var prom_pan = $.get('/paneles/'+ id +'/');
-      $.when(prom_pan, prom_esp).done(function(res_pan, res_esp) {
-        var panel = res_pan[0];
+      var prom_ancestros = $.get('/ancestros/panel/'+ id +'/');
+      $.when(prom_ancestros, prom_esp).done(function(res_ancestros, res_esp) {
+        var ancestros = res_ancestros[0];
+        var encuentro = ancestros[0];
+        var panel = ancestros[ancestros.length - 1];
         var espacios = res_esp[0];
-        console.log(panel);
         modal.find('#panel_modal_nombre').val(panel.nombre);
         modal.find('#panel_modal_espacios').html('');
         modal.find('#panel_modal_espacios').find('option').remove();
@@ -115,8 +114,18 @@ $('#panel_modal').on('show.bs.modal', function (event) {
         });
         var cal_inicio = $(modal.find('#panel_modal_fecha_inicio').closest(".date"));
         var cal_fin = $(modal.find('#panel_modal_fecha_fin').closest(".date"));
-        cal_inicio.data("DateTimePicker").date(null);
-        cal_fin.data("DateTimePicker").date(null);
+        cal_inicio.data("DateTimePicker").maxDate(false);
+        cal_fin.data("DateTimePicker").minDate(false);
+        var min_fecha = moment(encuentro.fecha_inicio);
+        var max_fecha = moment(encuentro.fecha_fin);
+        cal_inicio.data("DateTimePicker").minDate(min_fecha);
+        cal_inicio.data("DateTimePicker").maxDate(max_fecha);
+        cal_fin.data("DateTimePicker").minDate(min_fecha);
+        cal_fin.data("DateTimePicker").maxDate(max_fecha);
+        cal_inicio.data("DateTimePicker").date(min_fecha);
+        cal_fin.data("DateTimePicker").date(max_fecha);
+        console.log(encuentro.fecha_inicio, encuentro.fecha_fin);
+        console.log(panel);
         var fecha_inicio = moment(panel.fecha_inicio);
         if (fecha_inicio.isValid()) {
           cal_inicio.data("DateTimePicker").date(fecha_inicio);
@@ -211,23 +220,31 @@ $(function () {
     $(cal_inicio).datetimepicker({
       //locale: 'es',
       format: 'DD/MM/YYYY HH:mm',
+      toolbarPlacement: 'top',
+      focusOnShow: false,
 
     });
     //Inicializa el calendario de la fecha de fin
     $(cal_fin).datetimepicker({
       //locale: 'es',
       format: 'DD/MM/YYYY HH:mm',
+      toolbarPlacement: 'top',
+      focusOnShow: false,
       useCurrent: false, //Important! See issue #1075
     });
     //Se asegura que la fecha de inicio no se mayor
     //a la fecha de fin
     $(cal_inicio).on("dp.change", function (e) {
-      $(cal_fin).data("DateTimePicker").minDate(e.date);
+      var fecha_min = moment.max($(cal_inicio).data("DateTimePicker").date(),
+        $(cal_inicio).data("DateTimePicker").minDate());
+      $(cal_fin).data("DateTimePicker").minDate(fecha_min);
     });
     //Se asegura que la fecha de fin no se menor
     //a la fecha de inicio
     $(cal_fin).on("dp.change", function (e) {
-      $(cal_inicio).data("DateTimePicker").maxDate(e.date);
+      var fecha_max = moment.min($(cal_fin).data("DateTimePicker").date(),
+        $(cal_fin).data("DateTimePicker").maxDate());
+      $(cal_inicio).data("DateTimePicker").maxDate(fecha_max);
     });
 });
 </script>

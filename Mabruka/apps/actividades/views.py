@@ -1,3 +1,5 @@
+import copy
+
 # from django.contrib.auth.models import User
 from django.http import Http404
 from django.views.generic import TemplateView
@@ -88,6 +90,41 @@ class HijosListView(MultipleModelAPIView):
         for llave, valor in conjunto_hijos.items():
             if len(valor[0]) > 0:
                 queryList.append(valor)
+        return queryList
+
+
+class AncestrosListView(MultipleModelAPIView):
+    """
+    Regresa una lista de forma descendente(abuelo, padre, hijo) con todos los
+    ancestros de la actividad incluida la actividad misma.
+    """
+    flat = True
+
+    def get_queryList(self):
+        queryList = []
+        tipo_actividad = self.kwargs['tipo_actividad']
+        id_actividad = self.kwargs['id_actividad']
+        if tipo_actividad not in modelo_dict:
+            raise Http404
+        # Se obtiene la actividad de la que se buscarán sus ancestros
+        Modelo = modelo_dict[tipo_actividad]
+        actividad = Modelo.objects.get(id=id_actividad)
+        nodo_actividad = actividad.nodos.first()
+        ancestros = nodo_actividad.get_ancestors(include_self=True)
+        # Se itera sobre cada ancestro
+        conjunto_hijos = {
+            Foro: ([], ForoSerializer),
+            Encuentro: ([], EncuentroSerializer),
+            Panel: ([], PanelSerializer),
+            Seminario: ([], SeminarioSerializer),
+        }
+        for ancestro in ancestros:
+            actividad_tmp = ancestro.elemento
+            serializer = conjunto_hijos[type(actividad_tmp)][1]
+            queryAncestro = (
+                type(actividad_tmp).objects.filter(pk=actividad_tmp.pk),
+                serializer)
+            queryList.append(queryAncestro)
         return queryList
 
 

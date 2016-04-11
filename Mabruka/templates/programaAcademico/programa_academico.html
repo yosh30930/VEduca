@@ -98,7 +98,6 @@ $(function() {
         onCreateLi: function (node, $li) {
             $li.addClass("list-group-item");
             $li.closest("ul").addClass("list-group");
-            console.log($li.closest("ul"));
             if (node.tipo) {
               var botones = null;
               switch(node.tipo) {
