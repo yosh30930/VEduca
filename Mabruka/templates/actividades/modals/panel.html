@@ -1,4 +1,5 @@
 <!-- Edición Panel Modal -->
+{% load countries %}
 <div class="modal fade" id="panel_modal" tabindex="-1" role="dialog" aria-labelledby="panel_modal_label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -37,8 +38,23 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="panel_modal_espacios" class="control-label">Espacio para el panel</label>
-            <select id="panel_modal_espacios" class="selectpicker form-control" data-live-search="true" title="Sin espacio seleccionado">
+            <label for="panel_modal_coordinador" class="control-label">Coordinador del panel</label>
+            <select id="panel_modal_coordinador" class="selectpicker form-control" data-live-search="true" title="No hay un coordinador seleccionado">
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="panel_modal_moderador" class="control-label">Moderador del panel</label>
+            <select id="panel_modal_moderador" class="selectpicker form-control" data-live-search="true" title="No hay un mooderador seleccionado">
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="panel_modal_intervienen" class="control-label">Quienes intervienen</label>
+            <select id="panel_modal_intervienen" class="selectpicker form-control" data-live-search="true" title="No hay personas seleccionads" multiple>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="panel_modal_espacio" class="control-label">Espacio para el panel</label>
+            <select id="panel_modal_espacio" class="selectpicker form-control" data-live-search="true" title="No hay personas seleccionadss">
             </select>
           </div>
         </form>
@@ -46,6 +62,10 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
         <button id="panel_modal_submit" type="button" class="btn btn-primary" ></button>
+        {{ countries }}
+        {% for country in countries %}
+          <div>country</div>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -69,6 +89,7 @@ $('#panel_modal').on('show.bs.modal', function (event) {
   var modal = $(this);
   //modal.find('#panel_modal_nombre').val('');
   var prom_esp = $.get('/espacios/' + {{encuentro_id}} + "/");
+  var prom_par = $.get('/participantes/', {encuentro_id: {{encuentro_id}} });
   modal.find('#panel_modal_submit').data('operacion', operacion);
   modal.find('#panel_modal_submit').data('id-actividad', id);
   modal.find('#panel_modal_submit').removeAttr('disabled');
@@ -76,7 +97,10 @@ $('#panel_modal').on('show.bs.modal', function (event) {
   selector.html("");
   switch (operacion) {
     case 'creacion':
-      prom_esp.done(function(espacios) {
+      $.when(prom_esp, prom_par).done(function(res_espacios, res_participantes) {
+        var participantes = res_participantes[0];
+        var espacios = res_espacios[0]
+        console.log(participantes);
         $(espacios).each(function (idx, espacio) {
           var selected = false;
           selector.append($('<option>', {
@@ -85,6 +109,36 @@ $('#panel_modal').on('show.bs.modal', function (event) {
             selected: selected,
           }));
         });
+        var $coordinardor_s = $("#panel_modal_coordinador");
+        var $moderador_s = $("#panel_modal_moderador");
+        var $intervienen_s = $("#panel_modal_intervienen");
+        var $optgroup_l = $('<optgroup label="Locales"></optgroup>');
+        $(participantes[0]['locales']).each(function (idx, participante) {
+          var $option = $('<option>', {
+            text: participante.nombre,
+            value: participante.id,
+            selected: false,
+          });
+          $optgroup_l.append($option);
+        })
+        $coordinardor_s.append($optgroup_l.clone());
+        $moderador_s.append($optgroup_l.clone());
+        $intervienen_s.append($optgroup_l.clone());
+        var $optgroup_g = $('<optgroup label="Globales"></optgroup>');
+        $(participantes[1]['globales']).each(function (idx, participante) {
+          var $option = $('<option>', {
+            text: participante.nombre,
+            value: participante.id,
+            selected: false,
+          });
+          $optgroup_g.append($option);
+        })
+        $coordinardor_s.append($optgroup_g.clone());
+        $moderador_s.append($optgroup_g.clone());
+        $intervienen_s.append($optgroup_g.clone());
+        $coordinardor_s.selectpicker('refresh');
+        $moderador_s.selectpicker('refresh');
+        $intervienen_s.selectpicker('refresh');
         selector.selectpicker('refresh');
       });
       modal.find('.modal-title').text('Creación de panel');
@@ -96,7 +150,8 @@ $('#panel_modal').on('show.bs.modal', function (event) {
       modal.find('.modal-title').text('Edición de panel');
       modal.find('#panel_modal_submit').text('Guardar modificaciones');
       var prom_ancestros = $.get('/ancestros/panel/'+ id +'/');
-      $.when(prom_ancestros, prom_esp).done(function(res_ancestros, res_esp) {
+      $.when(prom_ancestros, prom_esp, prom_par).done(function(res_ancestros, res_esp, res_participantes) {
+        var participantes = res_participantes[0];
         var ancestros = res_ancestros[0];
         var encuentro = ancestros[0];
         var panel = ancestros[ancestros.length - 1];
@@ -112,6 +167,38 @@ $('#panel_modal').on('show.bs.modal', function (event) {
             selected: selected,
           }));
         });
+        selector.selectpicker('refresh');
+        var $coordinardor_s = $("#panel_modal_coordinador");
+        var $moderador_s = $("#panel_modal_moderador");
+        var $intervienen_s = $("#panel_modal_intervienen");
+        var $optgroup_l = $('<optgroup label="Locales"></optgroup>');
+        $(participantes[0]['locales']).each(function (idx, participante) {
+          var $option = $('<option>', {
+            text: participante.nombre,
+            value: participante.id,
+            selected: false,
+          });
+          $optgroup_l.append($option);
+        })
+        $coordinardor_s.append($optgroup_l.clone());
+        $moderador_s.append($optgroup_l.clone());
+        $intervienen_s.append($optgroup_l.clone());
+        var $optgroup_g = $('<optgroup label="Globales"></optgroup>');
+        $(participantes[1]['globales']).each(function (idx, participante) {
+          var $option = $('<option>', {
+            text: participante.nombre,
+            value: participante.id,
+            selected: false,
+          });
+          $optgroup_g.append($option);
+        })
+        $coordinardor_s.append($optgroup_g.clone());
+        $moderador_s.append($optgroup_g.clone());
+        $intervienen_s.append($optgroup_g.clone());
+        $coordinardor_s.selectpicker('refresh');
+        $moderador_s.selectpicker('refresh');
+        $intervienen_s.selectpicker('refresh');
+
         var cal_inicio = $(modal.find('#panel_modal_fecha_inicio').closest(".date"));
         var cal_fin = $(modal.find('#panel_modal_fecha_fin').closest(".date"));
         cal_inicio.data("DateTimePicker").maxDate(false);
@@ -143,7 +230,6 @@ $('#panel_modal').on('show.bs.modal', function (event) {
           cal_fin.data("DateTimePicker").date(null);
         }
         console.log(fecha_fin, fecha_fin.isValid())
-        selector.selectpicker('refresh');
       });
       break;
     default: //Evita que se abra el modal

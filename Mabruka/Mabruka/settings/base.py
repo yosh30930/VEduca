@@ -40,7 +40,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_docs',
     'mptt',
     'drf_multiple_model',
-#   'swampdragon',
+    'django_countries'
     ]
 
 LOCAL_APPS = [

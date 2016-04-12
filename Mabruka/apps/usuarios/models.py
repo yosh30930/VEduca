@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin, User)
+from django_countries.fields import CountryField
 
 """
 class UserManager(BaseUserManager):
@@ -44,3 +45,16 @@ class SecretarioGeneral(models.Model):
     general
     """
     usuario = models.ForeignKey(User, models.CASCADE)
+
+
+class Participante(models.Model):
+    """
+    Representan a los participantes de los encuentro, si este tiene asociado
+    un encuentro entonces sólo será recomendado en ese encuentro
+    """
+    nombre = models.CharField(max_length=100)
+    puesto = models.TextField()
+    pais = CountryField(blank=True, null=True)
+    encuentro = models.ForeignKey(
+        'actividades.Encuentro', blank=True, null=True,
+        on_delete=models.SET_NULL)

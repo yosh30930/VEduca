@@ -1,10 +1,13 @@
 from django.contrib.auth.models import User
+from django.http import Http404
 
+from drf_multiple_model.views import MultipleModelAPIView
 from rest_framework import status, generics
 from rest_framework.response import Response
 
-from .serializersDRF import ResponsableSerializer
-# Create your views here.
+from .serializersDRF import ResponsableSerializer, ParticipanteSerializer
+from apps.actividades.models import Encuentro
+from .models import Participante
 
 
 class ResponsableListView(generics.ListCreateAPIView):
@@ -22,3 +25,30 @@ class ResponsableListView(generics.ListCreateAPIView):
         data = dict()
         serializer = ResponsableSerializer(data=data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ParticipanteListView(MultipleModelAPIView):
+    """
+    Regresa una lista de los participantes, si se epecifica
+    el id de un encuentro se regresan 2 listas, los que son locales al encuentro
+    con ese id y los que son globales.
+    """
+
+    def get_queryList(self):
+        participantes = Participante.objects.order_by('nombre')
+        encuentro_id = self.request.query_params.get('encuentro_id', None)
+        if encuentro_id is None:
+            queryList = [(participantes, ParticipanteSerializer)]
+        else:
+            try:
+                encuentro = Encuentro.objects.get(id=encuentro_id)
+                queryList = (
+                    (participantes.filter(encuentro=encuentro),
+                        ParticipanteSerializer, "locales"),
+                    (participantes.filter(encuentro=None),
+                        ParticipanteSerializer, "globales"),
+                )
+
+            except Encuentro.ObjectDoesNotExist:
+                raise Http404
+        return queryList
