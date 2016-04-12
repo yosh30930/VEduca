@@ -33,7 +33,8 @@ class InicioSesionView(View):
 def crea_actividad(Modelo, nombre, padre, *args, **kwargs):
     try:
         with transaction.atomic():
-            actividad = Modelo.objects.crear(nombre=nombre, padre=padre, *args, **kwargs)
+            actividad = Modelo(nombre=nombre, *args, **kwargs)
+            actividad.save(padre=padre)
             return actividad
     except IntegrityError as e:
         raise e
@@ -43,7 +44,7 @@ def ResetActividades():
     modelos = [Encuentro, Foro, Seminario, Panel]
     for modelo in modelos:
         modelo.objects.all().delete()
-    encuentro = Encuentro.objects.crear(nombre="Encuentro Internacional 2016 Costa Rica")
+    encuentro = Encuentro.objects.create(nombre="Encuentro Internacional 2016 Costa Rica")
     foro1 = crea_actividad(
         Foro, "Educación Superior, Innovación e Internacionalización", encuentro,
         nombre_corto="Educación Superior")
@@ -57,9 +58,9 @@ def ResetActividades():
         Seminario, "Programa Piloto de Inclusión Digital, Estrategia Digital\
         Nacional, Gobierno de México", foro2)
     for idx in range(3):
-        crea_actividad(Panel, "Panel 1." + str(idx), seminario11, calId="0")
+        crea_actividad(Panel, "Panel 1." + str(idx), seminario11)
     for idx in range(3):
-        crea_actividad(Panel, "Panel 2." + str(idx), seminario21, calId="0")
+        crea_actividad(Panel, "Panel 2." + str(idx), seminario21)
     return
 
 
