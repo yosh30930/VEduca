@@ -72,7 +72,7 @@ $(function(){
 // Limpia el modal del encuentro
 function reset_modal(){
   var $modal = $("#encuentro_modal");
-  var $modal_body = $modal.find(".modal-body").eq(0);
+  var $modal_body = $modal.find(".modal-body");
   // Se cierran las alertas anteriores
   $modal_body.find(".alert").alert('close');
   // Se hace el reset del nombre del encuentro
@@ -97,8 +97,8 @@ function reset_modal(){
 
 // Se ejecuta cuando se muestra el modal
 $('#encuentro_modal').on('show.bs.modal', function (event) {
-  var $button = $(event.relatedTarget) // Botón que mostró el  modal
   reset_modal();
+  var $button = $(event.relatedTarget) // Botón que mostró el  modal
   var operacion = $button.data('operacion');
   var id = $button.data('id-actividad');
   var $modal = $(this);

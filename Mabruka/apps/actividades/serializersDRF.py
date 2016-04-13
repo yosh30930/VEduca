@@ -145,4 +145,5 @@ class PanelSerializer(ActividadSerializer):
     class Meta:
         model = Panel
         fields = ("nombre", "id", "tipo", "fecha_inicio", "fecha_fin",
+                  "coordinador", "moderador", "intervienen",
                   "espacio", "tipo_padre", "id_padre", "permisos_edicion")

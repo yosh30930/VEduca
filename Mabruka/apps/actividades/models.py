@@ -237,6 +237,13 @@ class Seminario(Actividad):
 
 class Panel(ConLocacionYFecha):
     tipo = "panel"
+    intervienen = models.ManyToManyField('usuarios.Participante', blank=True)
+    coordinador = models.ForeignKey(
+        'usuarios.Participante', models.SET_NULL, blank=True, null=True,
+        related_name="coordiandor_panel")
+    moderador = models.ForeignKey(
+        'usuarios.Participante', models.SET_NULL, blank=True, null=True,
+        related_name="moderador_panel")
 
     class Meta:
         verbose_name_plural = "paneles"

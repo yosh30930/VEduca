@@ -154,7 +154,9 @@
     $('#calendar').fullCalendar({
       lang: 'es',
       slotDuration: '00:15:00',
-      snapDuration: '00:01:00',
+      snapDuration: '00:05:00',
+      defaultTimedEventDuration: '00:30:00',
+      forceEventDuration: true,
       allDaySlot: false,
       header: {
         left: 'prev,next today',
@@ -167,8 +169,7 @@
       droppable: true,
       eventClick: function (event, jsEvent, view) {
         var evento_anchor = jsEvent.currentTarget;
-        $('.tiene_popover').not(evento_anchor).popover('hide');
-        $(evento_anchor).popover('toggle');
+        $(evento_anchor).focus();
       },
       eventDrop: function(event) {
         updateEvent(event);
@@ -198,7 +199,7 @@
           },
           html: true,
           placement: 'left',
-          trigger: 'manual',
+          trigger: 'focus',
           container: '#calendar',
         })
         .on('show.bs.popover', function(e) {
@@ -271,18 +272,16 @@
                 $li.addClass('draggable fc-event ui-draggable ui-draggable-handle');
                 var evento = {
                   id: node.tipo + '-' +node.id,
-                    title: node.nombre, // use the element's text as the event title
-                    backgroundColor: colores_calendario[0],
-                    className: ['tiene_popover'],
-                    objeto: node,
-
+                  title: node.nombre, // use the element's text as the event title
+                  backgroundColor: colores_calendario[0],
+                  className: ['tiene_popover'],
+                  objeto: node,
                 };
                 if (evento.objeto.fecha_inicio) {
-                  evento.start = evento.objeto.fecha_inicio;
+                  evento.start = moment(evento.objeto.fecha_inicio).format();
                   if (evento.objeto.fecha_fin) {
-                    evento.end = evento.objeto.fecha_fin;
+                    evento.end = moment(evento.objeto.fecha_fin).format();
                   }
-                  console.log('evento', evento);
                   var en_lista = false;
                   for(var i = 0; i < evento_src.length; i++ ){
                     if (evento_src[i].id === evento.id) {
@@ -292,9 +291,8 @@
                     }
                   }
                   if (!en_lista) {evento_src.push(evento)};
-                  console.log(evento_src);
+                  $('#calendar').fullCalendar( 'removeEvents' );
                   $('#calendar').fullCalendar( 'addEventSource', evento_src);
-                  $('#calendar').fullCalendar( 'refetchEvents' )
                 }
                 $li.data('event', evento);
                 // make the event draggable using jQuery UI
@@ -348,10 +346,5 @@
     })
 
 });
-
-$("#calendar").on('click', '.editar-btn', function () {
-  $('.tiene_popover').popover('hide');
-})
-
 </script>
 {% endblock %}

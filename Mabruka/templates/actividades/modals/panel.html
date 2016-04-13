@@ -1,5 +1,7 @@
 <!-- Edición Panel Modal -->
+{% load static from staticfiles %}
 {% load countries %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
 <div class="modal fade" id="panel_modal" tabindex="-1" role="dialog" aria-labelledby="panel_modal_label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -8,6 +10,9 @@
         <h4 class="modal-title" id="panel_modal_label">Título ___ de Panel</h4>
       </div>
       <div class="modal-body">
+        <div class="modal-cargando-div">
+          <div class='uil-ring-css' style="margin: 0 auto"><div></div></div>
+        </div>
         <form>
           <div class="form-group">
             <label for="panel_modal_nombre" class="control-label">Nombre del Panel</label>
@@ -17,23 +22,23 @@
             <div class='col-md-6'>
               <div class="form-group">
                 <label for="panel_modal_fecha_inicio" class="control-label">Fecha y hora de inicio</label>
-                  <div class='input-group date'>
-                    <input id='panel_modal_fecha_inicio' type='text' class="form-control" placeholder="Ejemplo: 23/02/2017 11:23" />
-                    <span class="input-group-addon">
-                      <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                  </div>
+                <div class='input-group date'>
+                  <input id='panel_modal_fecha_inicio' type='text' class="form-control" placeholder="Ejemplo: 23/02/2017 11:23" />
+                  <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                  </span>
+                </div>
               </div>
             </div>
             <div class='col-md-6'>
               <div class="form-group">
                 <label for="panel_modal_fecha_fin" class="control-label">Fecha y hora de término</label>
-                  <div class='input-group date'>
-                    <input id='panel_modal_fecha_fin' type='text' class="form-control" placeholder="Ejemplo: 24/02/2017 20:23" />
-                    <span class="input-group-addon">
-                      <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                  </div>
+                <div class='input-group date'>
+                  <input id='panel_modal_fecha_fin' type='text' class="form-control" placeholder="Ejemplo: 24/02/2017 20:23" />
+                  <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -64,7 +69,7 @@
         <button id="panel_modal_submit" type="button" class="btn btn-primary" ></button>
         {{ countries }}
         {% for country in countries %}
-          <div>country</div>
+        <div>country</div>
         {% endfor %}
       </div>
     </div>
@@ -72,245 +77,303 @@
 </div>
 
 <script type="text/javascript">
+$(function(){// inicio de funcíon wrapper
 
-function crea_alert(){
+  function crea_alert(){
    var alert = $.parseHTML(
-        '<div class="alert alert-dismissible" role="alert">' +
-          '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-          '<span class ="mensaje_alert"></span>' +
-        '</div>')
-  return alert;
+    '<div class="alert alert-dismissible" role="alert">' +
+    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+    '<span class ="mensaje_alert"></span>' +
+    '</div>')
+   return alert;
+ }
+
+ function reset_modal(){
+  var $modal = $("#panel_modal");
+  var $modal_body = $modal.find(".modal-body");
+  // Se cierran las alertas anteriores
+  $modal_body.find(".alert").alert('close');
+  // Se hace el reset del nombre del encuentro
+  $modal.find('#panel_modal_nombre').val("");
+  // Se hace el reset de las fechas del encuentro
+  var $cal_inicio = $modal.find('#panel_modal_fecha_inicio').closest(".date");
+  var $cal_fin = $modal.find('#panel_modal_fecha_fin').closest(".date");
+  $cal_inicio.data("DateTimePicker").date(null);
+  $cal_fin.data("DateTimePicker").date(null);
+  // Se hace el reset de los responsables del encuentro
+  var $selector = $modal.find('#panel_modal_responsables');
+  $selector.find('option').remove();
+  $selector.selectpicker('refresh');
+  // Se oculta el form
+  $modal_body.find("form").hide();
+  // Se desbloqué el botón submit
+  var $boton_submit = $modal.find('#panel_modal_submit');
+  $boton_submit.attr('disabled', 'disabled');
+  // Se muestra la imágen de carga
+  $modal_body.find(".modal-cargando-div").show();
 }
 
 $('#panel_modal').on('show.bs.modal', function (event) {
+  reset_modal();
   var button = $(event.relatedTarget) // Button that triggered the modal
   var operacion = button.data('operacion');
   var id = button.data('id-actividad');
-  var modal = $(this);
+  var $modal = $(this);
+  var $form = $modal.find(".modal-content form");
   //modal.find('#panel_modal_nombre').val('');
   var prom_esp = $.get('/espacios/' + {{encuentro_id}} + "/");
   var prom_par = $.get('/participantes/', {encuentro_id: {{encuentro_id}} });
-  modal.find('#panel_modal_submit').data('operacion', operacion);
-  modal.find('#panel_modal_submit').data('id-actividad', id);
-  modal.find('#panel_modal_submit').removeAttr('disabled');
-  var selector = $(modal.find('#panel_modal_espacios'));
-  selector.html("");
+  $modal.find('#panel_modal_submit').data('operacion', operacion);
+  $modal.find('#panel_modal_submit').data('id-actividad', id);
+  $modal.find('#panel_modal_submit').removeAttr('disabled');
+  var selector = $modal.find('#panel_modal_espacio');
+  var $coordinardor_s = $("#panel_modal_coordinador");
+  var $moderador_s = $("#panel_modal_moderador");
+  var $intervienen_s = $("#panel_modal_intervienen");
+  selector.find('option').remove();
+  selector.find('optgroup').remove();
+  $coordinardor_s.find('option').remove();
+  $coordinardor_s.find('optgroup').remove();
+  $moderador_s.find('option').remove();
+  $moderador_s.find('optgroup').remove();
+  $intervienen_s.find('option').remove();
+  $intervienen_s.find('optgroup').remove();
   switch (operacion) {
     case 'creacion':
-      $.when(prom_esp, prom_par).done(function(res_espacios, res_participantes) {
-        var participantes = res_participantes[0];
-        var espacios = res_espacios[0]
-        console.log(participantes);
-        $(espacios).each(function (idx, espacio) {
-          var selected = false;
-          selector.append($('<option>', {
-            text: espacio.nombre,
-            value: espacio.id,
-            selected: selected,
-          }));
-        });
-        var $coordinardor_s = $("#panel_modal_coordinador");
-        var $moderador_s = $("#panel_modal_moderador");
-        var $intervienen_s = $("#panel_modal_intervienen");
-        var $optgroup_l = $('<optgroup label="Locales"></optgroup>');
-        $(participantes[0]['locales']).each(function (idx, participante) {
-          var $option = $('<option>', {
-            text: participante.nombre,
-            value: participante.id,
-            selected: false,
-          });
-          $optgroup_l.append($option);
-        })
-        $coordinardor_s.append($optgroup_l.clone());
-        $moderador_s.append($optgroup_l.clone());
-        $intervienen_s.append($optgroup_l.clone());
-        var $optgroup_g = $('<optgroup label="Globales"></optgroup>');
-        $(participantes[1]['globales']).each(function (idx, participante) {
-          var $option = $('<option>', {
-            text: participante.nombre,
-            value: participante.id,
-            selected: false,
-          });
-          $optgroup_g.append($option);
-        })
-        $coordinardor_s.append($optgroup_g.clone());
-        $moderador_s.append($optgroup_g.clone());
-        $intervienen_s.append($optgroup_g.clone());
-        $coordinardor_s.selectpicker('refresh');
-        $moderador_s.selectpicker('refresh');
-        $intervienen_s.selectpicker('refresh');
-        selector.selectpicker('refresh');
+    $.when(prom_esp, prom_par).done(function(res_espacios, res_participantes) {
+      var participantes = res_participantes[0];
+      var espacios = res_espacios[0]
+      console.log(participantes);
+      $(espacios).each(function (idx, espacio) {
+        var selected = false;
+        selector.append($('<option>', {
+          text: espacio.nombre,
+          value: espacio.id,
+          selected: selected,
+        }));
       });
-      modal.find('.modal-title').text('Creación de panel');
-      modal.find('#panel_modal_submit').text('Crear panel');
-      var tipo_padre = button.data('tipo-padre');
-      modal.find('#panel_modal_submit').data('tipo-padre', tipo_padre);
-      break;
+      var $optgroup_l = $('<optgroup label="Locales"></optgroup>');
+      $(participantes[0]['locales']).each(function (idx, participante) {
+        var $option = $('<option>', {
+          text: participante.nombre,
+          value: participante.id,
+          selected: false,
+        });
+        $optgroup_l.append($option);
+      })
+      $coordinardor_s.append($optgroup_l.clone());
+      $moderador_s.append($optgroup_l.clone());
+      $intervienen_s.append($optgroup_l.clone());
+      var $optgroup_g = $('<optgroup label="Globales"></optgroup>');
+      $(participantes[1]['globales']).each(function (idx, participante) {
+        var $option = $('<option>', {
+          text: participante.nombre,
+          value: participante.id,
+          selected: false,
+        });
+        $optgroup_g.append($option);
+      })
+      $coordinardor_s.append($optgroup_g.clone());
+      $moderador_s.append($optgroup_g.clone());
+      $intervienen_s.append($optgroup_g.clone());
+      $coordinardor_s.selectpicker('refresh');
+      $moderador_s.selectpicker('refresh');
+      $intervienen_s.selectpicker('refresh');
+      selector.selectpicker('refresh');
+      $('#panel_modal').find(".modal-cargando-div").fadeOut(800, function () {
+        $form.fadeIn(400);
+      });
+    });
+    $modal.find('.modal-title').text('Creación de panel');
+    $modal.find('#panel_modal_submit').text('Crear panel');
+    var tipo_padre = button.data('tipo-padre');
+    $modal.find('#panel_modal_submit').data('tipo-padre', tipo_padre);
+    break;
     case 'edicion':
-      modal.find('.modal-title').text('Edición de panel');
-      modal.find('#panel_modal_submit').text('Guardar modificaciones');
-      var prom_ancestros = $.get('/ancestros/panel/'+ id +'/');
-      $.when(prom_ancestros, prom_esp, prom_par).done(function(res_ancestros, res_esp, res_participantes) {
-        var participantes = res_participantes[0];
-        var ancestros = res_ancestros[0];
-        var encuentro = ancestros[0];
-        var panel = ancestros[ancestros.length - 1];
-        var espacios = res_esp[0];
-        modal.find('#panel_modal_nombre').val(panel.nombre);
-        modal.find('#panel_modal_espacios').html('');
-        modal.find('#panel_modal_espacios').find('option').remove();
-        $(espacios).each(function (idx, espacio) {
-          var selected = espacio.id == panel.espacio;
-          selector.append($('<option>', {
-            text: espacio.nombre,
-            value: espacio.id,
-            selected: selected,
-          }));
-        });
-        selector.selectpicker('refresh');
-        var $coordinardor_s = $("#panel_modal_coordinador");
-        var $moderador_s = $("#panel_modal_moderador");
-        var $intervienen_s = $("#panel_modal_intervienen");
-        var $optgroup_l = $('<optgroup label="Locales"></optgroup>');
-        $(participantes[0]['locales']).each(function (idx, participante) {
-          var $option = $('<option>', {
-            text: participante.nombre,
-            value: participante.id,
-            selected: false,
-          });
-          $optgroup_l.append($option);
-        })
-        $coordinardor_s.append($optgroup_l.clone());
-        $moderador_s.append($optgroup_l.clone());
-        $intervienen_s.append($optgroup_l.clone());
-        var $optgroup_g = $('<optgroup label="Globales"></optgroup>');
-        $(participantes[1]['globales']).each(function (idx, participante) {
-          var $option = $('<option>', {
-            text: participante.nombre,
-            value: participante.id,
-            selected: false,
-          });
-          $optgroup_g.append($option);
-        })
-        $coordinardor_s.append($optgroup_g.clone());
-        $moderador_s.append($optgroup_g.clone());
-        $intervienen_s.append($optgroup_g.clone());
-        $coordinardor_s.selectpicker('refresh');
-        $moderador_s.selectpicker('refresh');
-        $intervienen_s.selectpicker('refresh');
-
-        var cal_inicio = $(modal.find('#panel_modal_fecha_inicio').closest(".date"));
-        var cal_fin = $(modal.find('#panel_modal_fecha_fin').closest(".date"));
-        cal_inicio.data("DateTimePicker").maxDate(false);
-        cal_inicio.data("DateTimePicker").minDate(false);
-        cal_fin.data("DateTimePicker").maxDate(false);
-        cal_fin.data("DateTimePicker").minDate(false);
-        var min_fecha = moment(encuentro.fecha_inicio);
-        var max_fecha = moment(encuentro.fecha_fin);
-        cal_inicio.data("DateTimePicker").minDate(min_fecha);
-        cal_fin.data("DateTimePicker").minDate(min_fecha);
-        cal_inicio.data("DateTimePicker").maxDate(max_fecha);
-        cal_fin.data("DateTimePicker").maxDate(max_fecha);
-        console.log(encuentro.fecha_inicio, encuentro.fecha_fin);
-        console.log(panel);
-        var fecha_inicio = moment(panel.fecha_inicio);
-        if (fecha_inicio.isValid()) {
-          fecha_inicio = moment.min(fecha_inicio, max_fecha);
-          fecha_inicio = moment.max(fecha_inicio, min_fecha);
-          cal_inicio.data("DateTimePicker").date(fecha_inicio);
-        }else{
-          cal_inicio.data("DateTimePicker").date(null);
-        }
-        var fecha_fin = moment(panel.fecha_fin);
-        if (fecha_fin.isValid()) {
-          fecha_fin = moment.max(fecha_fin, min_fecha);
-          fecha_fin = moment.min(fecha_fin, max_fecha);
-          cal_fin.data("DateTimePicker").date(fecha_fin);
-        }else{
-          cal_fin.data("DateTimePicker").date(null);
-        }
-        console.log(fecha_fin, fecha_fin.isValid())
+    $modal.find('.modal-title').text('Edición de panel');
+    $modal.find('#panel_modal_submit').text('Guardar modificaciones');
+    var prom_ancestros = $.get('/ancestros/panel/'+ id +'/');
+    $.when(prom_ancestros, prom_esp, prom_par).done(function(res_ancestros, res_esp, res_participantes) {
+      var participantes = res_participantes[0];
+      var ancestros = res_ancestros[0];
+      var encuentro = ancestros[0];
+      var panel = ancestros[ancestros.length - 1];
+      var espacios = res_esp[0];
+      $modal.find('#panel_modal_nombre').val(panel.nombre);
+      $modal.find('#panel_modal_espacio').html('');
+      $modal.find('#panel_modal_espacio').find('option').remove();
+      $(espacios).each(function (idx, espacio) {
+        var selected = espacio.id == panel.espacio;
+        selector.append($('<option>', {
+          text: espacio.nombre,
+          value: espacio.id,
+          selected: selected,
+        }));
       });
-      break;
+      selector.selectpicker('refresh');
+      var $coordinardor_s = $("#panel_modal_coordinador");
+      var $moderador_s = $("#panel_modal_moderador");
+      var $intervienen_s = $("#panel_modal_intervienen");
+      var $optgroup_l = $('<optgroup label="Locales"></optgroup>');
+      $(participantes[0]['locales']).each(function (idx, participante) {
+        var $option = $('<option>', {
+          text: participante.nombre,
+          value: participante.id,
+          selected: false,
+        });
+        $optgroup_l.append($option);
+      })
+      $coordinardor_s.append($optgroup_l.clone());
+      $moderador_s.append($optgroup_l.clone());
+      $intervienen_s.append($optgroup_l.clone());
+      var $optgroup_g = $('<optgroup label="Globales"></optgroup>');
+      $(participantes[1]['globales']).each(function (idx, participante) {
+        var $option = $('<option>', {
+          text: participante.nombre,
+          value: participante.id,
+          selected: false,
+        });
+        $optgroup_g.append($option);
+      })
+      $coordinardor_s.append($optgroup_g.clone());
+      $moderador_s.append($optgroup_g.clone());
+      $intervienen_s.append($optgroup_g.clone());
+      $coordinardor_s.find("option").each(function (idx, option) {
+        console.log(panel.coordinador, $(option).attr("value"), panel.coordinador==$(option).attr("value"));
+        $(option).attr("selected", panel.coordinador==$(option).attr("value"))
+      })
+      $moderador_s.find("option").each(function (idx, option) {
+        $(option).attr("selected", panel.moderador==$(option).attr("value"))
+      })
+      $intervienen_s.find("option").each(function (idx, option) {
+        $(option).attr("selected", $.inArray(parseInt($(option).attr("value")), panel.intervienen) > -1)
+      })
+      $coordinardor_s.selectpicker('refresh');
+      $moderador_s.selectpicker('refresh');
+      $intervienen_s.selectpicker('refresh');
+
+      var cal_inicio = $modal.find('#panel_modal_fecha_inicio').closest(".date");
+      var cal_fin = $modal.find('#panel_modal_fecha_fin').closest(".date");
+      cal_inicio.data("DateTimePicker").maxDate(false);
+      cal_inicio.data("DateTimePicker").minDate(false);
+      cal_fin.data("DateTimePicker").maxDate(false);
+      cal_fin.data("DateTimePicker").minDate(false);
+      var min_fecha = moment(encuentro.fecha_inicio);
+      var max_fecha = moment(encuentro.fecha_fin).add(1, 'd').subtract(1, 'seconds');
+      cal_inicio.data("DateTimePicker").minDate(min_fecha);
+      cal_fin.data("DateTimePicker").minDate(min_fecha);
+      cal_inicio.data("DateTimePicker").maxDate(max_fecha);
+      cal_fin.data("DateTimePicker").maxDate(max_fecha);
+      console.log(encuentro.fecha_inicio, encuentro.fecha_fin);
+      console.log(panel);
+      var fecha_inicio = moment(panel.fecha_inicio);
+      console.log(fecha_inicio);
+      if (fecha_inicio.isValid()) {
+        fecha_inicio = moment.min(fecha_inicio, max_fecha);
+        fecha_inicio = moment.max(fecha_inicio, min_fecha);
+        cal_inicio.data("DateTimePicker").date(fecha_inicio);
+      }else{
+        cal_inicio.data("DateTimePicker").date(null);
+      }
+      var fecha_fin = moment(panel.fecha_fin);
+      console.log(fecha_fin);
+      if (fecha_fin.isValid()) {
+        fecha_fin = moment.max(fecha_fin, min_fecha);
+        fecha_fin = moment.min(fecha_fin, max_fecha);
+        cal_fin.data("DateTimePicker").date(fecha_fin);
+      }else{
+        cal_fin.data("DateTimePicker").date(null);
+      }
+      $('#panel_modal').find(".modal-cargando-div").fadeOut(800, function () {
+        $form.fadeIn(400);
+      });
+        //console.log(fecha_fin, fecha_fin.isValid())
+      });
+break;
     default: //Evita que se abra el modal
-      return event.preventDefault();
+    return event.preventDefault();
   }
   // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
   // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 });
 $('#panel_modal_submit').on('click', function (event) {
+  var $modal_body = $("#panel_modal .modal-body");
+  // Se cierran las alertas anteriores
+  $modal_body.find(".alert").alert('close');
   var button = $(this); // Button that triggered the modal
   button.attr('disabled', 'disabled');
   var operacion = button.data('operacion');
-  var data = {
-    'nombre': $('#panel_modal_nombre').val().trim(),
-    'fecha_inicio': moment($('#panel_modal_fecha_inicio').val(), "DD/MM/YYYY HH:mm").format(),
-    'fecha_fin': moment($('#panel_modal_fecha_fin').val(), "DD/MM/YYYY HH:mm").format(),
-    'espacio': $("#panel_modal_espacios").val()
-  };
-  if(data.espacios == null){data.espacios=[]}
+  var data = {};
+  data['nombre'] = $('#panel_modal_nombre').val().trim();
+  data['espacio'] = $("#panel_modal_espacio").val();
+  var fecha_inicio = moment($("#panel_modal_fecha_inicio").val(), "DD/MM/YYYY hh:mm");
+  data['fecha_inicio'] = fecha_inicio.isValid() ? fecha_inicio.format("YYYY-MM-DDThh:mmZ") : "";
+  var fecha_fin = moment($("#panel_modal_fecha_fin").val(), "DD/MM/YYYY hh:mm");
+  data['fecha_fin'] = fecha_fin.isValid() ? fecha_fin.format("YYYY-MM-DDThh:mmZ") : "";
+  data['coordinador'] = $("#panel_modal_coordinador").val();
+  data['moderador'] = $("#panel_modal_moderador").val();
+  data['intervienen'] = $("#panel_modal_intervienen").val() || [];
   var promesa;
   console.log("data", data, "/data");
   switch (operacion) {
     case 'creacion':
-      data["id_padre"] =button.data('id-actividad');
-      data["tipo_padre"] = button.data("tipo-padre");
-      console.log("data", data, "/data");
-      promesa = $.ajax({
-        url: '/paneles/',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(data),
-      });
-      promesa
-      .fail(function(data) {
-        console.log(data);
-      })
-      .done(function(data){
-        $(document).trigger( "actividadCreada", data);
-        var alert = crea_alert();
-        $(alert).addClass("alert-success");
-        var mensaje = $(alert).find('.mensaje_alert');
-        mensaje.text("Panel creado exitosamente!!!");
-        $("#panel_modal").find(".modal-body").append(alert);
-      })
-      .always(function(data) {
-        console.log(data);
-      });
-      break;
+    data["id_padre"] =button.data('id-actividad');
+    data["tipo_padre"] = button.data("tipo-padre");
+    console.log("data", data, "/data");
+    promesa = $.ajax({
+      url: '/paneles/',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+    });
+    promesa
+    .fail(function(data) {
+      console.log(data);
+    })
+    .done(function(data){
+      $(document).trigger( "actividadCreada", data);
+      var alert = crea_alert();
+      $(alert).addClass("alert-success");
+      var mensaje = $(alert).find('.mensaje_alert');
+      mensaje.text("Panel creado exitosamente!!!");
+      $("#panel_modal").find(".modal-body").append(alert);
+    })
+    .always(function(data) {
+      console.log(data);
+    });
+    break;
     case 'edicion':
-      var id = button.data('id-actividad');
-      promesa = $.ajax({
-        url: '/paneles/' + id + '/',
-        type: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(data),
-      });
-      promesa
-      .fail(function(data) {
-        console.log(data);
-      })
-      .done(function(data){
-        $(document).trigger( "actividadModificada", data);
-        var alert = crea_alert();
-        $(alert).addClass("alert-success");
-        var mensaje = $(alert).find('.mensaje_alert');
-        mensaje.text("Panel modificado exitosamente!!!");
-        $("#panel_modal").find(".modal-body").append(alert);
-        button.removeAttr('disabled');
-      })
-      .always(function(data) {
-        console.log(data);
-      });
-      break;
+    var id = button.data('id-actividad');
+    promesa = $.ajax({
+      url: '/paneles/' + id + '/',
+      type: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+    });
+    promesa
+    .fail(function(data) {
+      console.log(data);
+    })
+    .done(function(data){
+      $(document).trigger( "actividadModificada", data);
+      var alert = crea_alert();
+      $(alert).addClass("alert-success");
+      var mensaje = $(alert).find('.mensaje_alert');
+      mensaje.text("Panel modificado exitosamente!!!");
+      $("#panel_modal").find(".modal-body").append(alert);
+      button.removeAttr('disabled');
+    })
+    .always(function(data) {
+      console.log(data);
+    });
+    break;
     default:
-      return;
+    return;
   }
 })
 
-$(function () {
-    var cal_inicio = $('#panel_modal_fecha_inicio').closest(".date");
-    var cal_fin = $('#panel_modal_fecha_fin').closest(".date");
+var cal_inicio = $('#panel_modal_fecha_inicio').closest(".date");
+var cal_fin = $('#panel_modal_fecha_fin').closest(".date");
     //Inicializa el calendario de la fecha de inicio
     $(cal_inicio).datetimepicker({
       //locale: 'es',
@@ -358,5 +421,5 @@ $(function () {
       fecha = moment.max(fecha, fecha_min);
       $(cal_inicio).data("DateTimePicker").maxDate(fecha);
     });
-});
+}); // fin de funcíon wrapper
 </script>
