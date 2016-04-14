@@ -113,6 +113,8 @@ $(function() {
                 case "panel":
                   botones = set_botones_panel(node, $li);
                   break;
+                default:
+                  return;
               };
               if (botones != null) {
                 $li.find(".jqtree-element").prepend(botones);
@@ -148,6 +150,19 @@ $(function() {
 function set_botones_encuentro(node, $li) {
   var permisos = node.permisos_edicion;
   var btns_actividades = $("<div>", {class: "btns-actividades"});
+  if (($.inArray('editar como responsable', permisos) > -1) ||
+      ($.inArray('editar como super responsable', permisos) > -1)) {
+    var $titulo = $li.find(".jqtree-title");
+    var $a_titulo = $("<a>");
+    $a_titulo.append($titulo.html());
+    $a_titulo.attr('data-toggle', "modal");
+    $a_titulo.attr('data-operacion', "edicion");
+    $a_titulo.attr("data-id-actividad", node.id);
+    $a_titulo.attr('data-target', "#encuentro_modal");
+    $titulo.html("");
+    $titulo.append($a_titulo);
+  }
+
   if ($.inArray('agregar hijos', permisos) > -1) {
     var drop_agregar = $.parseHTML(
     '<div class="dropdown">' +
@@ -184,6 +199,15 @@ function set_botones_foro(node, $li) {
   var btns_actividades = $("<div>", {class: "btns-actividades"});
   if (($.inArray('editar como responsable', permisos) > -1) ||
       ($.inArray('editar como super responsable', permisos) > -1)) {
+    var $titulo = $li.find(".jqtree-title");
+    var $a_titulo = $("<a>");
+    $a_titulo.append($titulo.html());
+    $a_titulo.attr('data-toggle', "modal");
+    $a_titulo.attr('data-operacion', "edicion");
+    $a_titulo.attr("data-id-actividad", node.id);
+    $a_titulo.attr('data-target', "#foro_modal");
+    $titulo.html("");
+    $titulo.append($a_titulo);
     var boton_editar = $("<a>",
       {text:"Editar foro",
       class:"btn btn-default btn-sm btn-editar",
@@ -240,6 +264,15 @@ function set_botones_seminario(node, $li) {
 
   if (($.inArray('editar como responsable', permisos) > -1) ||
       ($.inArray('editar como super responsable', permisos) > -1)) {
+    var $titulo = $li.find(".jqtree-title");
+    var $a_titulo = $("<a>");
+    $a_titulo.append($titulo.html());
+    $a_titulo.attr('data-toggle', "modal");
+    $a_titulo.attr('data-operacion', "edicion");
+    $a_titulo.attr("data-id-actividad", node.id);
+    $a_titulo.attr('data-target', "#seminario_modal");
+    $titulo.html("");
+    $titulo.append($a_titulo);
     var boton_editar = $("<a>",
       {text:"Editar seminario",
       class:"btn btn-default btn-sm btn-editar",
@@ -305,6 +338,16 @@ function set_botones_panel(node, $li) {
 
   if (($.inArray('editar como responsable', permisos) > -1) ||
       ($.inArray('editar como super responsable', permisos) > -1)) {
+    var $titulo = $li.find(".jqtree-title");
+    var $a_titulo = $("<a>");
+    $a_titulo.append($titulo.html());
+    $a_titulo.attr('data-toggle', "modal");
+    $a_titulo.attr('data-operacion', "edicion");
+    $a_titulo.attr("data-id-actividad", node.id);
+    $a_titulo.attr('data-target', "#panel_modal");
+    $titulo.html("");
+    $titulo.append($a_titulo);
+
     $(boton_editar).attr("data-toggle", "modal")
     $(boton_editar).attr("data-target", "#panel_modal")
     $(boton_editar).attr("data-operacion", "edicion")

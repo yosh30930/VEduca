@@ -26,7 +26,8 @@ class InicioSesionView(View):
             return login(request, *args, template_name=template_name, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        return login(request, *args, **kwargs)
+        template_name = 'sesion/inicio_sesion.html'
+        return login(request, *args, template_name=template_name, **kwargs)
 
 
 @transaction.atomic

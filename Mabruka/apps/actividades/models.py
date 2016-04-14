@@ -1,10 +1,14 @@
 import datetime
 
-from django.db import models, transaction, IntegrityError
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.mail import EmailMessage
+from django.db import models, transaction, IntegrityError
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
+from django.template.loader import render_to_string
 
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -249,3 +253,25 @@ class Panel(ConLocacionYFecha):
         verbose_name_plural = "paneles"
 
 modelosActividades = [Encuentro, Foro, Seminario, Panel]
+
+
+def encuentro_responsables_cambiados(sender, instance, **kwargs):
+    # Sólo se ejecuta en el post_add y no en el pre_add
+    if kwargs['action'] != "post_add":
+        return
+    asunto = "Virtual Educa - Se te asignó como responsable"
+    remitente = "sainoba@gmail.com"
+    destinatarios = [responsable.email for responsable in  User.objects.filter(pk__in=kwargs['pk_set'])]
+    ctx = {
+        'nombre_actividad': instance.nombre,
+        'protocol': "http",
+        'domain': "127.0.0.1:8000/",
+        'site_name': "Virtual Educa",
+    }
+    mensaje = render_to_string("sesion/asignacion_responsable_correo.html", ctx)
+    EmailMessage(asunto, mensaje,
+                 to=destinatarios, from_email=remitente).send()
+
+
+m2m_changed.connect(
+    encuentro_responsables_cambiados, sender=Encuentro.responsables.through)

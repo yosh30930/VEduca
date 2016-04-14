@@ -1,8 +1,93 @@
 {% extends "sesion/base.html" %}
+{% load static from staticfiles %}
 
-{% block title %}Contraseña enviada exitosamente{% endblock %}
+{% block header%}
+{{ block.super }}
+    <style type="text/css">
+body {
+    background-color: white;
+}
+
+#loginbox {
+    margin-top: 30px;
+}
+
+#loginbox > div:first-child {
+    padding-bottom: 10px;
+}
+
+.iconmelon {
+    display: block;
+    margin: auto;
+}
+
+#form > div {
+    margin-bottom: 25px;
+}
+
+#form > div:last-child {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.panel {
+    background-color: transparent;
+}
+
+.panel-body {
+    background-color: rgba(2555,255,255,.3);
+}
+
+.iconmelon,
+.im {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: block;
+  fill: #525151;
+}
+
+.iconmelon:after,
+.im:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+</style>
+{% endblock %}
+
+{% block title %}Correo para recuperar tu usuario y/o contraseña enviado{% endblock %}
 
 {% block content %}
-<p>Si tienes una cuenta en el sistema se te envió instrucciones para reconfigurar tu contraseña al correo que proporcionaste.</p>
-<p>Deberías recibir un correo pronto.</p>
+{{ block.super }}
+<div id="loginbox" class="mainbox col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3">
+
+<div class="row">
+  <div class="iconmelon">
+    <img src="{% static 'img/logo-virtual-educa-institucional.png' %}">
+  </div>
+</div>
+
+<div class="panel panel-default" >
+  <div class="panel-heading">
+    <div class="panel-title text-center">Verifica tu correo electrónico</div>
+  </div>
+  <div class="panel-body">
+  <p>
+    Si cuentas con una cuenta en el sistema se te envió un correo con las instrucciones
+    para continuar el proceso
+  </p>
+  <div class="col-sm-12 controls text-center">
+    <a  href="/" class="btn btn-default">
+        <!--<i class="glyphicon glyphicon-log-in"></i>-->
+        Regresar
+    </a>
+  </div>
+
+  </div>
+</div>
 {% endblock %}

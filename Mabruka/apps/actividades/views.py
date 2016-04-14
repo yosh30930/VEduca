@@ -176,7 +176,6 @@ class EncuentroListView(generics.ListCreateAPIView):
                         ancestros = nodo.get_ancestors(include_self=True)
                         ancestro_raiz = ancestros.first()
                         actividad_raiz = ancestro_raiz.elemento
-                        print(actividad.nombre)
                         if type(actividad_raiz) == Encuentro:
                             encuentros_id.add(actividad_raiz.pk)
                         else:
@@ -380,7 +379,6 @@ class PanelDetailView(APIView):
     def get(self, request, id, format=None):
         panel = self.get_object(id)
         serializer = PanelSerializer(panel, context={'request': request})
-        print("$$data panel", serializer.data)
         return Response(serializer.data)
 
     def put(self, request, id, format=None):

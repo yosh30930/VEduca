@@ -1,15 +1,15 @@
 {% autoescape off %}
-Estás recibiendo este correo porque solicitaste una restauración de contraseña en {{ site_name }}.
+Estás recibiendo este correo porque solicitaste la recuperación de tu usuario y/o contraseña en {{ site_name }}.
 
-Ingresa a la liga siguiente e ingresa tu contraseña nueva:
+Este es tu usuario: {{ user.username }}
+
+En caso de querer recuperar tu contraseña ingresa a la liga siguiente:
 {% block reset_link %}
 {{ protocol }}://{{ domain }}{% url django.contrib.auth.views.password_reset_confirm uidb36=uid, token=token %}
 {% endblock %}
 
-Este es tu usuario, en caso de que lo hayas olvidado: {{ user.username }}
+¡Gracias por usar nuestro sitio!
 
-!Gracias por usar nuestro sitio¡
-
-El equipo {{ site_name }}.
+Atte. El equipo de {{ site_name }}.
 
 {% endautoescape %}

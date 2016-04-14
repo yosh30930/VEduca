@@ -17,13 +17,13 @@
 
 <style>
   #wrap {
-    width: 1100px;
+    width: 100%;
+    max-width: 1100px;
     margin: 0 auto;
   }
 
   #external-events {
-    float: left;
-    width: 250px;
+    width: 100%;
     padding: 0;
     border: 1px solid #ccc;
     background: #eee;
@@ -53,8 +53,7 @@
   }
 
   .calendar {
-    float: right;
-    width: 800px;
+    width: auto;
   }
 
   ul {
@@ -115,19 +114,21 @@
 {% include "actividades/modals/encuentro.html" %}
 {% include "actividades/modals/panel.html" %}
 <div id="popoverHiddenContent" style="display:none">
-  <span style="font-weight: bold">Hora Inicio: </span>
-  <span class="popover-hora-inicio-campo"></span><br>
-  <span style="font-weight: bold">Hora Fin: </span>
-  <span class="popover-hora-fin-campo"></span><br>
-  <span style="font-weight: bold">Espacio: </span>
+  <span style="font-weight: bold">Espacio: Sin espacio</span>
   <span class="popover-espacio-campo"></span><br>
   <button class="btn btn-default editar-btn" data-toggle="modal">Editar</button>
 </div>
 <div id='wrap'>
-  <div id='external-events'>
-    <div id="arbol-actividades"></div>
+  <div class="row">
+  <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+    <div id='external-events'>
+      <div id="arbol-actividades"></div>
+    </div>
   </div>
-  <div id='calendar' class="calendar"></div>
+  <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+    <div id='calendar' class="calendar"></div>
+  </div>
+  </div>
   <div style='clear:both'></div>
 
     <!--<div id='calendar-min' class="calendar"></div>
@@ -184,7 +185,9 @@
         updateEvent(event);
       },
       eventRender: function (event, element) {
+        /*Se le asigna un popover al evento*/
         $(element).attr("role", "button");
+        $(element).attr('tabindex', -1);
         $(element)
         .popover({
           title: event.objeto.nombre,
@@ -198,7 +201,7 @@
             return cont_html.html();
           },
           html: true,
-          placement: 'left',
+          placement: 'top',
           trigger: 'focus',
           container: '#calendar',
         })
@@ -216,7 +219,6 @@
             boton.attr("data-tipo-actividad","panel");
             popover.options.content = cont_html.html();*/
           });
-        $(element).attr('tabindex', -1);
       }
     });
 
@@ -323,8 +325,8 @@
         var actividad = event.objeto;
         var tipo = actividad.tipo;
         var id = actividad.id;
-        var start = event['start'].format();
-        var end = moment(event['end']).isValid() ? event['end'].format() : "null";
+        var start = event['start'].format("YYYY-MM-DD HH:MMZ");
+        var end = moment(event['end']).isValid() ? event['end'].format("YYYY-MM-DD HH:MMZ") : "null";
         $.post("/actualizar_actividad/" + tipo +"/"+ id +"/",{
           fecha_inicio: start,
           fecha_fin: end,
