@@ -74,7 +74,7 @@ body {
 
 <div class="panel panel-default" >
   <div class="panel-heading">
-    <div class="panel-title text-center">Escribe tu correo para recuperar tu nombre de usuario y/o contraseña</div>
+    <div class="panel-title text-center">Escriba su correo para recuperar su cuenta</div>
   </div>
   <div class="panel-body">
 
@@ -84,7 +84,7 @@ body {
   <div class="form-group {% if form.email.errors %} has-error {% endif %}">
     <label for="id_email">Correo electrónico</label>
     <div id="email-group" class="input-group">
-      <span class="input-group-addon">@</span>
+      <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
       {{ form.email }}
     </div>
     {% if form.email.errors %}
@@ -92,14 +92,14 @@ body {
     {% endif %}
   </div>
   <div class="col-sm-12 controls text-center">
-    <a  href="/" class="btn btn-default">
-        <!--<i class="glyphicon glyphicon-log-in"></i>-->
-        Regresar
-    </a>
     <button type="submit" href="#" class="btn btn-default">
         <!--<i class="glyphicon glyphicon-log-in"></i>-->
-        Continuar
+        Buscar
     </button>
+    <a  href="/" class="btn btn-default">
+        <!--<i class="glyphicon glyphicon-log-in"></i>-->
+        Cancelar
+    </a>
   </div>
 </form>
 

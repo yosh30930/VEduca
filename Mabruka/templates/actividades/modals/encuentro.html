@@ -1,6 +1,20 @@
 {% load static from staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
 <!-- Edición Encuentro Modal -->
+<style type="text/css">
+  .form-group.required .control-label:after {
+    content:"*";
+    color:red;
+  }
+  .label_obligatorio {
+    font-size: 10pt;
+    float: left;
+  }
+  .label_obligatorio:before {
+    content:"*";
+    color:red;
+  }
+</style>
 <div class="modal fade" id="encuentro_modal" tabindex="-1" role="dialog" aria-labelledby="encuentro_modal_label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -13,13 +27,13 @@
           <div class='uil-ring-css' style="margin: 0 auto"><div></div></div>
         </div>
         <form>
-          <div class="form-group">
+          <div class="form-group required">
             <label for="encuentro_modal_nombre" class="control-label">Nombre del Encuentro</label>
-            <input id="encuentro_modal_nombre" type="text" class="form-control" placeholder="Ejemplo: Encuentro Internacional 2016 Costa Rica">
+            <input id="encuentro_modal_nombre" type="text" class="form-control" placeholder="Ejemplo: Encuentro Internacional 2016 Costa Rica" required="required">
           </div>
           <div class="row">
             <div class='col-md-6'>
-              <div class="form-group">
+              <div class="form-group required">
                 <label for="encuentro_modal_fecha_inicio" class="control-label">Fecha de inicio</label>
                   <div class='input-group date'>
                     <input id='encuentro_modal_fecha_inicio' type='text' class="form-control" placeholder="Ejemplo: 23/02/2017" />
@@ -30,7 +44,7 @@
               </div>
             </div>
             <div class='col-md-6'>
-              <div class="form-group">
+              <div class="form-group required">
                 <label for="encuentro_modal_fecha_fin" class="control-label">Fecha de término</label>
                   <div class='input-group date'>
                     <input id='encuentro_modal_fecha_fin' type='text' class="form-control" placeholder="Ejemplo: 24/02/2017" />
@@ -42,15 +56,16 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="encuentro_modal_responsables" class="control-label">Responsables de programa</label>
+            <label for="encuentro_modal_responsables" class="control-label">Responsable(s) de programa</label>
             <select id="encuentro_modal_responsables" class="selectpicker form-control" data-live-search="true" multiple title="Sin responsables">
             </select>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+        <span class="label_obligatorio">Campos obligatorios</span>
         <button id="encuentro_modal_submit" type="button" class="btn btn-primary" ></button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
       </div>
     </div>
   </div>
@@ -133,13 +148,13 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
         });
       });
       // Se modifica el título del modal
-      $modal.find('.modal-title').text('Creación de encuentro');
+      $modal.find('.modal-title').text('Crear un Encuentro');
       // Se modifica el texto del botón submit
-      $boton_submit.text('Crear encuentro');
+      $boton_submit.text('Crear Encuentro');
       break;
     case 'edicion':
       // Se modifica el título del modal
-      $modal.find('.modal-title').text('Edición de encuentro');
+      $modal.find('.modal-title').text('Modificar Encuentro');
       // Se modifica el texto del botón submit
       $boton_submit.text('Guardar modificaciones');
       // Se pide la información del encuentro a modificar

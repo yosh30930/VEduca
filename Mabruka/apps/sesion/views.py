@@ -4,7 +4,7 @@ from django.views.generic import View
 from django.contrib.auth.views import login
 # from django.core.urlresolvers import reverse
 # Create your views here.
-from django.contrib.auth.models import User
+from apps.usuarios.models import Usuario
 from apps.actividades.models import Encuentro, Foro, Seminario, Panel, Espacio
 
 
@@ -12,10 +12,10 @@ class InicioSesionView(View):
     def get(self, request, *args, **kwargs):
         if len(Encuentro.objects.all()) == 0:
             ResetActividades()
-        if len(User.objects.all()) == 0:
-            print(len(User.objects.all()))
+        if len(Usuario.objects.all()) == 0:
+            print(len(Usuario.objects.all()))
             ResetUsuarios()
-            print(len(User.objects.all()))
+            print(len(Usuario.objects.all()))
         if len(Espacio.objects.all()) == 0:
             ResetEspacios()
         if request.user.is_authenticated():
@@ -66,16 +66,16 @@ def ResetActividades():
 
 
 def ResetUsuarios():
-    User.objects.all().delete()
-    User.objects.create_superuser('foo', email='sainoba@gmail.com', password='bar').save()
-    User.objects.create_user('Fernando Gamboa', email='mabruka1@mailinator.com', password='bar', is_staff=True).save()
-    User.objects.create_user('Elena García', email='mabruka2@mailinator.com', password='bar', is_staff=True).save()
-    User.objects.create_user('Pedro Rocha', email='mabruka3@mailinator.com', password='bar', is_staff=True).save()
-    User.objects.create_user('Juan Luis Valdés', email='mabruka4@mailinator.com', password='bar', is_staff=True).save()
-    User.objects.create_user('Julieta Palma', email='mabruka5@mailinator.com', password='bar', is_staff=True).save()
-    User.objects.create_user('Juan Manuel Valdés', email='mabruka6@mailinator.com', password='bar', is_staff=True).save()
-    User.objects.create_user('Luis Andrés Ochoa', email='mabruka7@mailinator.com', password='bar', is_staff=True).save()
-    User.objects.create_user('Alejandro Llovet', email='mabruka8@mailinator.com', password='bar', is_staff=True).save()
+    Usuario.objects.all().delete()
+    Usuario.objects.create_superuser('sainoba@gmail.com', 'Marco Nila', password='bar').save()
+    Usuario.objects.create_user('mabruka1@mailinator.com', 'Fernando Gamboa', password='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka2@mailinator.com', 'Elena García', password='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka3@mailinator.com', 'Pedro Rocha', password='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka4@mailinator.com', 'Juan Luis Valdés', password='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka5@mailinator.com', 'Julieta Palma', password='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka6@mailinator.com', 'Juan Manuel Valdés', password='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka7@mailinator.com', 'Luis Andrés Ochoa', password='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka8@mailinator.com', 'Alejandro Llovet', password='bar', is_staff=True).save()
 
 
 def ResetEspacios():

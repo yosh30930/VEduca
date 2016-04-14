@@ -42,6 +42,15 @@
   #tree1  ul li div span a {
     text-decoration: underline;
   }
+  #tree1 li:nth-child(odd){
+    background-color: #F2FBFF;
+  }
+  #tree1 li:nth-child(even){
+    background-color: white;
+  }
+  .btn-eliminar {
+    margin-left: 10px;
+  }
 </style>
 {% endblock %}
 
@@ -59,11 +68,9 @@
 
 <!-- Termina Modal -->
 {% if es_secretario %}
-<h4>
   <a data-toggle="modal" data-target="#encuentro_modal" data-operacion="creacion" href="#">
     <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Crear Encuentro
   </a>
-</h4>
 {% endif %}
 <div id="jstree_demo_div"></div>
 <div id="tree1"></div>
@@ -136,10 +143,18 @@
 
         var $boton_eliminacion = $("<a>",
           {text:"Eliminar",
-          class:"btn btn-default btn-md",
+          class:"btn btn-default btn-md btn-eliminar",
           href:"#"
         });
         $btns_actividades.append($boton_eliminacion);
+        // Botón para archivar el encuentro
+        var $boton_archivar = $("<a>",
+          {text:"Archivar",
+          class:"btn btn-default btn-md",
+                        //href:"/modificacion_encuentro/" + node.id + "/"
+                      });
+        $btns_actividades.append($boton_archivar);
+        // Botón para modificar el encuentro
         var $boton_modificacion = $("<a>",
           {text:"Modificar",
           class:"btn btn-default btn-md",

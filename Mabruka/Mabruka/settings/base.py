@@ -22,6 +22,7 @@ BASE_DIR = Path(__file__).ancestor(3)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '*!emde8!@kxl)-f7=#sc@vh#(t^(15-@mh^*xufk$)-m35$o!u'
 
+AUTH_USER_MODEL = 'usuarios.Usuario'
 
 # Application definition
 

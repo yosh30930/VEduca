@@ -2,10 +2,6 @@ from django.conf.urls import url
 from .views import (
     EspacioListView,
     InicioEncuentros,
-    ModificacionEncuentroView,
-    ModificacionForoView,
-    ModificacionSeminarioView,
-    ModificacionPanelView,
     EncuentroListView,
     EncuentroDetailView,
     ForoListView,
@@ -19,18 +15,6 @@ from .views import (
 
 urlpatterns = [
     url(r'^inicio/$', InicioEncuentros.as_view()),
-    url(
-        r'^modificacion_encuentro/(?P<id>\d+)/$',
-        ModificacionEncuentroView.as_view()),
-    url(
-        r'^modificacion_foro/(?P<id>\d+)/$',
-        ModificacionForoView.as_view()),
-    url(
-        r'^modificacion_seminario/(?P<id>\d+)/$',
-        ModificacionSeminarioView.as_view()),
-    url(
-        r'^modificacion_panel/(?P<id>\d+)/$',
-        ModificacionPanelView.as_view()),
     url(r'^espacios/(?P<encuentro_id>\d+)/$', EspacioListView.as_view(),
         name='espacio-list'),
     url(r'^encuentros/$', EncuentroListView.as_view(), name='encuentro-list'),

@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from .models import Usuario
 from django.http import Http404
 
 from drf_multiple_model.views import MultipleModelAPIView
@@ -17,9 +17,9 @@ class ResponsableListView(generics.ListCreateAPIView):
     Actualiza todos los usuarios (PUT)
     Elimina todos los usuarios en el sistema (DELETE)
     """
-    model = User
+    model = Usuario
     serializer_class = ResponsableSerializer
-    queryset = User.objects.all()
+    queryset = Usuario.objects.all()
 
     def post(self, request, format=None):
         data = dict()

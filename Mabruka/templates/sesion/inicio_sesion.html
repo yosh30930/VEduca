@@ -84,7 +84,7 @@ body {
 <form name="form" id="form" enctype="multipart/form-data" method="POST">
   {% csrf_token %}
   <div class="form-group">
-    <label for="id_username">Nombre de usuario</label>
+    <label for="id_username">Correo electrónico</label>
     <div id="username-group" class="input-group">
       <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
       {{ form.username }}
@@ -105,7 +105,7 @@ body {
     <div class="col-sm-12 controls text-center">
       <button type="submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-log-in"></i> Iniciar sesión</button>
       <br>
-      <a href="{% url 'restaura_contraseña' %}" class="need-help">¿Olvidaste tu usuario o contraseña?</a>
+      <a href="{% url 'restaura_contraseña' %}" class="need-help">¿Olvidaste tu contraseña?</a>
     </div>
   </div>
 </form>
@@ -115,7 +115,7 @@ body {
 <script type="text/javascript">
   $(document).ready(function(){
     $("input").addClass("form-control");
-    $("#username-group input").attr("placeholder", "Usuario");
+    $("#username-group input").attr("placeholder", "Correo");
     $("#password-group input").attr("placeholder", "Contraseña");
   });
 </script>

@@ -1,6 +1,6 @@
 import datetime
 
-from django.contrib.auth.models import User
+from apps.usuarios.models import Usuario
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -71,7 +71,7 @@ class Actividad(models.Model):
     nodos = GenericRelation(
         'Nodo', content_type_field='content_type',
         object_id_field='content_id')
-    responsables = models.ManyToManyField(User, blank=True)
+    # responsables = models.ManyToManyField(Usuario, blank=True)
     anotaciones = models.TextField(blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_edicion = models.DateTimeField(auto_now=True)
@@ -254,14 +254,14 @@ class Panel(ConLocacionYFecha):
 
 modelosActividades = [Encuentro, Foro, Seminario, Panel]
 
-
+"""
 def encuentro_responsables_cambiados(sender, instance, **kwargs):
     # Sólo se ejecuta en el post_add y no en el pre_add
     if kwargs['action'] != "post_add":
         return
     asunto = "Virtual Educa - Se te asignó como responsable"
     remitente = "sainoba@gmail.com"
-    destinatarios = [responsable.email for responsable in  User.objects.filter(pk__in=kwargs['pk_set'])]
+    destinatarios = [responsable.email for responsable in  Usuario.objects.filter(pk__in=kwargs['pk_set'])]
     ctx = {
         'nombre_actividad': instance.nombre,
         'protocol': "http",
@@ -275,3 +275,4 @@ def encuentro_responsables_cambiados(sender, instance, **kwargs):
 
 m2m_changed.connect(
     encuentro_responsables_cambiados, sender=Encuentro.responsables.through)
+"""
