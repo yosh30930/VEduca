@@ -28,8 +28,14 @@ DATABASES = {
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 # STATIC_ROOT = BASE_DIR.child('staticfiles')
-STATIC_ROOT = '/home/sainoba/webapps/mabruka_static/'
+STATIC_ROOT = BASE_DIR.child('staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (BASE_DIR.child('static'),)
 
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+# Configuración del correo
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'sainoba@gmail.com'
+EMAIL_HOST_PASSWORD = 'gphesueuhkjicisv'
+DEFAULT_FROM_EMAIL = 'sainoba@gmail.com'
