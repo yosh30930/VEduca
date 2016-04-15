@@ -426,6 +426,6 @@ class InicioEncuentros(LoginRequiredMixin, TemplateView):
         context = super(
             InicioEncuentros, self).get_context_data(**kwargs)
         user = self.request.user
-        if SecretarioGeneral.objects.filter(usuario=user):
+        if user.is_superuser or SecretarioGeneral.objects.filter(usuario=user):
             context['es_secretario'] = True
         return context

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from .serializersDRF import ResponsableSerializer, ParticipanteSerializer
 from apps.actividades.models import Encuentro
+from apps.actividades.models import Participante
 
 
 class ResponsableListView(generics.ListCreateAPIView):

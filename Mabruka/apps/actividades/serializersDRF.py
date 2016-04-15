@@ -101,6 +101,32 @@ class EncuentroSerializer(ActividadSerializer):
     tipo_str = "encuentro"
     modelo = Encuentro
 
+    def get_fields(self, *args, **kwargs):
+        fields = super(EncuentroSerializer, self).get_fields(*args, **kwargs)
+        request = self.context.get('request', None)
+        view = self.context.get('view', None)
+        # Hace todos los campos read-only hasta que se sepan los derechos
+        # del usuarios
+        for _, valor in fields.items():
+            valor.read_only = True
+        if (request and view and getattr(view, 'object', None) and
+                request.user.is_superuser):
+            pass
+        if (request is None or
+                request.user.is_anonymous() or
+                not request.user.is_active):
+            return fields
+        for llave, valor in fields.items():
+            if llave in ["id", "permisos_edicion", "tipo"]:
+                continue
+            valor.read_only = False
+        """if request and request.user:
+
+            fields['nombre'].read_only = True
+        fields['id'].read_only = True
+        del(fields["id_padre"])"""
+        return fields
+
     class Meta:
         model = Encuentro
         fields = ("nombre", "id",
