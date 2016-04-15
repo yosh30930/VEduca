@@ -3,7 +3,6 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from django.utils import timezone
-from django_countries.fields import CountryField
 
 
 class UserManager(BaseUserManager):
@@ -17,18 +16,19 @@ class UserManager(BaseUserManager):
                              is_superuser=is_superuser, fecha_registro=now,
                              **extra_fields)
         usuario.set_password(contrasena)
+        print("El usuario", extra_fields["nombres"], "tiene contraseña", contrasena)
         usuario.save(using=self._db)
         return usuario
 
-    def create_user(self, nombre_usuario, correo, contrasena=None,
+    def create_user(self, correo, contrasena=None, is_staff=False,
                     **extra_fields):
         return self._create_user(
-            nombre_usuario, correo, contrasena, False, False, **extra_fields)
+            correo, contrasena, is_staff, False, **extra_fields)
 
-    def create_superuser(self, nombre_usuario, correo, contrasena=None,
+    def create_superuser(self, correo, contrasena=None,
                          **extra_fields):
-        return self._create_user(nombre_usuario, correo, contrasena, True,
-                                 True, **extra_fields)
+        return self._create_user(
+            correo, contrasena, True, True, **extra_fields)
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):

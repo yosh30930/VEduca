@@ -6,7 +6,7 @@ from rest_framework import status, generics
 from rest_framework.response import Response
 
 from .serializersDRF import ResponsableSerializer, ParticipanteSerializer
-from apps.actividades.models import Encuentro, Participante
+from apps.actividades.models import Encuentro
 
 
 class ResponsableListView(generics.ListCreateAPIView):

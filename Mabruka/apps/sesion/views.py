@@ -67,15 +67,15 @@ def ResetActividades():
 
 def ResetUsuarios():
     Usuario.objects.all().delete()
-    Usuario.objects.create_superuser('sainoba@gmail.com', 'Marco Nila', password='bar').save()
-    Usuario.objects.create_user('mabruka1@mailinator.com', 'Fernando Gamboa', password='bar', is_staff=True).save()
-    Usuario.objects.create_user('mabruka2@mailinator.com', 'Elena García', password='bar', is_staff=True).save()
-    Usuario.objects.create_user('mabruka3@mailinator.com', 'Pedro Rocha', password='bar', is_staff=True).save()
-    Usuario.objects.create_user('mabruka4@mailinator.com', 'Juan Luis Valdés', password='bar', is_staff=True).save()
-    Usuario.objects.create_user('mabruka5@mailinator.com', 'Julieta Palma', password='bar', is_staff=True).save()
-    Usuario.objects.create_user('mabruka6@mailinator.com', 'Juan Manuel Valdés', password='bar', is_staff=True).save()
-    Usuario.objects.create_user('mabruka7@mailinator.com', 'Luis Andrés Ochoa', password='bar', is_staff=True).save()
-    Usuario.objects.create_user('mabruka8@mailinator.com', 'Alejandro Llovet', password='bar', is_staff=True).save()
+    Usuario.objects.create_superuser('sainoba@gmail.com', nombres='Marco Nila', contrasena='bar').save()
+    Usuario.objects.create_user('mabruka1@mailinator.com', nombres='Fernando Gamboa', contrasena='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka2@mailinator.com', nombres='Elena García', contrasena='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka3@mailinator.com', nombres='Pedro Rocha', contrasena='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka4@mailinator.com', nombres='Juan Luis Valdés', contrasena='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka5@mailinator.com', nombres='Julieta Palma', contrasena='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka6@mailinator.com', nombres='Juan Manuel Valdés', contrasena='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka7@mailinator.com', nombres='Luis Andrés Ochoa', contrasena='bar', is_staff=True).save()
+    Usuario.objects.create_user('mabruka8@mailinator.com', nombres='Alejandro Llovet', contrasena='bar', is_staff=True).save()
 
 
 def ResetEspacios():
