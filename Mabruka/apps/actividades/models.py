@@ -71,7 +71,7 @@ class Actividad(models.Model):
     nodos = GenericRelation(
         'Nodo', content_type_field='content_type',
         object_id_field='content_id')
-    # responsables = models.ManyToManyField(Usuario, blank=True)
+    responsables = models.ManyToManyField(Usuario, blank=True)
     anotaciones = models.TextField(blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_edicion = models.DateTimeField(auto_now=True)
@@ -241,7 +241,7 @@ class Seminario(Actividad):
 
 class Panel(ConLocacionYFecha):
     tipo = "panel"
-    intervienen = models.ManyToManyField('usuarios.Participante', blank=True)
+    #intervienen = models.ManyToManyField('usuarios.Participante', blank=True)
     coordinador = models.ForeignKey(
         'usuarios.Participante', models.SET_NULL, blank=True, null=True,
         related_name="coordiandor_panel")
