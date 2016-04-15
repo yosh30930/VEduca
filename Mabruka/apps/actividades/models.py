@@ -1,6 +1,5 @@
 import datetime
 
-from apps.usuarios.models import Usuario
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -10,9 +9,8 @@ from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
+from django_countries.fields import CountryField
 from mptt.models import MPTTModel, TreeForeignKey
-
-from apps.usuarios.models import SecretarioGeneral
 
 
 class Espacio(models.Model):
@@ -71,7 +69,7 @@ class Actividad(models.Model):
     nodos = GenericRelation(
         'Nodo', content_type_field='content_type',
         object_id_field='content_id')
-    responsables = models.ManyToManyField(Usuario, blank=True)
+    responsables = models.ManyToManyField('usuarios.Usuario', blank=True)
     anotaciones = models.TextField(blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_edicion = models.DateTimeField(auto_now=True)
@@ -241,12 +239,12 @@ class Seminario(Actividad):
 
 class Panel(ConLocacionYFecha):
     tipo = "panel"
-    #intervienen = models.ManyToManyField('usuarios.Participante', blank=True)
+    intervienen = models.ManyToManyField('Participante', blank=True)
     coordinador = models.ForeignKey(
-        'usuarios.Participante', models.SET_NULL, blank=True, null=True,
+        'Participante', models.SET_NULL, blank=True, null=True,
         related_name="coordiandor_panel")
     moderador = models.ForeignKey(
-        'usuarios.Participante', models.SET_NULL, blank=True, null=True,
+        'Participante', models.SET_NULL, blank=True, null=True,
         related_name="moderador_panel")
 
     class Meta:
@@ -276,3 +274,16 @@ def encuentro_responsables_cambiados(sender, instance, **kwargs):
 m2m_changed.connect(
     encuentro_responsables_cambiados, sender=Encuentro.responsables.through)
 """
+
+
+class Participante(models.Model):
+    """
+    Representan a los participantes de los encuentro, si este tiene asociado
+    un encuentro entonces sólo será recomendado en ese encuentro
+    """
+    nombre = models.CharField(max_length=100)
+    puesto = models.TextField()
+    pais = CountryField(blank=True, null=True)
+    encuentro = models.ForeignKey(
+        'Encuentro', blank=True, null=True,
+        on_delete=models.SET_NULL)

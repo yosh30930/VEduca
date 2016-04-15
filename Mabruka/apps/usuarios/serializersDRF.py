@@ -1,15 +1,14 @@
-from django.contrib.auth.models import User
-
 from django_countries import Countries
 from rest_framework import serializers
 
-from .models import Participante
+from apps.actividades.models import Participante
+from apps.usuarios.models import Usuario
 
 
 class ResponsableSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('id', 'username')
+        model = Usuario
+        fields = ('id', 'nombres')
 
 
 class SerializableCountryField(serializers.ChoiceField):

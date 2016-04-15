@@ -2,8 +2,8 @@ from django.db import models
 from django.core.mail import send_mail
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin)
-from django_countries.fields import CountryField
 from django.utils import timezone
+from django_countries.fields import CountryField
 
 
 class UserManager(BaseUserManager):
@@ -67,17 +67,4 @@ class SecretarioGeneral(models.Model):
     Indica los usuarios que tiene permisos del nivel de secretario
     general
     """
-    usuario = models.ForeignKey(Usuario, models.CASCADE)
-
-
-class Participante(models.Model):
-    """
-    Representan a los participantes de los encuentro, si este tiene asociado
-    un encuentro entonces sólo será recomendado en ese encuentro
-    """
-    nombre = models.CharField(max_length=100)
-    puesto = models.TextField()
-    pais = CountryField(blank=True, null=True)
-    encuentro = models.ForeignKey(
-        'actividades.Encuentro', blank=True, null=True,
-        on_delete=models.SET_NULL)
+    usuario = models.ForeignKey('Usuario', models.CASCADE)

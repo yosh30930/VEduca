@@ -14,8 +14,8 @@ from rest_framework.views import APIView
 from .serializersDRF import (
     EncuentroSerializer, ForoSerializer, SeminarioSerializer,
     PanelSerializer, EspacioSerializer)
-from .models import Encuentro, Foro, Seminario, Panel, Espacio
-from .models import modelosActividades
+from .models import (Encuentro, Foro, Seminario, Panel, Espacio,
+                     modelosActividades)
 from apps.usuarios.models import SecretarioGeneral
 
 modelo_dict = {
