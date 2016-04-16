@@ -8,8 +8,11 @@ https://docs.djangoproject.com/en/1.9/howto/deployment/wsgi/
 """
 
 import os
-import sys
+import signal
 import site
+import sys
+import time
+import traceback
 
 from django.core.wsgi import get_wsgi_application
 from whitenoise.django import DjangoWhiteNoise
@@ -26,13 +29,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Mabruka.settings.staging")
 
 activate_env = os.path.expanduser(
     "/home/sainoba/.virtualenvs/Mabruka/bin/activate_this.py")
-# execfile(activate_env, dict(__file__=activate_env))
+
 exec(compile(open(activate_env, "rb").read(), activate_env, 'exec'),
      dict(__file__=activate_env))
 
-import traceback
-import signal
-import time
 
 try:
     application = get_wsgi_application()
