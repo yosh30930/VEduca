@@ -28,7 +28,7 @@ activate_env = os.path.expanduser(
     "/home/sainoba/.virtualenvs/Mabruka/bin/activate_this.py")
 # execfile(activate_env, dict(__file__=activate_env))
 exec(compile(open(activate_env, "rb").read(), activate_env, 'exec'),
-     dict(__file__=activate_env), locals)
+     dict(__file__=activate_env))
 
 application = get_wsgi_application()
 application = DjangoWhiteNoise(application)
