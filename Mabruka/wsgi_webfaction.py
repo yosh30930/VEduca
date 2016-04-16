@@ -32,12 +32,13 @@ exec(compile(open(activate_env, "rb").read(), activate_env, 'exec'),
 
 import traceback
 import signal
+import time
 
 try:
     application = get_wsgi_application()
     application = DjangoWhiteNoise(application)
 except Exception:
-    print 'handling WSGI exception'
+    print('handling WSGI exception')
     # Error loading applications
     if 'mod_wsgi' in sys.modules:
         traceback.print_exc()
