@@ -5,9 +5,10 @@ from drf_multiple_model.views import MultipleModelAPIView
 from rest_framework import status, generics
 from rest_framework.response import Response
 
-from .serializersDRF import ResponsableSerializer, ParticipanteSerializer
+from .serializersDRF import ResponsableSerializer
+# from .serializersDRF import ParticipanteSerializer
 from apps.actividades.models import Encuentro
-from apps.actividades.models import Participante
+# from apps.actividades.models import Participante
 
 
 class ResponsableListView(generics.ListCreateAPIView):
@@ -25,14 +26,14 @@ class ResponsableListView(generics.ListCreateAPIView):
         data = dict()
         serializer = ResponsableSerializer(data=data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+"""
 
 class ParticipanteListView(MultipleModelAPIView):
-    """
+
     Regresa una lista de los participantes, si se epecifica
     el id de un encuentro se regresan 2 listas, los que son locales al encuentro
     con ese id y los que son globales.
-    """
+
 
     def get_queryList(self):
         participantes = Participante.objects.order_by('nombre')
@@ -52,3 +53,4 @@ class ParticipanteListView(MultipleModelAPIView):
             except Encuentro.ObjectDoesNotExist:
                 raise Http404
         return queryList
+"""

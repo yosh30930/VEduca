@@ -13,26 +13,6 @@ from django_countries.fields import CountryField
 from mptt.models import MPTTModel, TreeForeignKey
 
 
-class Espacio(models.Model):
-    """
-    Guarda los espacios disponibles en un encuentro para ser
-    asignado a alguna actividad.
-    """
-    nombre = models.CharField(max_length=300)
-    encuentro = models.ForeignKey(
-        'Encuentro', models.CASCADE)
-
-    def get_actividades(self):
-        lista_querys = []
-        relaciones = self._meta.related_objects
-        for relacion in relaciones:
-            Modelo = relacion.related_model
-            query_result = Modelo.objects.filter(espacio=self)
-            if query_result:  # Si hubo al menos un resultado
-                lista_querys.append(query_result)
-        return lista_querys
-
-
 class Nodo(MPTTModel):
     """
     Estructura que hace posible ver a las actividades como un árbol.
@@ -102,6 +82,9 @@ class Actividad(models.Model):
             super(Actividad, self).save(*args, **kwargs)
 
     def es_responsable(self, usuario, checar_padres=False):
+        """
+        Verifica si un usuario es responsable de la actividad
+        """
         if not usuario.is_authenticated():
             return False
         if self.responsables.filter(pk=usuario.pk):
@@ -111,6 +94,11 @@ class Actividad(models.Model):
         return False
 
     def es_super_responsable(self, usuario):
+        """
+        Verifica si un usuario es responsable de alguna actividad
+        con jerarquía superior, es responsable de programa o
+        tiene privilegios de secretario general
+        """
         if not usuario.is_authenticated():
             return False
         if (usuario.is_superuser or
@@ -133,9 +121,23 @@ class Actividad(models.Model):
         return False
 
     def puede_ver_actividad(self, usuario):
+        """
+        Verifica si un usuario puede o no ver una actividad.
+        Un usuario puede ver una actividad si tiene nivel de secretario
+        general, si es responsable del programa o si tiene derecho de
+        ver/modificar alguna actividad que sea descendiente de la que se
+        está verificando.
+        """
         return self.puede_ver_nodo(usuario)
 
     def puede_ver_nodo(self, usuario):
+        """
+        Verifica si un usuario puede o no ver un nodo.
+        Un usuario puede ver un nodo si tiene nivel de secretario
+        general, si es responsable del programa o si tiene derecho de
+        ver/modificar algún nodo que sea descendiente de la que se
+        está verificando.
+        """
         nodo_actividad = self.nodos.first()
         if not usuario.is_authenticated():
             return True
@@ -170,82 +172,67 @@ class Actividad(models.Model):
 
     class Meta:
         abstract = True
-
-
-class ConFecha(Actividad):
-    """
-    Base de las actividades que pueden ser programadas a alguna hora
-    en específico
-    """
-    fecha_inicio = models.DateTimeField(auto_now_add=True)
-    fecha_fin = models.DateTimeField(null=True)
-
-    class Meta:
-        abstract = True
-
-
-class ConLocacion(Actividad):
-    espacio = models.ForeignKey(
-        'Espacio', models.SET_NULL, blank=True, null=True)
-
-    class Meta:
-        abstract = True
-
-
-class ConLocacionYFecha(ConLocacion):
-    fecha_inicio = models.DateTimeField(null=True, blank=True)
-    fecha_fin = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        abstract = True
+        ordering = ["fecha_creacion", "nombre"]
 
 
 class Encuentro(Actividad):
+    tipo = "encuentro"
     fecha_inicio = models.DateField(default=datetime.date.today)
     fecha_fin = models.DateField(default=datetime.date.today)
-    tipo = "encuentro"
+    pais = models.CharField(max_length=100, blank=True)
+    ciudad = models.CharField(max_length=100, blank=True)
+
+    def save(self, *args, **kwargs):
+        es_creacion = self.pk is None
+        # Se obtiene el elemento padre
+        nombres_sedes = None
+        if "sedes" in kwargs:
+            nombres_sedes = kwargs.pop("sedes", None)
+            nombres_sedes = [x.lower() for x in nombres_sedes]
+        try:
+            with transaction.atomic():
+                super(Encuentro, self).save(*args, **kwargs)
+                if es_creacion and (nombres_sedes is not None):
+                    for nombre_sede in nombres_sedes:
+                        sede = Sede(nombre=nombre_sede, encuentro=self)
+                        sede.save()
+                elif nombres_sedes is not None:
+                    sedes = Sede.objects.filter(encuentro=self)
+                    sedes.exclude(nombre__in=nombres_sedes).delete()
+                    for nombre_sede in nombres_sedes:
+                        if len(sedes.filter(nombre=nombre_sede)) == 0:
+                            sede = Sede(nombre=nombre_sede, encuentro=self)
+                            sede.save()
+        except IntegrityError as e:
+            raise e
 
 
 class Foro(Actividad):
-    nombre_corto = models.CharField(max_length=60, blank=True)
-    descripcion = models.TextField(default="", blank=True)
     tipo = "foro"
+    nombre_corto = models.CharField(max_length=200, blank=True)
+    descripcion = models.TextField(default="", blank=True)
 
 
-class Taller(ConLocacionYFecha):
+class Taller(Actividad):
     tipo = "taller"
+    #espacio = models.ForeignKey(
+    #    'Espacio', models.SET_NULL, blank=True, null=True)
+    duracion = models.PositiveSmallIntegerField(default=3*60)
 
     class Meta:
         verbose_name_plural = "talleres"
 
 
-class Reunion(ConLocacionYFecha):
-    tipo = "reunion"
-
-    class Meta:
-        verbose_name_plural = "reuniones"
-
-
-class Sesion(Actividad):
-    tipo = "sesion"
-
-    class Meta:
-        verbose_name_plural = "sesiones"
-
-
 class Seminario(Actividad):
     tipo = "seminario"
+    nombre_corto = models.CharField(max_length=60, blank=True)
 
 
-class Panel(ConLocacionYFecha):
+class Panel(Actividad):
     tipo = "panel"
-    intervienen = models.ManyToManyField('Participante', blank=True)
-    coordinador = models.ForeignKey(
-        'Participante', models.SET_NULL, blank=True, null=True,
-        related_name="coordiandor_panel")
-    moderador = models.ForeignKey(
-        'Participante', models.SET_NULL, blank=True, null=True,
-        related_name="moderador_panel")
+    #espacio = models.ForeignKey(
+    #    'Espacio', models.SET_NULL, blank=True, null=True)
+    duracion = models.PositiveSmallIntegerField(default=1*60)
 
     class Meta:
         verbose_name_plural = "paneles"
@@ -275,15 +262,64 @@ m2m_changed.connect(
     encuentro_responsables_cambiados, sender=Encuentro.responsables.through)
 """
 
-
+"""
 class Participante(models.Model):
-    """
+
     Representan a los participantes de los encuentro, si este tiene asociado
     un encuentro entonces sólo será recomendado en ese encuentro
-    """
+
     nombre = models.CharField(max_length=100)
     puesto = models.TextField()
     pais = CountryField(blank=True, null=True)
     encuentro = models.ForeignKey(
         'Encuentro', blank=True, null=True,
         on_delete=models.SET_NULL)
+"""
+
+
+class Institucion(models.Model):
+    pass
+
+"""
+class ParticipanteActividad(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_id = models.PositiveIntegerField()
+    actividad = GenericForeignKey('content_type', 'content_id')
+    rol = models.ForeignKey('Rol', models.CASCADE)
+    participante = models.ForeignKey('Usuario', models.CASCADE)
+    institucion = models.ForeignKey(
+        'Institucion', blank=True, null=True,
+        on_delete=models.SET_NULL)
+
+
+class Rol(models.Model):
+    nombre = models.CharField(max_length=100)
+    checa_conflictos = models.BooleanField(default=True)
+"""
+
+
+class Sede(models.Model):
+    """
+    Lugar donde se encuentran los espacios disponibles para las distintas
+    actividades de un encuentro, como talleres, palenes, magistrales, etc...
+    """
+    nombre = models.CharField(max_length=100)
+    encuentro = models.ForeignKey('Encuentro', models.CASCADE)
+
+
+class Espacio(models.Model):
+    """
+    Espacios disponibles en un encuentro para ser asignado a alguna actividad.
+    """
+    nombre = models.CharField(max_length=100)
+    sede = models.ForeignKey('Sede', models.CASCADE)
+
+    def get_actividades(self):
+        lista_querys = []
+        relaciones = self._meta.related_objects
+        for relacion in relaciones:
+            Modelo = relacion.related_model
+            query_result = Modelo.objects.filter(espacio=self)
+            if query_result:  # Si hubo al menos un resultado
+                lista_querys.append(query_result)
+        return lista_querys

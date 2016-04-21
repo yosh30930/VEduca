@@ -2,17 +2,25 @@ from django.apps import apps
 
 from rest_framework import serializers
 
-from .models import Encuentro, Foro, Seminario, Panel, Espacio
+from .models import Encuentro, Foro, Seminario, Panel, Espacio, Sede
 from apps.usuarios.models import SecretarioGeneral
 
 
 class EspacioSerializer(serializers.ModelSerializer):
+    """
+    Se encarga de hacer la conversión entre objetos tipo Espacio en formato
+    Python a objetos json y visceversa.
+    """
     class Meta:
         model = Espacio
         fields = ("nombre", "id")
 
 
 class ActividadSerializer(serializers.ModelSerializer):
+    """
+    Se encarga de hacer la conversión entre objetos de tipo Actividad en
+    formato Python a objetos en formato json y visceversa.
+    """
     modelo = None
     tipo = serializers.SerializerMethodField('tipo_modelo')
     tipo_padre = serializers.SerializerMethodField('tipo_padre_fun')
@@ -20,7 +28,7 @@ class ActividadSerializer(serializers.ModelSerializer):
     permisos_edicion = serializers.SerializerMethodField(
         'permisos_edicion_fun')
 
-    def create(self, validated_data):
+    def create(self, validated_data, *args, **kwargs):
         # Se remueven los responsables de los datos
         responsables = []
         if 'responsables' in validated_data:
@@ -93,13 +101,31 @@ class ActividadSerializer(serializers.ModelSerializer):
             permisos_edicion.append("agregar hijos")
         return permisos_edicion
 
+    class Meta:
+        model = Encuentro
+        fields = ("tipo", "tipo_padre", "id_padre", "permisos_edicion")
+
+
+class SedeField(serializers.Field):
+    def to_internal_value(self, data):
+        return data
+
+    def get_attribute(self, obj):
+        sedes = Sede.objects.filter(encuentro=obj)
+        return [sede.nombre for sede in sedes]
+
+    def to_representation(self, obj):
+        return obj
+
 
 class EncuentroSerializer(ActividadSerializer):
     """
-    Serializa todos los Encuentros
+    Se encarga de hacer la conversión entre objetos de tipo Encuentro en
+    formato Python a objetos en formato json y visceversa.
     """
     tipo_str = "encuentro"
     modelo = Encuentro
+    sedes = SedeField()
 
     def get_fields(self, *args, **kwargs):
         fields = super(EncuentroSerializer, self).get_fields(*args, **kwargs)
@@ -127,16 +153,27 @@ class EncuentroSerializer(ActividadSerializer):
         del(fields["id_padre"])"""
         return fields
 
+    def update(self, instance, validated_data):
+        instance = super(EncuentroSerializer, self).update(
+            instance, validated_data)
+        save_kwargs = dict()
+        if "sedes" in validated_data:
+            save_kwargs["sedes"] = validated_data["sedes"]
+        instance.save(**save_kwargs)
+        return instance
+
     class Meta:
         model = Encuentro
         fields = ("nombre", "id",
                   "fecha_inicio", "fecha_fin", "tipo", "responsables",
-                  "tipo_padre", "id_padre", "permisos_edicion")
+                  "tipo_padre", "id_padre", "permisos_edicion", "pais",
+                  "ciudad", "sedes",)
 
 
 class ForoSerializer(ActividadSerializer):
     """
-    Serializa todos los Foros
+    Se encarga de hacer la conversión entre objetos de tipo Foro en
+    formato Python a objetos en formato json y visceversa.
     """
     tipo_str = "foro"
     modelo = Foro
@@ -150,7 +187,8 @@ class ForoSerializer(ActividadSerializer):
 
 class SeminarioSerializer(ActividadSerializer):
     """
-    Serializa todos los Seminarios
+    Se encarga de hacer la conversión entre objetos de tipo Seminario en
+    formato Python a objetos en formato json y visceversa.
     """
     tipo_str = "seminario"
     modelo = Seminario
@@ -163,7 +201,8 @@ class SeminarioSerializer(ActividadSerializer):
 
 class PanelSerializer(ActividadSerializer):
     """
-    Serializa todos los Paneles
+    Se encarga de hacer la conversión entre objetos de tipo Panel en
+    formato Python a objetos en formato json y visceversa.
     """
     tipo_str = "panel"
     modelo = Panel

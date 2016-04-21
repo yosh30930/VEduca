@@ -1,7 +1,7 @@
 from django_countries import Countries
 from rest_framework import serializers
 
-from apps.actividades.models import Participante
+# from apps.actividades.models import Participante
 from apps.usuarios.models import Usuario
 
 
@@ -20,10 +20,11 @@ class SerializableCountryField(serializers.ChoiceField):
             return '' # normally here it would return value. which is Country(u'') and not serialiable
         return super(SerializableCountryField, self).to_representation(value)
 
-
+"""
 class ParticipanteSerializer(serializers.ModelSerializer):
     pais = SerializableCountryField(allow_blank=True)
 
     class Meta:
         model = Participante
         fields = ('id', 'nombre', 'pais')
+"""

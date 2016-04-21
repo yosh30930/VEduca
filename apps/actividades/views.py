@@ -1,6 +1,7 @@
 import copy
 
 # from django.contrib.auth.models import User
+import apps
 from django.http import Http404
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
@@ -13,7 +14,7 @@ from rest_framework.views import APIView
 
 from .serializersDRF import (
     EncuentroSerializer, ForoSerializer, SeminarioSerializer,
-    PanelSerializer, EspacioSerializer)
+    PanelSerializer, EspacioSerializer, ActividadSerializer)
 from .models import (Encuentro, Foro, Seminario, Panel, Espacio,
                      modelosActividades)
 from apps.usuarios.models import SecretarioGeneral
@@ -21,6 +22,103 @@ from apps.usuarios.models import SecretarioGeneral
 modelo_dict = {
     'encuentro': Encuentro, 'foro': Foro, 'seminario': Seminario,
     'panel': Panel}
+
+
+def get_model(nombre_str):
+    Modelo = apps.get_model(
+        app_label='actividades', model_name=nombre_str)
+    return Modelo
+
+
+class ActividadListView(generics.ListCreateAPIView):
+    """
+    Regresa una lista de todos los **encuentros** (GET)
+
+    Agrega un nuevo encuentro (POST)
+
+    Actualiza todos los encuentros (PUT)
+
+    Elimina todos los encuentros en el sistema (DELETE)
+    """
+    serializer_class = ActividadSerializer
+
+    def post(self, request, format=None):
+        serializer = ActividadSerializer(
+            data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+#           #publish_data(channel='notification', data=data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        queryset = Actividad.objects.none()
+        if not user.is_authenticated():
+            queryset = Actividad.objects.all()
+        elif tiene_permiso_absoluto(user):
+            queryset = Actividad.objects.all()
+        else:
+            encuentros_id = set()
+            for Modelo in modelosActividades:
+                query_results = []
+                try:
+                    query_result = Modelo.objects.filter(responsables=user)
+                    query_results.append(query_result)
+                except Modelo.FieldDoesNotExist:
+                    continue
+                for query_result in query_results:
+                    for actividad in query_result:
+                        nodo = actividad.nodos.first()
+                        ancestros = nodo.get_ancestors(include_self=True)
+                        ancestro_raiz = ancestros.first()
+                        actividad_raiz = ancestro_raiz.elemento
+                        if type(actividad_raiz) == Actividad:
+                            encuentros_id.add(actividad_raiz.pk)
+                        else:
+                            continue
+                        # encuentros_id.add()
+            queryset = Actividad.objects.filter(pk__in=encuentros_id)
+        # return Purchase.objects.filter(purchaser=user)
+        return queryset.order_by('-fecha_creacion')
+
+
+class ActividadDetailView(APIView):
+    """
+    Regresa un encuentro (GET)
+    Actualiza un encuentro (PUT)
+    Elimina un encuentro (DELETE)
+    """
+
+    def get_object(self, id):
+        try:
+            return Actividad.objects.get(pk=id)
+        except Actividad.DoesNotExist:
+            raise Http404
+
+    def get(self, request, id, format=None):
+        encuentro = self.get_object(id)
+        serializer = ActividadSerializer(
+            encuentro, context={'request': request})
+        return Response(serializer.data)
+
+    def put(self, request, id, format=None):
+        encuentro = self.get_object(id)
+        serializer = ActividadSerializer(
+            encuentro, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        encuentro = self.get_object(id)
+        encuentro.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class EspacioListView(generics.ListCreateAPIView):
@@ -139,10 +237,13 @@ class EncuentroListView(generics.ListCreateAPIView):
     serializer_class = EncuentroSerializer
 
     def post(self, request, format=None):
+        serializer_kwargs = dict()
+        if "sedes" in request.data:
+            serializer_kwargs["sedes"] = request.data.pop("sedes")
         serializer = EncuentroSerializer(
             data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(**serializer_kwargs)
 #           #publish_data(channel='notification', data=data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -204,10 +305,13 @@ class EncuentroDetailView(APIView):
 
     def put(self, request, id, format=None):
         encuentro = self.get_object(id)
+        serializer_kwargs = dict()
+        if "sedes" in request.data:
+            serializer_kwargs["sedes"] = request.data["sedes"]
         serializer = EncuentroSerializer(
             encuentro, data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(**serializer_kwargs)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -55,9 +55,28 @@
               </div>
             </div>
           </div>
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="encuentro_modal_pais" class="control-label">País</label>
+                <input id="encuentro_modal_pais" type="text" class="form-control" placeholder="Ejemplo: México">
+              </div>
+            </div>
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="encuentro_modal_ciudad" class="control-label">Ciudad</label>
+                <input id="encuentro_modal_ciudad" type="text" class="form-control" placeholder="Ejemplo: Monterrey">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="encuentro_modal_sedes" class="control-label">Sede(s) del encuentro</label>
+            <select id="encuentro_modal_sedes" class="form-control" multiple>
+            </select>
+          </div>
           <div class="form-group">
             <label for="encuentro_modal_responsables" class="control-label">Responsable(s) de programa</label>
-            <select id="encuentro_modal_responsables" class="selectpicker form-control" data-live-search="true" multiple title="Sin responsables">
+            <select id="encuentro_modal_responsables" class="form-control" multiple>
             </select>
           </div>
         </form>
@@ -84,6 +103,9 @@ function crea_alert(){
 
 $(function(){
 
+var resp_selectize = null;
+var sedes_selectize = null;
+
 // Limpia el modal del encuentro
 function reset_modal(){
   var $modal = $("#encuentro_modal");
@@ -98,9 +120,24 @@ function reset_modal(){
   $cal_inicio.data("DateTimePicker").date(null);
   $cal_fin.data("DateTimePicker").date(null);
   // Se hace el reset de los responsables del encuentro
-  var $selector = $modal.find('#encuentro_modal_responsables');
-  $selector.find('option').remove();
-  $selector.selectpicker('refresh');
+  if (resp_selectize === null) {
+    var $selector = $modal.find('#encuentro_modal_responsables').selectize({
+      plugins: ['remove_button'],
+      openOnFocus: false,
+    });
+    resp_selectize = $selector[0].selectize;
+  }
+  resp_selectize.clearOptions();
+  // Se hace el reset de las sedes del encuentro
+  if (sedes_selectize === null) {
+    var $selector = $modal.find('#encuentro_modal_sedes').selectize({
+      plugins: ['remove_button'],
+      create: true,
+      openOnFocus: false,
+    });
+    sedes_selectize = $selector[0].selectize;
+  }
+  sedes_selectize.clearOptions();
   // Se oculta el form
   $modal_body.find("form").hide();
   // Se desbloqué el botón submit
@@ -108,6 +145,26 @@ function reset_modal(){
   $boton_submit.attr('disabled', 'disabled');
   // Se muestra la imágen de carga
   $modal_body.find(".modal-cargando-div").show();
+};
+
+function rellena_responsables(selectize, responsables, id_seleccionados) {
+  id_seleccionados = typeof id_seleccionados !== 'undefined' ? id_seleccionados : [];
+  $(responsables).each(function (idx, responsable) {
+    var selected = false;
+    $(id_seleccionados).each(function (i, resp_id) {
+      if (responsable.id == resp_id) {
+        selected = true;
+      }
+    })
+    selectize.addOption({
+      text: responsable.nombres,
+      value: responsable.id,
+      selected: selected,
+    });
+    if (selected) {
+      selectize.setValue(selectize.getValue().concat([responsable.id]), true)
+    }
+  });
 }
 
 // Se ejecuta cuando se muestra el modal
@@ -134,14 +191,8 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
       // Se ejecuta cuando se obtiene la lista de responsables
       prom_resp.done(function(responsables) {
         // Se el selector con los responsables
-        $(responsables).each(function (idx, responsable) {
-          $selector.append($('<option>', {
-            text: responsable.username,
-            value: responsable.id,
-            selected: false,
-          }));
-        });
-        $selector.selectpicker('refresh');
+        rellena_responsables(resp_selectize, responsables);
+        resp_selectize.refreshOptions(false);
         // Se muestra una animación de carga en lo que se cargan los responsables
         $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
           $form.fadeIn(400);
@@ -165,30 +216,28 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
         // res___ =  [ data, statusText, jqXHR ]
         var encuentro = res_enc[0];
         var responsables = res_resp[0];
+        $(encuentro.sedes).each(function (idx, nombre_sede) {
+          sedes_selectize.addOption({
+            text: _.capitalize(nombre_sede),
+            value: nombre_sede,
+            selected: true,
+          })
+        });
+        sedes_selectize.setValue(encuentro.sedes, false);
+        sedes_selectize.refreshOptions();
         // Rellena el campo del nombre del encuentro
         $modal.find('#encuentro_modal_nombre').val(encuentro.nombre);
+        // Rellena el campo del país del encuentro
+        $modal.find('#encuentro_modal_pais').val(encuentro.pais);
+        // Rellena el campo de la ciudad del encuentro
+        $modal.find('#encuentro_modal_ciudad').val(encuentro.ciudad);
         // Llena la lista de responsables marcando los que son
         // responsables del encuentro
-        $(responsables).each(function (idx, responsable) {
-          var selected = false;
-          $(encuentro.responsables).each(function (i, resp_id) {
-            if (responsable.id == resp_id) {
-              selected = true;
-            }
-          })
-          // Se agregan los responsables a la lista de responsables
-          $selector.append($('<option>', {
-            text: responsable.username,
-            value: responsable.id,
-            selected: selected,
-          }));
-          // Se muestra una animación de carga en lo que se carga el encuentro
-          $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
-            $form.fadeIn(400);
-          });
+        rellena_responsables(resp_selectize, responsables, encuentro.responsables);
+        // Se muestra una animación de carga en lo que se carga el encuentro
+        $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+          $form.fadeIn(400);
         });
-        // Se actualiza el selector con los responsables agregados
-        $selector.selectpicker('refresh');
         // Se obtienen las fechas del encuentro, si es que las tiene
         var fecha_fin = moment(encuentro.fecha_fin);
         var fecha_inicio = moment(encuentro.fecha_inicio);
@@ -237,6 +286,9 @@ $('#encuentro_modal_nombre').on('input', function (event) {
 });
 
 $('#encuentro_modal_submit').on('click', function (event) {
+  var $modal = $("#encuentro_modal");
+  var $modal_body = $modal.find(".modal-body");
+  $modal_body.find(".alert").alert('close');
   // Boton submit que contiene información para crear/editar el encuentro
   var $boton_submit = $(this);
   // Se bloquea el botón en lo que se procesa la creación/edición
@@ -246,9 +298,13 @@ $('#encuentro_modal_submit').on('click', function (event) {
     'nombre': $('#encuentro_modal_nombre').val().trim(),
     'fecha_inicio': moment($('#encuentro_modal_fecha_inicio').val(), "DD/MM/YYYY").format("YYYY-MM-DD"),
     'fecha_fin': moment($('#encuentro_modal_fecha_fin').val(), "DD/MM/YYYY").format("YYYY-MM-DD"),
-    'responsables': $("#encuentro_modal_responsables").val()
+    'responsables': $("#encuentro_modal_responsables").val(),
+    'sedes': $("#encuentro_modal_sedes").val(),
+    'pais': $("#encuentro_modal_pais").val(),
+    'ciudad': $("#encuentro_modal_ciudad").val(),
   };
   if(data.responsables === null){data.responsables=[]}
+  if(data.sedes === null){data.sedes=[]}
   var operacion = $boton_submit.data('operacion');
   switch (operacion) {
     case 'creacion':
