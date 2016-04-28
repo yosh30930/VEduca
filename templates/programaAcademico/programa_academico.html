@@ -53,7 +53,8 @@
 <script type="text/javascript">
 $(function() {
     $('#arbol-actividades').tree({
-        autoOpen: true,
+        autoOpen: 1,
+        saveState: true,
         dataUrl:  function(node) {
             var data = {};
             var url = '';
@@ -67,6 +68,7 @@ $(function() {
             return {url: url, data: data};
        },
         dataFilter: function(data) {
+            console.log(data);
             if (data['nombre']) {
               var nodo = data;
               nodo['label'] = nodo['nombre'] + " ";
@@ -77,7 +79,8 @@ $(function() {
             $(data).each(function (index, obj) {
               var nombre_categoria = Object.keys(obj)[0];
               var nodo_categoria = {
-                label: _.capitalize(nombre_categoria),
+                tipo: nombre_categoria,
+                label: _.capitalize(nombre_categoria) + " (" + obj[nombre_categoria].length + ")",
                 children: []};
               $(obj[nombre_categoria]).each(function(index, nodo){
                 //console.log('nodo', nodo);
@@ -107,11 +110,20 @@ $(function() {
                 case "foro":
                   botones = set_botones_foro(node, $li);
                   break;
+                case "foros":
+                  botones = set_botones_foros(node, $li);
+                  break;
                 case "seminario":
                   botones = set_botones_seminario(node, $li);
                   break;
+                case "seminarios":
+                  botones = set_botones_seminarios(node, $li);
+                  break;
                 case "panel":
                   botones = set_botones_panel(node, $li);
+                  break;
+                case "paneles":
+                  botones = set_botones_paneles(node, $li);
                   break;
                 default:
                   return;
@@ -162,34 +174,45 @@ function set_botones_encuentro(node, $li) {
     $titulo.html("");
     $titulo.append($a_titulo);
   }
+  return btns_actividades;
+};
 
+function set_botones_foros(node, $li) {
+  var btns_actividades = $("<div>", {class: "btns-actividades"});
+  var permisos = node.parent.permisos_edicion;
   if ($.inArray('agregar hijos', permisos) > -1) {
-    var drop_agregar = $.parseHTML(
-    '<div class="dropdown">' +
-      '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
-        'Agregar una actividad' +
-        '<span class="caret"></span>' +
-      '</button>' +
-      '<ul class="dropdown-menu"></ul>'+
-    '</div>'
-    );
-    var drop_menu = $(drop_agregar).find(".dropdown-menu");
-    var li = $.parseHTML(
-      '<li><a href="#" data-toggle="modal" data-target="#foro_modal" data-operacion="creacion" >Foro</a></li>');
-    $(li).find("a").attr("data-id-actividad", node.id),
-    $(li).find("a").attr("data-tipo-padre", node.tipo),
-    $(drop_menu).append(li);
-    var li = $.parseHTML(
-      '<li><a href="#" data-toggle="modal" data-target="#plenaria_modal" data-operacion="creacion" >Plenaria</a></li>');
-    $(li).find("a").attr("data-id-actividad", node.id),
-    $(li).find("a").attr("data-tipo-padre", node.tipo),
-    $(drop_menu).append(li);
-    var li = $.parseHTML(
-      '<li><a href="#" data-toggle="modal" data-target="#taller_modal" data-operacion="creacion" >Taller</a></li>');
-    $(li).find("a").attr("data-id-actividad", node.id),
-    $(li).find("a").attr("data-tipo-padre", node.tipo),
-    $(drop_menu).append(li);
-    $(btns_actividades).append(drop_agregar);
+    $(btns_actividades).append($("<div style=clear:right></div>"));
+    var boton_agregar = $("<a>",
+      {text:"Agregar un Foro",
+      class:"btn btn-default btn-sm btn-agregar",
+      href: "#"
+    });
+    $(boton_agregar).attr("data-toggle", "modal")
+    $(boton_agregar).attr("data-target", "#foro_modal")
+    $(boton_agregar).attr("data-operacion", "creacion")
+    $(boton_agregar).attr("data-id-actividad", node.parent.id),
+    $(boton_agregar).attr("data-tipo-padre", node.parent.tipo),
+    $(btns_actividades).append(boton_agregar);
+  }
+  return btns_actividades;
+};
+
+function set_botones_seminarios(node, $li) {
+  var btns_actividades = $("<div>", {class: "btns-actividades"});
+  var permisos = node.parent.permisos_edicion;
+  if ($.inArray('agregar hijos', permisos) > -1) {
+    $(btns_actividades).append($("<div style=clear:right></div>"));
+    var boton_agregar = $("<a>",
+      {text:"Agregar un Seminario",
+      class:"btn btn-default btn-sm btn-agregar",
+      href: "#"
+    });
+    $(boton_agregar).attr("data-toggle", "modal")
+    $(boton_agregar).attr("data-target", "#seminario_modal")
+    $(boton_agregar).attr("data-operacion", "creacion")
+    $(boton_agregar).attr("data-id-actividad", node.parent.id),
+    $(boton_agregar).attr("data-tipo-padre", node.parent.tipo),
+    $(btns_actividades).append(boton_agregar);
   }
   return btns_actividades;
 };
@@ -197,6 +220,14 @@ function set_botones_encuentro(node, $li) {
 function set_botones_foro(node, $li) {
   var permisos = node.permisos_edicion;
   var btns_actividades = $("<div>", {class: "btns-actividades"});
+  if ($.inArray('eliminar', permisos) > -1) {
+    var boton_eliminar = $("<a>",
+      {text:"Eliminar Foro",
+      class:"btn btn-default btn-sm btn-editar",
+      href: "#"
+    });
+    $(btns_actividades).append(boton_eliminar);
+  }
   if (($.inArray('editar como responsable', permisos) > -1) ||
       ($.inArray('editar como super responsable', permisos) > -1)) {
     var $titulo = $li.find(".jqtree-title");
@@ -209,7 +240,7 @@ function set_botones_foro(node, $li) {
     $titulo.html("");
     $titulo.append($a_titulo);
     var boton_editar = $("<a>",
-      {text:"Editar foro",
+      {text:"Editar Foro",
       class:"btn btn-default btn-sm btn-editar",
       href: "#"
     });
@@ -221,32 +252,10 @@ function set_botones_foro(node, $li) {
 
   }
 
-  if ($.inArray('eliminar', permisos) > -1) {
-    var boton_eliminar = $("<a>",
-      {text:"Eliminar foro",
-      class:"btn btn-default btn-sm btn-editar",
-      href: "#"
-    });
-    $(btns_actividades).append(boton_eliminar);
-  }
   //$(boton_editar).attr("data-toggle", "modal")
   //$(boton_editar).attr("data-target", "#foro_modal")
   //$(boton_editar).attr("data-operacion", "edicion")
   //$(boton_editar).attr("data-id-actividad", node.id);
-  if ($.inArray('agregar hijos', permisos) > -1) {
-    $(btns_actividades).append($("<div style=clear:right></div>"));
-    var boton_agregar = $("<a>",
-      {text:"Agregar un seminario",
-      class:"btn btn-default btn-sm btn-editar",
-      href: "#"
-    });
-    $(boton_agregar).attr("data-toggle", "modal")
-    $(boton_agregar).attr("data-target", "#seminario_modal")
-    $(boton_agregar).attr("data-operacion", "creacion")
-    $(boton_agregar).attr("data-id-actividad", node.id),
-    $(boton_agregar).attr("data-tipo-padre", node.tipo),
-    $(btns_actividades).append(boton_agregar);
-  }
   return btns_actividades;
 }
 
@@ -255,7 +264,7 @@ function set_botones_seminario(node, $li) {
   var btns_actividades = $("<div>", {class: "btns-actividades"});
   if ($.inArray('eliminar', permisos) > -1) {
     var boton_eliminar = $("<a>",
-      {text:"Eliminar seminario",
+      {text:"Eliminar Seminario",
       class:"btn btn-default btn-sm btn-editar",
       href: "#"
     });
@@ -274,7 +283,7 @@ function set_botones_seminario(node, $li) {
     $titulo.html("");
     $titulo.append($a_titulo);
     var boton_editar = $("<a>",
-      {text:"Editar seminario",
+      {text:"Editar Seminario",
       class:"btn btn-default btn-sm btn-editar",
       href: "#"
     });
@@ -285,36 +294,6 @@ function set_botones_seminario(node, $li) {
     $(btns_actividades).append(boton_editar);
   }
 
-
-  if ($.inArray('agregar hijos', permisos) > -1) {
-    $(btns_actividades).append($("<div style=clear:right></div>"));
-    var drop_agregar = $.parseHTML(
-    '<div class="dropdown">' +
-      '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">' +
-        'Agregar una actividad' +
-        '<span class="caret"></span>' +
-      '</button>' +
-      '<ul class="dropdown-menu"></ul>'+
-    '</div>'
-    );
-    var drop_menu = $(drop_agregar).find(".dropdown-menu");
-    var li = $.parseHTML(
-      '<li><a href="#" data-toggle="modal" data-target="#panel_modal" data-operacion="creacion" >Panel</a></li>');
-    $(li).find("a").attr("data-id-actividad", node.id),
-    $(li).find("a").attr("data-tipo-padre", node.tipo),
-    $(drop_menu).append(li);
-    var li = $.parseHTML(
-      '<li><a href="#" data-toggle="modal" data-target="#mesa_redonda_modal" data-operacion="creacion" >Mesa redonda</a></li>');
-    $(li).find("a").attr("data-id-actividad", node.id),
-    $(li).find("a").attr("data-tipo-padre", node.tipo),
-    $(drop_menu).append(li);
-    var li = $.parseHTML(
-      '<li><a href="#" data-toggle="modal" data-target="#ponencia_modal" data-operacion="creacion" >Ponencia</a></li>');
-    $(li).find("a").attr("data-id-actividad", node.id),
-    $(li).find("a").attr("data-tipo-padre", node.tipo),
-    $(drop_menu).append(li);
-    $(btns_actividades).append(drop_agregar);
-  }
   return btns_actividades;
 }
 
@@ -323,7 +302,7 @@ function set_botones_panel(node, $li) {
   var btns_actividades = $("<div>", {class: "btns-actividades"});
   if ($.inArray('eliminar', permisos) > -1) {
     var boton_eliminar = $("<a>",
-      {text:"Eliminar panel",
+      {text:"Eliminar Panel",
       class:"btn btn-default btn-sm btn-editar",
       href: "#"
     });
@@ -331,7 +310,7 @@ function set_botones_panel(node, $li) {
   }
 
   var boton_editar = $("<a>",
-    {text:"Editar panel",
+    {text:"Editar Panel",
     class:"btn btn-default btn-sm btn-editar",
     href: "#"
   });

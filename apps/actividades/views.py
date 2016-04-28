@@ -239,10 +239,11 @@ class EncuentroListView(generics.ListCreateAPIView):
     def post(self, request, format=None):
         serializer_kwargs = dict()
         if "sedes" in request.data:
-            serializer_kwargs["sedes"] = request.data.pop("sedes")
+            serializer_kwargs["sedes"] = request.data["sedes"]
         serializer = EncuentroSerializer(
             data=request.data, context={'request': request})
         if serializer.is_valid():
+            print("Post", serializer_kwargs)
             serializer.save(**serializer_kwargs)
 #           #publish_data(channel='notification', data=data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

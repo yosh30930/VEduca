@@ -1,12 +1,63 @@
+{% load static from staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
+<!-- Edición Encuentro Modal -->
+<style type="text/css">
+  .form-group.required .control-label:after {
+    content:"*";
+    color:red;
+  }
+  .label_obligatorio {
+    font-size: 10pt;
+    float: left;
+  }
+  .label_obligatorio:before {
+    content:"*";
+    color:red;
+  }
+  .modal-info {
+    display: none;
+    text-align: center;
+    z-index: 10;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255, 0.9);
+    font-size: 15pt;
+  }
+  .modal-info > div{
+    margin-top: 50px;
+  }
+  .modal-status-img{
+    width: 200px;
+  }
+</style>
 <!-- Edición Foro Modal -->
 <div class="modal fade" id="foro_modal" tabindex="-1" role="dialog" aria-labelledby="foro_modal_label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
+      <div class="modal-info">
+        <div class="modal-info-cargando">
+          <div class="uil-ring-css modal-status-img" style="margin: 0 auto"><div></div></div>
+          <p>Cargando</p>
+        </div>
+        <div class="modal-info-exito">
+          <img class="modal-status-img" src="{% static 'img/mark.svg' %}">
+          <p>La operación se ha realizado con éxito</p>
+        </div>
+        <div class="modal-info-error">
+          <img class="modal-status-img" src="{% static 'img/error.svg' %}">
+          <p>¡Hubo un problema al intentar realizar la acción! Recargue la página y vuelva a intentarlo</p>
+          <button class="btn btn-default" data-dismiss="modal">Regresar</button>
+        </div>
+      </div>
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="foro_modal_label">Título ___ de Foro</h4>
       </div>
       <div class="modal-body">
+        <div class="modal-cargando-div">
+          <div class='uil-ring-css' style="margin: 0 auto"><div></div></div>
+        </div>
         <form>
           <div class="form-group">
             <label for="foro_modal_nombre" class="control-label">Nombre del Foro</label>
@@ -22,7 +73,7 @@
           </div>
           <div class="form-group">
             <label for="foro_modal_responsables" class="control-label">Responsables del Foro</label>
-            <select id="foro_modal_responsables" class="selectpicker form-control" data-live-search="true" multiple title="Sin responsables">
+            <select id="foro_modal_responsables" class="form-control" multiple title="Sin responsables">
             </select>
           </div>
         </form>
@@ -36,17 +87,60 @@
 </div>
 
 <script type="text/javascript">
+$(function(){
 
-function crea_alert(){
-   var alert = $.parseHTML(
-        '<div class="alert alert-dismissible" role="alert">' +
-          '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-          '<span class ="mensaje_alert"></span>' +
-        '</div>')
-  return alert;
+var resp_selectize = null;
+
+// Limpia el modal del encuentro
+function reset_modal(){
+  var $modal = $("#foro_modal");
+  var $modal_body = $modal.find(".modal-body");
+  //Oculta el estatus del modal
+  $modal.find(".modal-info").css('display', 'none');
+  // Se hace el reset del nombre del encuentro
+  $modal.find('#foro_modal_nombre').val("");
+  $modal.find('#foro_modal_nombre_corto').val("");
+  $modal.find('#foro_modal_descripcion').val("");
+  // Se hace el reset de los responsables del encuentro
+  if (resp_selectize === null) {
+    var $selector = $modal.find('#foro_modal_responsables').selectize({
+      plugins: ['remove_button'],
+      openOnFocus: false,
+    });
+    resp_selectize = $selector[0].selectize;
+  }
+  resp_selectize.clearOptions();
+  // Se oculta el form
+  $modal_body.find("form").hide();
+  // Se desbloqué el botón submit
+  var $boton_submit = $modal.find('#foro_modal_submit');
+  $boton_submit.attr('disabled', 'disabled');
+  // Se muestra la imágen de carga
+  $modal_body.find(".modal-cargando-div").show();
+};
+
+function rellena_responsables(selectize, responsables, id_seleccionados) {
+  id_seleccionados = typeof id_seleccionados !== 'undefined' ? id_seleccionados : [];
+  $(responsables).each(function (idx, responsable) {
+    var selected = false;
+    $(id_seleccionados).each(function (i, resp_id) {
+      if (responsable.id == resp_id) {
+        selected = true;
+      }
+    })
+    selectize.addOption({
+      text: responsable.nombres,
+      value: responsable.id,
+      selected: selected,
+    });
+    if (selected) {
+      selectize.setValue(selectize.getValue().concat([responsable.id]), true)
+    }
+  });
 }
 
 $('#foro_modal').on('show.bs.modal', function (event) {
+  reset_modal();
   //Botón que accionó el modal
   var button = $(event.relatedTarget);
   //Operación a realizar (creación o edición)
@@ -55,59 +149,48 @@ $('#foro_modal').on('show.bs.modal', function (event) {
   //Si la operación es 'creación' es el id del padre
   //Si la operación es 'ecición' es el id de foro
   var id = button.data('id-actividad');
-  var modal = $(this);
+  var $modal = $(this);
+  var $form = $modal.find(".modal-content form");
   //Se pide una lista de los responsables disponibles
   var prom_resp = $.get('/responsables/');
 
-  var boton_submit = modal.find('#foro_modal_submit');
+  var boton_submit = $modal.find('#foro_modal_submit');
   boton_submit.data('operacion', operacion);
   boton_submit.data('id-actividad', id);
   boton_submit.removeAttr('disabled');
-  var selector = $(modal.find('#foro_modal_responsables'));
+  var selector = $modal.find('#foro_modal_responsables');
   selector.find('option').remove();
   switch (operacion) {
     case 'creacion':
       prom_resp.done(function(responsables) {
-        $(responsables).each(function (idx, responsable) {
-          var selected = false;
-          selector.append($('<option>', {
-            text: responsable.username,
-            value: responsable.id,
-            selected: selected,
-          }));
+        // Se el selector con los responsables
+        rellena_responsables(resp_selectize, responsables);
+        resp_selectize.refreshOptions(false);
+        // Se muestra una animación de carga en lo que se cargan los responsables
+        $('#foro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+          $form.fadeIn(400);
         });
-        selector.selectpicker('refresh');
       });
-      modal.find('.modal-title').text('Creación de Foro');
+      $modal.find('.modal-title').text('Creación de Foro');
       boton_submit.text('Crear Foro');
       var tipo_padre = button.data('tipo-padre');
       boton_submit.data('tipo-padre', tipo_padre);
       break;
     case 'edicion':
-      modal.find('.modal-title').text('Edición de Foro');
+      $modal.find('.modal-title').text('Edición de Foro');
       boton_submit.text('Guardar modificaciones');
       var prom_for = $.get('/foros/'+ id +'/');
       $.when(prom_for, prom_resp).done(function(res_pos, res_resp) {
         var foro = res_pos[0];
         var responsables = res_resp[0];
-        modal.find('#foro_modal_nombre').val(foro.nombre);
-        modal.find('#foro_modal_nombre_corto').val(foro.nombre_corto);
-        modal.find('#foro_modal_descripcion').val(foro.descripcion);
-        modal.find("#foro_modal_responsables").val(foro.responsables);
-        $(responsables).each(function (idx, responsable) {
-          var selected = false;
-          $(foro.responsables).each(function (i, resp_id) {
-            if (responsable.id == resp_id) {
-              selected = true;
-            }
-          })
-          selector.append($('<option>', {
-            text: responsable.username,
-            value: responsable.id,
-            selected: selected,
-          }));
+        $modal.find('#foro_modal_nombre').val(foro.nombre);
+        $modal.find('#foro_modal_nombre_corto').val(foro.nombre_corto);
+        $modal.find('#foro_modal_descripcion').val(foro.descripcion);
+        rellena_responsables(resp_selectize, responsables, foro.responsables);
+        // Se muestra una animación de carga en lo que se carga el encuentro
+        $('#foro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+          $form.fadeIn(400);
         });
-        selector.selectpicker('refresh');
       });
       break;
     default: //Evita que se abra el modal
@@ -116,7 +199,31 @@ $('#foro_modal').on('show.bs.modal', function (event) {
   // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
   // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 });
+
+function verifica_inputs() {
+  $modal = $("#foro_modal");
+  $modal_body = $modal.find(".modal-body");
+  $boton_submit = $modal.find("#foro_modal_submit");
+  var son_validos = true;
+  // Verifica nombre del foro
+  if ($("#foro_modal_nombre").val().trim() === "") { son_validos = false;};
+  // Bloquea el botón submit si faltan datos
+  if (son_validos) {
+    $boton_submit.removeAttr('disabled', 'disabled');
+  }else {
+    $boton_submit.attr('disabled', 'disabled');
+  }
+};
+
+$('#foro_modal_nombre').on('input', function (event) {
+  verifica_inputs();
+});
+
 $('#foro_modal_submit').on('click', function (event) {
+  var $modal = $("#foro_modal");
+  $modal.find(".modal-info>div").hide();
+  $modal.find(".modal-info").css('display', 'block');
+  $modal.find(".modal-info .modal-info-cargando").show();
   var button = $(this); // Button that triggered the modal
   button.attr('disabled', 'disabled');
   var operacion = button.data('operacion');
@@ -143,14 +250,18 @@ $('#foro_modal_submit').on('click', function (event) {
       promesa
       .fail(function(data) {
         console.log(data);
+        var $modal = $("#foro_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-error").show();
       })
       .done(function(data){
         $(document).trigger( "actividadCreada", data);
-        var alert = crea_alert();
-        $(alert).addClass("alert-success");
-        var mensaje = $(alert).find('.mensaje_alert');
-        mensaje.text("Foro creado exitosamente!!!");
-        $("#foro_modal").find(".modal-body").append(alert);
+        var $modal = $("#foro_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-exito").show();
+        setTimeout(function(){$("#foro_modal").modal('hide')}, 3000);
       })
       .always(function(data) {
         console.log(data);
@@ -167,15 +278,18 @@ $('#foro_modal_submit').on('click', function (event) {
       promesa
       .fail(function(data) {
         console.log(data);
+        var $modal = $("#foro_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-error").show();
       })
       .done(function(data){
         $(document).trigger( "actividadModificada", data);
-        var alert = crea_alert();
-        $(alert).addClass("alert-success");
-        var mensaje = $(alert).find('.mensaje_alert');
-        mensaje.text("Foro modificado exitosamente!!!");
-        $("#foro_modal").find(".modal-body").append(alert);
-        button.removeAttr('disabled');
+        var $modal = $("#foro_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-exito").show();
+        setTimeout(function(){$("#foro_modal").modal('hide')}, 3000);
       })
       .always(function(data) {
         console.log(data);
@@ -185,4 +299,5 @@ $('#foro_modal_submit').on('click', function (event) {
       return;
   }
 });
+});//Fin de función wrapper
 </script>

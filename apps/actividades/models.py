@@ -9,7 +9,6 @@ from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
-from django_countries.fields import CountryField
 from mptt.models import MPTTModel, TreeForeignKey
 
 
@@ -49,7 +48,7 @@ class Actividad(models.Model):
     nodos = GenericRelation(
         'Nodo', content_type_field='content_type',
         object_id_field='content_id')
-    responsables = models.ManyToManyField('usuarios.Usuario', blank=True)
+    responsables = models.ManyToManyField('usuarios.Persona', blank=True)
     anotaciones = models.TextField(blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_edicion = models.DateTimeField(auto_now=True)
@@ -215,9 +214,36 @@ class Foro(Actividad):
 
 class Taller(Actividad):
     tipo = "taller"
-    #espacio = models.ForeignKey(
-    #    'Espacio', models.SET_NULL, blank=True, null=True)
-    duracion = models.PositiveSmallIntegerField(default=3*60)
+    fecha = models.DateTimeField(null=True, blank=True)
+    duracion_mins = models.PositiveSmallIntegerField(default=180)
+    publico_objetivo = models.CharField(max_length=200, blank=True)
+    espacio = models.ForeignKey(
+        'Espacio', models.SET_NULL, blank=True, null=True)
+    """
+    organizan: compañía, institucion
+    a cargo de persona
+    ##
+    organiza institucion
+    coordina persona, institucion
+    imparten personas,
+    ##"""
+
+    class Meta:
+        verbose_name_plural = "talleres"
+
+
+class Reunion(Actividad):
+    tipo = "reunión"
+    fecha = models.DateTimeField(null=True, blank=True)
+    duracion_mins = models.PositiveSmallIntegerField(default=180)
+    espacio = models.ForeignKey(
+        'Espacio', models.SET_NULL, blank=True, null=True)
+    tipo_asistencia = models.CharField(max_length=200, blank=True)
+    """
+    Auspicioan:
+    Organizan: compañía, institucion
+    Coordinan:
+    """
 
     class Meta:
         verbose_name_plural = "talleres"
@@ -226,16 +252,44 @@ class Taller(Actividad):
 class Seminario(Actividad):
     tipo = "seminario"
     nombre_corto = models.CharField(max_length=60, blank=True)
+    # fecha_tentativa = models.DateField(null=True, blank=True)
+    # hora_tentativa = models.TimeField(null=True, blank=True)
+
+
+class PresentacionPonencia(Actividad):
+    tipo = "presentación de ponencia"
+    fecha = models.DateTimeField(null=True, blank=True)
+    duracion_mins = models.PositiveSmallIntegerField(default=60)
+    orden = models.PositiveSmallIntegerField()
+
+
+class SesionEspecial(Actividad):
+    tipo = "sesión especial"
+    fecha = models.DateTimeField(null=True, blank=True)
+    duracion_mins = models.PositiveSmallIntegerField(default=60)
+    orden = models.PositiveSmallIntegerField()
+
+
+class OtraActividadSeminario(Actividad):
+    tipo = "otra actividad de seminario"
+    fecha = models.DateTimeField(null=True, blank=True)
+    duracion_mins = models.PositiveSmallIntegerField(default=60)
+    orden = models.PositiveSmallIntegerField()
 
 
 class Panel(Actividad):
     tipo = "panel"
+    nombre_corto = models.CharField(max_length=200, blank=True)
     #espacio = models.ForeignKey(
     #    'Espacio', models.SET_NULL, blank=True, null=True)
+    fecha = models.DateTimeField(null=True, blank=True)
     duracion = models.PositiveSmallIntegerField(default=1*60)
+    orden = models.PositiveSmallIntegerField()
 
     class Meta:
         verbose_name_plural = "paneles"
+
+
 
 modelosActividades = [Encuentro, Foro, Seminario, Panel]
 
@@ -313,12 +367,15 @@ class Espacio(models.Model):
     """
     nombre = models.CharField(max_length=100)
     sede = models.ForeignKey('Sede', models.CASCADE)
+    cupo = models.PositiveIntegerField(null=True, blank=True)
 
     def get_actividades(self):
         lista_querys = []
         relaciones = self._meta.related_objects
         for relacion in relaciones:
-            Modelo = relacion.related_model
+            Modelo = getattr(relacion, 'related_model', None)
+            if Modelo is None or (not isinstance(Modelo, Actividad)):
+                continue
             query_result = Modelo.objects.filter(espacio=self)
             if query_result:  # Si hubo al menos un resultado
                 lista_querys.append(query_result)

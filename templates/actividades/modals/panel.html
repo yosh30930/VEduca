@@ -1,10 +1,56 @@
-<!-- Edición Panel Modal -->
 {% load static from staticfiles %}
-{% load countries %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
+<!-- Edición Encuentro Modal -->
+<style type="text/css">
+  .form-group.required .control-label:after {
+    content:"*";
+    color:red;
+  }
+  .label_obligatorio {
+    font-size: 10pt;
+    float: left;
+  }
+  .label_obligatorio:before {
+    content:"*";
+    color:red;
+  }
+  .modal-info {
+    display: none;
+    text-align: center;
+    z-index: 10;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255, 0.9);
+    font-size: 15pt;
+  }
+  .modal-info > div{
+    margin-top: 50px;
+  }
+  .modal-status-img{
+    width: 200px;
+  }
+</style>
+<!-- Edición Panel Modal -->
 <link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
 <div class="modal fade" id="panel_modal" tabindex="-1" role="dialog" aria-labelledby="panel_modal_label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
+      <div class="modal-info">
+        <div class="modal-info-cargando">
+          <div class="uil-ring-css modal-status-img" style="margin: 0 auto"><div></div></div>
+          <p>Cargando</p>
+        </div>
+        <div class="modal-info-exito">
+          <img class="modal-status-img" src="{% static 'img/mark.svg' %}">
+          <p>La operación se ha realizado con éxito</p>
+        </div>
+        <div class="modal-info-error">
+          <img class="modal-status-img" src="{% static 'img/error.svg' %}">
+          <p>¡Hubo un problema al intentar realizar la acción! Recargue la página y vuelva a intentarlo</p>
+          <button class="btn btn-default" data-dismiss="modal">Regresar</button>
+        </div>
+      </div>
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="panel_modal_label">Título ___ de Panel</h4>
@@ -79,20 +125,11 @@
 <script type="text/javascript">
 $(function(){// inicio de funcíon wrapper
 
-  function crea_alert(){
-   var alert = $.parseHTML(
-    '<div class="alert alert-dismissible" role="alert">' +
-    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-    '<span class ="mensaje_alert"></span>' +
-    '</div>')
-   return alert;
- }
-
- function reset_modal(){
+function reset_modal(){
   var $modal = $("#panel_modal");
   var $modal_body = $modal.find(".modal-body");
-  // Se cierran las alertas anteriores
-  $modal_body.find(".alert").alert('close');
+  //Oculta el estatus del modal
+  $modal.find(".modal-info").css('display', 'none');
   // Se hace el reset del nombre del encuentro
   $modal.find('#panel_modal_nombre').val("");
   // Se hace el reset de las fechas del encuentro
@@ -100,10 +137,6 @@ $(function(){// inicio de funcíon wrapper
   var $cal_fin = $modal.find('#panel_modal_fecha_fin').closest(".date");
   $cal_inicio.data("DateTimePicker").date(null);
   $cal_fin.data("DateTimePicker").date(null);
-  // Se hace el reset de los responsables del encuentro
-  var $selector = $modal.find('#panel_modal_responsables');
-  $selector.find('option').remove();
-  $selector.selectpicker('refresh');
   // Se oculta el form
   $modal_body.find("form").hide();
   // Se desbloqué el botón submit
@@ -296,7 +329,31 @@ break;
   // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
   // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 });
+
+function verifica_inputs() {
+  $modal = $("#panel_modal");
+  $modal_body = $modal.find(".modal-body");
+  $boton_submit = $modal.find("#panel_modal_submit");
+  var son_validos = true;
+  // Verifica nombre del foro
+  if ($("#panel_modal_nombre").val().trim() === "") { son_validos = false;};
+  // Bloquea el botón submit si faltan datos
+  if (son_validos) {
+    $boton_submit.removeAttr('disabled', 'disabled');
+  }else {
+    $boton_submit.attr('disabled', 'disabled');
+  }
+};
+
+$('#panel_modal_nombre').on('input', function (event) {
+  verifica_inputs();
+});
+
 $('#panel_modal_submit').on('click', function (event) {
+  var $modal = $("#foro_modal");
+  $modal.find(".modal-info>div").hide();
+  $modal.find(".modal-info").css('display', 'block');
+  $modal.find(".modal-info .modal-info-cargando").show();
   var $modal_body = $("#panel_modal .modal-body");
   // Se cierran las alertas anteriores
   $modal_body.find(".alert").alert('close');
@@ -329,14 +386,18 @@ $('#panel_modal_submit').on('click', function (event) {
     promesa
     .fail(function(data) {
       console.log(data);
+        var $modal = $("#panel_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-error").show();
     })
     .done(function(data){
       $(document).trigger( "actividadCreada", data);
-      var alert = crea_alert();
-      $(alert).addClass("alert-success");
-      var mensaje = $(alert).find('.mensaje_alert');
-      mensaje.text("Panel creado exitosamente!!!");
-      $("#panel_modal").find(".modal-body").append(alert);
+        var $modal = $("#panel_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-exito").show();
+        setTimeout(function(){$("#panel_modal").modal('hide')}, 3000);
     })
     .always(function(data) {
       console.log(data);
@@ -353,15 +414,18 @@ $('#panel_modal_submit').on('click', function (event) {
     promesa
     .fail(function(data) {
       console.log(data);
+        var $modal = $("#panel_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-error").show();
     })
     .done(function(data){
       $(document).trigger( "actividadModificada", data);
-      var alert = crea_alert();
-      $(alert).addClass("alert-success");
-      var mensaje = $(alert).find('.mensaje_alert');
-      mensaje.text("Panel modificado exitosamente!!!");
-      $("#panel_modal").find(".modal-body").append(alert);
-      button.removeAttr('disabled');
+        var $modal = $("#panel_modal");
+        $modal.find(".modal-info>div").hide();
+        $modal.find(".modal-info").css('display', 'block');
+        $modal.find(".modal-info .modal-info-exito").show();
+        setTimeout(function(){$("#panel_modal").modal('hide')}, 3000);
     })
     .always(function(data) {
       console.log(data);
@@ -374,52 +438,52 @@ $('#panel_modal_submit').on('click', function (event) {
 
 var cal_inicio = $('#panel_modal_fecha_inicio').closest(".date");
 var cal_fin = $('#panel_modal_fecha_fin').closest(".date");
-    //Inicializa el calendario de la fecha de inicio
-    $(cal_inicio).datetimepicker({
-      //locale: 'es',
-      format: 'DD/MM/YYYY HH:mm',
-      toolbarPlacement: 'bottom',
-      focusOnShow: false,
-      sideBySide: true,
-      showClear: true,
-      useCurrent: false,
+//Inicializa el calendario de la fecha de inicio
+$(cal_inicio).datetimepicker({
+  //locale: 'es',
+  format: 'DD/MM/YYYY HH:mm',
+  toolbarPlacement: 'bottom',
+  focusOnShow: false,
+  sideBySide: true,
+  showClear: true,
+  useCurrent: false,
 
-    });
-    //Inicializa el calendario de la fecha de fin
-    $(cal_fin).datetimepicker({
-      //locale: 'es',
-      format: 'DD/MM/YYYY HH:mm',
-      toolbarPlacement: 'bottom',
-      focusOnShow: false,
-      sideBySide: true,
-      showClear: true,
-      useCurrent: false, //Important! See issue #1075
-    });
-    //Se asegura que la fecha de inicio no se mayor
-    //a la fecha de fin
-    $(cal_inicio).on("dp.change", function (e) {
-      return; //@@pendiente
-      if(e.date == null){return;};
-      var fecha_min = $(cal_inicio).data("DateTimePicker").minDate();
-      var fecha_max = $(cal_fin).data("DateTimePicker").maxDate();
-      if (!(fecha_min && fecha_max)) {return;}
-      if (e.date === false || e.date == null || !moment(e.date).isValid()) {return;}
-      var fecha = moment.max(e.date, fecha_min);
-      fecha = moment.min(fecha, fecha_max);
-      $(cal_fin).data("DateTimePicker").minDate(fecha);
-    });
-    //Se asegura que la fecha de fin no se menor
-    //a la fecha de inicio
-    $(cal_fin).on("dp.change", function (e) {
-      return; //@@pendiente
-      if(e === false || e.date == null){return;};
-      var fecha_min = $(cal_inicio).data("DateTimePicker").minDate();
-      var fecha_max = $(cal_fin).data("DateTimePicker").maxDate();
-      if (!(fecha_min && fecha_max)) {return;}
-      if (e.date === false || e.date == null || !moment(e.date).isValid()) {return;}
-      var fecha = moment.min(e.date, fecha_max);
-      fecha = moment.max(fecha, fecha_min);
-      $(cal_inicio).data("DateTimePicker").maxDate(fecha);
-    });
+});
+//Inicializa el calendario de la fecha de fin
+$(cal_fin).datetimepicker({
+  //locale: 'es',
+  format: 'DD/MM/YYYY HH:mm',
+  toolbarPlacement: 'bottom',
+  focusOnShow: false,
+  sideBySide: true,
+  showClear: true,
+  useCurrent: false, //Important! See issue #1075
+});
+//Se asegura que la fecha de inicio no se mayor
+//a la fecha de fin
+$(cal_inicio).on("dp.change", function (e) {
+  return; //@@pendiente
+  if(e.date == null){return;};
+  var fecha_min = $(cal_inicio).data("DateTimePicker").minDate();
+  var fecha_max = $(cal_fin).data("DateTimePicker").maxDate();
+  if (!(fecha_min && fecha_max)) {return;}
+  if (e.date === false || e.date == null || !moment(e.date).isValid()) {return;}
+  var fecha = moment.max(e.date, fecha_min);
+  fecha = moment.min(fecha, fecha_max);
+  $(cal_fin).data("DateTimePicker").minDate(fecha);
+});
+//Se asegura que la fecha de fin no se menor
+//a la fecha de inicio
+$(cal_fin).on("dp.change", function (e) {
+  return; //@@pendiente
+  if(e === false || e.date == null){return;};
+  var fecha_min = $(cal_inicio).data("DateTimePicker").minDate();
+  var fecha_max = $(cal_fin).data("DateTimePicker").maxDate();
+  if (!(fecha_min && fecha_max)) {return;}
+  if (e.date === false || e.date == null || !moment(e.date).isValid()) {return;}
+  var fecha = moment.min(e.date, fecha_max);
+  fecha = moment.max(fecha, fecha_min);
+  $(cal_inicio).data("DateTimePicker").maxDate(fecha);
+});
 }); // fin de funcíon wrapper
 </script>

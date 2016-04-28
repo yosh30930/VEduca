@@ -153,13 +153,29 @@ class EncuentroSerializer(ActividadSerializer):
         del(fields["id_padre"])"""
         return fields
 
-    def update(self, instance, validated_data):
-        instance = super(EncuentroSerializer, self).update(
-            instance, validated_data)
+    def create(self, validated_data):
+        # Se obtienen los argumentos extra de la creación del encuentro
         save_kwargs = dict()
         if "sedes" in validated_data:
-            save_kwargs["sedes"] = validated_data["sedes"]
-        instance.save(**save_kwargs)
+            save_kwargs["sedes"] = validated_data.pop("sedes")
+        # Se crea el encuentro
+        instance = super(EncuentroSerializer, self).create(validated_data)
+        # Se verifica si se tienen que hacer modificaciones a la instancia
+        if save_kwargs:
+            instance.save(**save_kwargs)
+        return instance
+
+    def update(self, instance, validated_data):
+        # Se obtienen los argumentos extra de la edición del encuentro
+        save_kwargs = dict()
+        if "sedes" in validated_data:
+            save_kwargs["sedes"] = validated_data.pop("sedes")
+        # Se crea actualiza el encuentro
+        instance = super(EncuentroSerializer, self).update(
+            instance, validated_data)
+        # Se verifica si se tienen que hacer modificaciones a la instancia
+        if save_kwargs:
+            instance.save(**save_kwargs)
         return instance
 
     class Meta:

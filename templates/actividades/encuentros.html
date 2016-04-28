@@ -62,6 +62,7 @@
 {% block content %}
 {{ block.super }}
 {% include "actividades/modals/encuentro.html" %}
+{% include "usuarios/modals/persona.html" %}
 
 {% block menu %}
 {% endblock %}
@@ -74,6 +75,7 @@
 {% endif %}
 <div id="jstree_demo_div"></div>
 <div id="tree1"></div>
+<button type="button" data-toggle="modal" data-target="#persona_modal" data-operacion="creacion">Launch modal</button>
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
 <script type="text/javascript">

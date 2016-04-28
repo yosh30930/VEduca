@@ -1,6 +1,6 @@
 {% load static from staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
-<!-- Edición Encuentro Modal -->
+<!-- Edición Persona Modal -->
 <style type="text/css">
   .form-group.required .control-label:after {
     content:"*";
@@ -31,7 +31,7 @@
     width: 200px;
   }
 </style>
-<div class="modal fade" id="encuentro_modal" tabindex="-1" role="dialog" aria-labelledby="encuentro_modal_label">
+<div class="modal fade" id="persona_modal" tabindex="-1" role="dialog" aria-labelledby="persona_modal_label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-info">
@@ -51,7 +51,7 @@
       </div>
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="encuentro_modal_label">Título Edición de Encuentro</h4>
+        <h4 class="modal-title" id="persona_modal_label">Persona</h4>
       </div>
       <div class="modal-body">
         <div class="modal-cargando-div">
@@ -59,63 +59,38 @@
         </div>
         <form>
           <div class="form-group required">
-            <label for="encuentro_modal_nombre" class="control-label">Nombre del Encuentro</label>
-            <input id="encuentro_modal_nombre" type="text" class="form-control" placeholder="Ejemplo: Encuentro Internacional 2016 Costa Rica" required="required">
+            <label for="persona_modal_nombres" class="control-label">Nombre</label>
+            <select id="persona_modal_nombres" class="form-control" placeholder="Ejemplo: Marco Aurelio">
+            </select>
           </div>
-          <div class="row">
-            <div class='col-md-6'>
-              <div class="form-group required">
-                <label for="encuentro_modal_fecha_inicio" class="control-label">Fecha de inicio</label>
-                  <div class='input-group date'>
-                    <input id='encuentro_modal_fecha_inicio' type='text' class="form-control" placeholder="Ejemplo: 23/02/2017" />
-                    <span class="input-group-addon">
-                      <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                  </div>
-              </div>
-            </div>
-            <div class='col-md-6'>
-              <div class="form-group required">
-                <label for="encuentro_modal_fecha_fin" class="control-label">Fecha de término</label>
-                  <div class='input-group date'>
-                    <input id='encuentro_modal_fecha_fin' type='text' class="form-control" placeholder="Ejemplo: 24/02/2017" />
-                    <span class="input-group-addon">
-                      <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                  </div>
-              </div>
-            </div>
+          <div class="form-group required">
+            <label for="persona_modal_apellidos" class="control-label">Apellidos</label>
+            <input id="persona_modal_apellidos" type="text" class="form-control" placeholder="Ejemplo: Nila Fonseca" required="required">
           </div>
-          <div class="row">
-            <div class='col-md-6'>
-              <div class="form-group">
-                <label for="encuentro_modal_pais" class="control-label">País</label>
-                <input id="encuentro_modal_pais" type="text" class="form-control" placeholder="Ejemplo: México">
-              </div>
-            </div>
-            <div class='col-md-6'>
-              <div class="form-group">
-                <label for="encuentro_modal_ciudad" class="control-label">Ciudad</label>
-                <input id="encuentro_modal_ciudad" type="text" class="form-control" placeholder="Ejemplo: Monterrey">
-              </div>
-            </div>
+          <div class="form-group required">
+            <label for="persona_modal_correo" class="control-label">Correo electrónico</label>
+            <input id="persona_modal_correo" type="text" class="form-control" placeholder="mi_correo@gmail.com" required="required">
           </div>
           <div class="form-group">
-            <label for="encuentro_modal_sedes" class="control-label">Sede(s) del encuentro</label>
-            <select id="encuentro_modal_sedes" class="form-control" multiple placeholder="Ejemplo: Expo Guadalajara, Centro de Negocios I">
+            <label for="persona_modal_correo_secundario" class="control-label">Correo electrónico secundario</label>
+            <input id="persona_modal_correo_secundario" type="text" class="form-control" placeholder="otro@hotmail.com">
+          </div>
+          <div class="form-group">
+            <label for="persona_modal_pais" class="control-label">País</label>
+            <select id="persona_modal_pais" class="form-control" placeholder="Elige un país">
+              {% include "usuarios/modals/pais.html" %}
             </select>
           </div>
           <div class="form-group">
-            <label for="encuentro_modal_responsables" class="control-label">Responsable(s) de programa</label>
-            <select id="encuentro_modal_responsables" class="form-control" multiple>
-            </select>
-            <small>¿No encuentra un responsable? <a class="registra-modal" href="#">Registre o edítelo</a></small>
+            <label class="control-label">Recomendar como:</label>
+            <label class="checkbox-inline"><input id="persona_modal_es_coordinador" type="checkbox" value="">Coordinador</label>
+            <label class="checkbox-inline"><input  type="checkbox" value="">Participante</label>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <span class="label_obligatorio">Campos obligatorios</span>
-        <button id="encuentro_modal_submit" type="button" class="btn btn-primary" ></button>
+        <button id="persona_modal_submit" type="button" class="btn btn-primary" ></button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
       </div>
     </div>
@@ -125,53 +100,67 @@
 <script type="text/javascript">
 $(function(){
 
-var resp_selectize = null;
 var sedes_selectize = null;
+var personas_selectize = null;
+var llenando_persona = false;
 
 // Limpia el modal del encuentro
 function reset_modal(){
-  var $modal = $("#encuentro_modal");
+  var $modal = $("#persona_modal");
   var $modal_body = $modal.find(".modal-body");
+  $('#persona_modal_apellidos').val("");
+  $('#persona_modal_correo').val("");
+  $('#persona_modal_correo_secundario').val("");
+  $('#persona_modal_es_coordinador').prop('checked', false);
+  $('#persona_modal_pais').val("");
   //Oculta el estatus del modal
   $modal.find(".modal-info").css('display', 'none');
-  // Se hace el reset del nombre del encuentro
-  $modal.find('#encuentro_modal_nombre').val("");
-  // Se hace el reset de las fechas del encuentro
-  var $cal_inicio = $modal.find('#encuentro_modal_fecha_inicio').closest(".date");
-  var $cal_fin = $modal.find('#encuentro_modal_fecha_fin').closest(".date");
-  $cal_inicio.data("DateTimePicker").date(null);
-  $cal_fin.data("DateTimePicker").date(null);
-  // Se hace el reset de los responsables del encuentro
-  if (resp_selectize === null) {
-    var $selector = $modal.find('#encuentro_modal_responsables').selectize({
-      plugins: ['remove_button'],
+  if (personas_selectize === null) {
+    var $selector = $modal.find('#persona_modal_nombres').selectize({
       openOnFocus: false,
-    });
-    resp_selectize = $selector[0].selectize;
-  }
-  resp_selectize.clearOptions();
-  // Se hace el reset de las sedes del encuentro
-  if (sedes_selectize === null) {
-    var $selector = $modal.find('#encuentro_modal_sedes').selectize({
-      plugins: ['remove_button'],
       create: true,
-      openOnFocus: false,
     });
-    sedes_selectize = $selector[0].selectize;
+    personas_selectize = $selector[0].selectize;
+    personas_selectize.on('item_add', function (val){
+      var promesa = $.get('/personas/'+ val +'/');
+      promesa.done(function(data){
+        console.log(data);
+        var $modal = $("#persona_modal");
+        $('#persona_modal_apellidos').val(data.apellidos);
+        $('#persona_modal_correo').val(data.correo);
+        $('#persona_modal_correo_secundario').val(data.correo_secundario);
+        $('#persona_modal_es_coordinador').prop('checked', data.es_coordinador);
+        $('#persona_modal_pais').val(data.pais);
+        var $boton_submit = $modal.find('#persona_modal_submit');
+        $modal.find('.modal-title').text('Editar una Persona');
+        $boton_submit.text('Guardar cambios');
+        var $boton_submit = $modal.find('#persona_modal_submit');
+        $boton_submit.data('operacion', 'edicion');
+        $boton_submit.data('id-actividad', data.id);
+      })
+    });
+    personas_selectize.on('option_add', function (val){
+      if (!llenando_persona) {
+        var $boton_submit = $modal.find('#persona_modal_submit');
+        $modal.find('.modal-title').text('Registrar una Persona');
+        $boton_submit.text('Registrar Persona');
+      }
+    });
   }
-  sedes_selectize.clearOptions();
+  personas_selectize.clearOptions();
   // Se oculta el form
-  $modal_body.find("form").hide();
+  //$modal_body.find("form").hide();
   // Se desbloqué el botón submit
-  var $boton_submit = $modal.find('#encuentro_modal_submit');
+  var $boton_submit = $modal.find('#persona_modal_submit');
   $boton_submit.attr('disabled', 'disabled');
   // Se muestra la imágen de carga
-  $modal_body.find(".modal-cargando-div").show();
+  //$modal_body.find(".modal-cargando-div").show();
 };
 
-function rellena_responsables(selectize, responsables, id_seleccionados) {
+function rellena_personas(selectize, personas, id_seleccionados) {
+  llenando_persona = true;
   id_seleccionados = typeof id_seleccionados !== 'undefined' ? id_seleccionados : [];
-  $(responsables).each(function (idx, responsable) {
+  $(personas).each(function (idx, responsable) {
     var selected = false;
     $(id_seleccionados).each(function (i, resp_id) {
       if (responsable.id == resp_id) {
@@ -187,22 +176,38 @@ function rellena_responsables(selectize, responsables, id_seleccionados) {
       selectize.setValue(selectize.getValue().concat([responsable.id]), true)
     }
   });
+  llenando_persona = false;
 }
-
+$('#persona_modal').on('hide.bs.modal', function (event) {
+  if ($('#persona_modal').data('modal-anterior')) {
+    var anterior_id = "#" + $('#persona_modal').data('modal-anterior');
+    $(anterior_id).modal('show');
+  }
+});
 // Se ejecuta cuando se muestra el modal
-$('#encuentro_modal').on('show.bs.modal', function (event) {
+$('#persona_modal').on('show.bs.modal', function (event) {
+  reset_modal();
   var $button = $(event.relatedTarget) // Botón que mostró el  modal
   var operacion = $button.data('operacion');
-  if (typeof operacion === 'undefined') {return;}
-  reset_modal();
   var id = $button.data('id-actividad');
   var $modal = $(this);
   var $form = $modal.find(".modal-content form");
   // Se obtiene la lista de los posibles responsables que están registrados
   var prom_resp = $.get('/responsables/');
+  var prom_pers = $.get('/personas/');
+  prom_pers.done(function(personas) {
+    // Se el selector con los responsables
+    rellena_personas(personas_selectize, personas);
+    personas_selectize.refreshOptions(false);
+    // Se muestra una animación de carga en lo que se cargan los responsables
+    $('#persona_modal').find(".modal-cargando-div").fadeOut(800, function () {
+      $form.fadeIn(400);
+    });
+  });
+  return;
   //Se buscan los elementos a modificar
-  var $boton_submit = $modal.find('#encuentro_modal_submit');
-  var $selector = $modal.find('#encuentro_modal_responsables');
+  var $boton_submit = $modal.find('#persona_modal_submit');
+  var $selector = $modal.find('#persona_modal_responsables');
   // Se le asignan datos al botón submit para cuando se realice la creación
   // o edicion del encuentro
   $boton_submit.data('operacion', operacion);
@@ -214,21 +219,21 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
       // Se ejecuta cuando se obtiene la lista de responsables
       prom_resp.done(function(responsables) {
         // Se el selector con los responsables
-        rellena_responsables(resp_selectize, responsables);
+        rellena_personas(resp_selectize, responsables);
         resp_selectize.refreshOptions(false);
         // Se muestra una animación de carga en lo que se cargan los responsables
-        $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+        $('#persona_modal').find(".modal-cargando-div").fadeOut(800, function () {
           $form.fadeIn(400);
         });
       });
       // Se modifica el título del modal
-      $modal.find('.modal-title').text('Crear un Encuentro');
+      $modal.find('.modal-title').text('Registrar una Persona');
       // Se modifica el texto del botón submit
-      $boton_submit.text('Crear Encuentro');
+      $boton_submit.text('Registrar Persona');
       break;
     case 'edicion':
       // Se modifica el título del modal
-      $modal.find('.modal-title').text('Modificar Encuentro');
+      $modal.find('.modal-title').text('Modificar Persona');
       // Se modifica el texto del botón submit
       $boton_submit.text('Guardar modificaciones');
       // Se pide la información del encuentro a modificar
@@ -249,23 +254,23 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
         sedes_selectize.setValue(encuentro.sedes, false);
         sedes_selectize.refreshOptions();
         // Rellena el campo del nombre del encuentro
-        $modal.find('#encuentro_modal_nombre').val(encuentro.nombre);
+        $modal.find('#persona_modal_nombre').val(encuentro.nombre);
         // Rellena el campo del país del encuentro
-        $modal.find('#encuentro_modal_pais').val(encuentro.pais);
+        $modal.find('#persona_modal_pais').val(encuentro.pais);
         // Rellena el campo de la ciudad del encuentro
-        $modal.find('#encuentro_modal_ciudad').val(encuentro.ciudad);
+        $modal.find('#persona_modal_ciudad').val(encuentro.ciudad);
         // Llena la lista de responsables marcando los que son
         // responsables del encuentro
-        rellena_responsables(resp_selectize, responsables, encuentro.responsables);
+        rellena_personas(resp_selectize, responsables, encuentro.responsables);
         // Se muestra una animación de carga en lo que se carga el encuentro
-        $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+        $('#persona_modal').find(".modal-cargando-div").fadeOut(800, function () {
           $form.fadeIn(400);
         });
         // Se obtienen las fechas del encuentro, si es que las tiene
         var fecha_fin = moment(encuentro.fecha_fin);
         var fecha_inicio = moment(encuentro.fecha_inicio);
-        var cal_inicio = $modal.find('#encuentro_modal_fecha_inicio').closest(".date");
-        var cal_fin = $modal.find('#encuentro_modal_fecha_fin').closest(".date");
+        var cal_inicio = $modal.find('#persona_modal_fecha_inicio').closest(".date");
+        var cal_fin = $modal.find('#persona_modal_fecha_fin').closest(".date");
         var fecha_inicio = moment(fecha_inicio);
         // Si la fecha de inicio es válida se llena el campo correspondiente
         if (fecha_inicio.isValid()) {
@@ -284,18 +289,16 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
 });
 
 function verifica_inputs() {
-  $modal = $("#encuentro_modal");
+  $modal = $("#persona_modal");
   $modal_body = $modal.find(".modal-body");
-  $boton_submit = $modal.find("#encuentro_modal_submit");
+  $boton_submit = $modal.find("#persona_modal_submit");
   var son_validos = true;
   // Verifica nombre del encuentro
-  if ($("#encuentro_modal_nombre").val().trim() === "") { son_validos = false;}
-  // Verifica la fecha de inicio
-  var fecha_inicio = moment($('#encuentro_modal_fecha_inicio').val(), "DD/MM/YYYY");
-  if (!fecha_inicio.isValid()) {son_validos = false};
-  // Verifica la fecha de fin
-  var fecha_fin = moment($('#encuentro_modal_fecha_fin').val(), "DD/MM/YYYY");
-  if (!fecha_fin.isValid()) {son_validos = false};
+  if ($("#persona_modal_nombres").val().trim() === "") { son_validos = false;}
+  // Verifica nombre del encuentro
+  if ($("#persona_modal_apellidos").val().trim() === "") { son_validos = false;}
+  // Verifica nombre del encuentro
+  if ($("#persona_modal_correo").val().trim() === "") { son_validos = false;}
   // Bloquea el botón submit si faltan datos
   if (son_validos) {
     $boton_submit.removeAttr('disabled', 'disabled');
@@ -304,20 +307,18 @@ function verifica_inputs() {
   }
 };
 
-$('#encuentro_modal_nombre').on('input', function (event) {
+$('#persona_modal_nombres').on('input', function (event) {
+  verifica_inputs();
+});
+$('#persona_modal_apellidos').on('input', function (event) {
+  verifica_inputs();
+});
+$('#persona_modal_correo').on('input', function (event) {
   verifica_inputs();
 });
 
-
-
-$('#encuentro_modal .registra-modal').on('click', function (event) {
-  $("#encuentro_modal").modal('hide');
-  $("#persona_modal").data('modal-anterior', 'encuentro_modal');
-  $("#persona_modal").modal('show');
-})
-
-$('#encuentro_modal_submit').on('click', function (event) {
-  var $modal = $("#encuentro_modal");
+$('#persona_modal_submit').on('click', function (event) {
+  var $modal = $("#persona_modal");
   $modal.find(".modal-info>div").hide();
   $modal.find(".modal-info").css('display', 'block');
   $modal.find(".modal-info .modal-info-cargando").show();
@@ -327,16 +328,12 @@ $('#encuentro_modal_submit').on('click', function (event) {
   $boton_submit.attr('disabled', 'disabled');
   // Datos a ser enviados al servidor
   var data = {
-    'nombre': $('#encuentro_modal_nombre').val().trim(),
-    'fecha_inicio': moment($('#encuentro_modal_fecha_inicio').val(), "DD/MM/YYYY").format("YYYY-MM-DD"),
-    'fecha_fin': moment($('#encuentro_modal_fecha_fin').val(), "DD/MM/YYYY").format("YYYY-MM-DD"),
-    'responsables': $("#encuentro_modal_responsables").val(),
-    'sedes': $("#encuentro_modal_sedes").val(),
-    'pais': $("#encuentro_modal_pais").val(),
-    'ciudad': $("#encuentro_modal_ciudad").val(),
+    'nombres': personas_selectize.getOption(personas_selectize.getValue()).context.innerText,
+    'apellidos': $('#persona_modal_apellidos').val().trim(),
+    'correo': $('#persona_modal_correo').val().trim(),
+    'es_coordinador': $('#persona_modal_es_coordinador').is(':checked'),
+    'pais': $('#persona_modal_pais').val(),
   };
-  if(data.responsables === null){data.responsables=[]}
-  if(data.sedes === null){data.sedes=[]}
   var operacion = $boton_submit.data('operacion');
   switch (operacion) {
     case 'creacion':
@@ -349,7 +346,7 @@ $('#encuentro_modal_submit').on('click', function (event) {
       promesa
       .fail(function(data) {
         // Se crea un mensaje para avisar que hubo un problema en la creación
-        var $modal = $("#encuentro_modal");
+        var $modal = $("#persona_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-error").show();
@@ -358,11 +355,11 @@ $('#encuentro_modal_submit').on('click', function (event) {
         // Se lanza un evento indicando que se creó un actividad con éxito
         $(document).trigger( "actividadCreada", data);
         // Se crea un mensaje para avisar que se creó el encuentro
-        var $modal = $("#encuentro_modal");
+        var $modal = $("#persona_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-exito").show();
-        setTimeout(function(){$("#encuentro_modal").modal('hide')}, 3000);
+        setTimeout(function(){$("#persona_modal").modal('hide')}, 3000);
       })
       .always(function(data) {
         console.log(data);
@@ -372,7 +369,7 @@ $('#encuentro_modal_submit').on('click', function (event) {
       // Se obtiene el id del encuentro a mofificar
       var id = $boton_submit.data('id-actividad');
       var promesa = $.ajax({
-        url: '/encuentros/' + id + '/',
+        url: '/personas/' + id + '/',
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify(data),
@@ -380,7 +377,7 @@ $('#encuentro_modal_submit').on('click', function (event) {
       promesa
       .fail(function(data) {
         // Se crea un mensaje para avisar que hubo un problema en la edición
-        var $modal = $("#encuentro_modal");
+        var $modal = $("#persona_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-error").show();
@@ -389,11 +386,11 @@ $('#encuentro_modal_submit').on('click', function (event) {
       .done(function(data){
         // Se lanza un evento indicando que se editó un actividad con éxito
         $(document).trigger( "actividadModificada", data);
-        var $modal = $("#encuentro_modal");
+        var $modal = $("#persona_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-exito").show();
-        setTimeout(function(){$("#encuentro_modal").modal('hide')}, 3000);
+        setTimeout(function(){$("#persona_modal").modal('hide')}, 3000);
       })
       .always(function(data) {
         console.log(data);
@@ -405,8 +402,8 @@ $('#encuentro_modal_submit').on('click', function (event) {
 });
 
 // Se buscan los selectores de fechas en el DOM del modal
-var cal_inicio = $('#encuentro_modal_fecha_inicio').closest(".date");
-var cal_fin = $('#encuentro_modal_fecha_fin').closest(".date");
+var cal_inicio = $('#persona_modal_fecha_inicio').closest(".date");
+var cal_fin = $('#persona_modal_fecha_fin').closest(".date");
 // Inicializa el calendario de la fecha de inicio
 $(cal_inicio).datetimepicker({
   format: 'DD/MM/YYYY',
