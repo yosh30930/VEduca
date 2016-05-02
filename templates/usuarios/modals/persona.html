@@ -58,33 +58,64 @@
           <div class='uil-ring-css' style="margin: 0 auto"><div></div></div>
         </div>
         <form>
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group required">
+                <label for="persona_modal_correo" class="control-label">Correo electrónico</label>
+                <input id="persona_modal_correo" type="text" class="form-control" placeholder="Correo" required="required">
+              </div>
+            </div>
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="persona_modal_correo_secundario" class="control-label">Correo electrónico alternativo</label>
+                <input id="persona_modal_correo_secundario" type="text" class="form-control" placeholder="Correo alternativo">
+              </div>
+            </div>
+          </div>
           <div class="form-group required">
-            <label for="persona_modal_nombres" class="control-label">Nombre</label>
-            <select id="persona_modal_nombres" class="form-control" placeholder="Ejemplo: Marco Aurelio">
+            <label for="persona_modal_nombres" class="control-label">Nombre(s)</label>
+            <select id="persona_modal_nombres" class="form-control" placeholder="Nombre">
             </select>
           </div>
-          <div class="form-group required">
-            <label for="persona_modal_apellidos" class="control-label">Apellidos</label>
-            <input id="persona_modal_apellidos" type="text" class="form-control" placeholder="Ejemplo: Nila Fonseca" required="required">
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group required">
+                <label for="persona_modal_apellido_paterno" class="control-label">Apellido paterno</label>
+                <input id="persona_modal_apellido_paterno" type="text" class="form-control" placeholder="Apellido paterno" required="required">
+              </div>
+            </div>
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="persona_modal_apellido_materno" class="control-label">Apellido materno</label>
+                <input id="persona_modal_apellido_materno" type="text" class="form-control" placeholder="Apellido materno" required="required">
+              </div>
+            </div>
           </div>
-          <div class="form-group required">
-            <label for="persona_modal_correo" class="control-label">Correo electrónico</label>
-            <input id="persona_modal_correo" type="text" class="form-control" placeholder="mi_correo@gmail.com" required="required">
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="persona_modal_pais" class="control-label">País</label>
+                <select id="persona_modal_pais" class="form-control" placeholder="Elige un país">
+                  {% include "usuarios/modals/pais.html" %}
+                </select>
+              </div>
+            </div>
+            <div class='col-md-6'>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="persona_modal_correo_secundario" class="control-label">Correo electrónico secundario</label>
-            <input id="persona_modal_correo_secundario" type="text" class="form-control" placeholder="otro@hotmail.com">
-          </div>
-          <div class="form-group">
-            <label for="persona_modal_pais" class="control-label">País</label>
-            <select id="persona_modal_pais" class="form-control" placeholder="Elige un país">
-              {% include "usuarios/modals/pais.html" %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="control-label">Recomendar como:</label>
-            <label class="checkbox-inline"><input id="persona_modal_es_coordinador" type="checkbox" value="">Coordinador</label>
-            <label class="checkbox-inline"><input  type="checkbox" value="">Participante</label>
+          <div class="row">
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="" class="control-label">Institución</label>
+                <select id="" class="form-control"></select>
+              </div>
+            </div>
+            <div class='col-md-6'>
+              <div class="form-group">
+                <label for="" class="control-label">Cargo</label>
+                <select id="" class="form-control"></select>
+              </div>
+            </div>
           </div>
         </form>
       </div>
@@ -111,7 +142,6 @@ function reset_modal(){
   $('#persona_modal_apellidos').val("");
   $('#persona_modal_correo').val("");
   $('#persona_modal_correo_secundario').val("");
-  $('#persona_modal_es_coordinador').prop('checked', false);
   $('#persona_modal_pais').val("");
   //Oculta el estatus del modal
   $modal.find(".modal-info").css('display', 'none');
@@ -129,7 +159,6 @@ function reset_modal(){
         $('#persona_modal_apellidos').val(data.apellidos);
         $('#persona_modal_correo').val(data.correo);
         $('#persona_modal_correo_secundario').val(data.correo_secundario);
-        $('#persona_modal_es_coordinador').prop('checked', data.es_coordinador);
         $('#persona_modal_pais').val(data.pais);
         var $boton_submit = $modal.find('#persona_modal_submit');
         $modal.find('.modal-title').text('Editar una Persona');
@@ -331,7 +360,6 @@ $('#persona_modal_submit').on('click', function (event) {
     'nombres': personas_selectize.getOption(personas_selectize.getValue()).context.innerText,
     'apellidos': $('#persona_modal_apellidos').val().trim(),
     'correo': $('#persona_modal_correo').val().trim(),
-    'es_coordinador': $('#persona_modal_es_coordinador').is(':checked'),
     'pais': $('#persona_modal_pais').val(),
   };
   var operacion = $boton_submit.data('operacion');

@@ -1,12 +1,15 @@
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect
-from django.views.generic import View
+from django.views.generic import View, TemplateView
+from django.views.generic.edit import FormView
 from django.contrib.auth.views import login
+from django import forms
 # from django.core.urlresolvers import reverse
 # Create your views here.
 from apps.usuarios.models import Usuario, Pais
 from apps.actividades.models import Encuentro, Foro, Seminario, Panel, Espacio
 
+from .forms import UsuarioResetForm
 
 class InicioSesionView(View):
     def get(self, request, *args, **kwargs):
@@ -21,6 +24,16 @@ class InicioSesionView(View):
     def post(self, request, *args, **kwargs):
         template_name = 'sesion/inicio_sesion.html'
         return login(request, *args, template_name=template_name, **kwargs)
+
+
+class UsuarioResetView(FormView):
+    """
+    Vista donde se muestran todos los encuentros sobre los que el usuario
+    tiene privilegios
+    """
+    template_name = "sesion/restaura_contrasena.html"
+    form_class = UsuarioResetForm
+    success_url = "/restaurar_contraseña_hecho/"
 
 
 @transaction.atomic

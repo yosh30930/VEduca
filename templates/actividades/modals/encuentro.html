@@ -107,9 +107,10 @@
           </div>
           <div class="form-group">
             <label for="encuentro_modal_responsables" class="control-label">Responsable(s) de programa</label>
-            <select id="encuentro_modal_responsables" class="form-control" multiple>
+            <select id="encuentro_modal_responsables" class="form-control" multiple placeholder="Nombre del responsable">
             </select>
-            <small>¿No encuentra un responsable? <a class="registra-modal" href="#">Registre o edítelo</a></small>
+            <small>¿No encuentra un responsable? <a class="registra-responsable-modal" href="#">Regístrelo</a></small><br>
+            <small>¿El responsable no tiene la institución o el cargo que necesita? <a class="edita-responsable-modal" href="#">Edítelo</a></small>
           </div>
         </form>
       </div>
@@ -308,13 +309,27 @@ $('#encuentro_modal_nombre').on('input', function (event) {
   verifica_inputs();
 });
 
-
-
-$('#encuentro_modal .registra-modal').on('click', function (event) {
+$('#encuentro_modal .edita-responsable-modal').on('click', function (event) {
+  $modal = $("#persona_modal");
+  $modal_body = $modal.find(".modal-body");
+  $boton_submit = $modal.find("#persona_modal_submit");
+  $boton_submit.text("Guardar cambios");
   $("#encuentro_modal").modal('hide');
   $("#persona_modal").data('modal-anterior', 'encuentro_modal');
+  $("#persona_modal").find('.modal-title').text("Editar Responsable");
   $("#persona_modal").modal('show');
-})
+});
+
+$('#encuentro_modal .registra-responsable-modal').on('click', function (event) {
+  $modal = $("#persona_modal");
+  $modal_body = $modal.find(".modal-body");
+  $boton_submit = $modal.find("#persona_modal_submit");
+  $boton_submit.text("Registrar cambios");
+  $("#encuentro_modal").modal('hide');
+  $("#persona_modal").data('modal-anterior', 'encuentro_modal');
+  $("#persona_modal").find('.modal-title').text("Registrar Responsable");
+  $("#persona_modal").modal('show');
+});
 
 $('#encuentro_modal_submit').on('click', function (event) {
   var $modal = $("#encuentro_modal");

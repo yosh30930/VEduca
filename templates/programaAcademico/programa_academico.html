@@ -29,6 +29,10 @@
       display: inline-block;
       float: right;
     }
+    .btns-actividades img{
+      width: 25px;
+      margin: 2px;
+    }
  </style>
 {% endblock header %}
 
@@ -221,11 +225,9 @@ function set_botones_foro(node, $li) {
   var permisos = node.permisos_edicion;
   var btns_actividades = $("<div>", {class: "btns-actividades"});
   if ($.inArray('eliminar', permisos) > -1) {
-    var boton_eliminar = $("<a>",
-      {text:"Eliminar Foro",
-      class:"btn btn-default btn-sm btn-editar",
-      href: "#"
-    });
+    var boton_eliminar = $("<a>", {href: "#"});
+    var $img = $("<img>", {src: "{% static 'img/delete.svg' %}" });
+    $(boton_eliminar).append($img);
     $(btns_actividades).append(boton_eliminar);
   }
   if (($.inArray('editar como responsable', permisos) > -1) ||
@@ -239,17 +241,6 @@ function set_botones_foro(node, $li) {
     $a_titulo.attr('data-target', "#foro_modal");
     $titulo.html("");
     $titulo.append($a_titulo);
-    var boton_editar = $("<a>",
-      {text:"Editar Foro",
-      class:"btn btn-default btn-sm btn-editar",
-      href: "#"
-    });
-    $(boton_editar).attr("data-toggle", "modal")
-    $(boton_editar).attr("data-target", "#foro_modal")
-    $(boton_editar).attr("data-operacion", "edicion")
-    $(boton_editar).attr("data-id-actividad", node.id);
-    $(btns_actividades).append(boton_editar);
-
   }
 
   //$(boton_editar).attr("data-toggle", "modal")
@@ -263,14 +254,11 @@ function set_botones_seminario(node, $li) {
   var permisos = node.permisos_edicion;
   var btns_actividades = $("<div>", {class: "btns-actividades"});
   if ($.inArray('eliminar', permisos) > -1) {
-    var boton_eliminar = $("<a>",
-      {text:"Eliminar Seminario",
-      class:"btn btn-default btn-sm btn-editar",
-      href: "#"
-    });
+    var boton_eliminar = $("<a>", {href: "#"});
+    var $img = $("<img>", {src: "{% static 'img/delete.svg' %}" });
+    $(boton_eliminar).append($img);
     $(btns_actividades).append(boton_eliminar);
   }
-
   if (($.inArray('editar como responsable', permisos) > -1) ||
       ($.inArray('editar como super responsable', permisos) > -1)) {
     var $titulo = $li.find(".jqtree-title");
@@ -282,16 +270,6 @@ function set_botones_seminario(node, $li) {
     $a_titulo.attr('data-target', "#seminario_modal");
     $titulo.html("");
     $titulo.append($a_titulo);
-    var boton_editar = $("<a>",
-      {text:"Editar Seminario",
-      class:"btn btn-default btn-sm btn-editar",
-      href: "#"
-    });
-    $(boton_editar).attr("data-toggle", "modal")
-    $(boton_editar).attr("data-target", "#seminario_modal")
-    $(boton_editar).attr("data-operacion", "edicion")
-    $(boton_editar).attr("data-id-actividad", node.id);
-    $(btns_actividades).append(boton_editar);
   }
 
   return btns_actividades;
@@ -301,20 +279,11 @@ function set_botones_panel(node, $li) {
   var permisos = node.permisos_edicion;
   var btns_actividades = $("<div>", {class: "btns-actividades"});
   if ($.inArray('eliminar', permisos) > -1) {
-    var boton_eliminar = $("<a>",
-      {text:"Eliminar Panel",
-      class:"btn btn-default btn-sm btn-editar",
-      href: "#"
-    });
+    var boton_eliminar = $("<a>", {href: "#"});
+    var $img = $("<img>", {src: "{% static 'img/delete.svg' %}" });
+    $(boton_eliminar).append($img);
     $(btns_actividades).append(boton_eliminar);
   }
-
-  var boton_editar = $("<a>",
-    {text:"Editar Panel",
-    class:"btn btn-default btn-sm btn-editar",
-    href: "#"
-  });
-
   if (($.inArray('editar como responsable', permisos) > -1) ||
       ($.inArray('editar como super responsable', permisos) > -1)) {
     var $titulo = $li.find(".jqtree-title");
@@ -326,12 +295,6 @@ function set_botones_panel(node, $li) {
     $a_titulo.attr('data-target', "#panel_modal");
     $titulo.html("");
     $titulo.append($a_titulo);
-
-    $(boton_editar).attr("data-toggle", "modal")
-    $(boton_editar).attr("data-target", "#panel_modal")
-    $(boton_editar).attr("data-operacion", "edicion")
-    $(boton_editar).attr("data-id-actividad", node.id);
-    $(btns_actividades).append(boton_editar);
   }
   return btns_actividades;
 }

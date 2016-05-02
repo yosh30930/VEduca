@@ -14,8 +14,8 @@ class ResponsableSerializer(serializers.ModelSerializer):
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
-        fields = ('id', 'nombres', 'apellidos', 'correo', 'correo_secundario',
-                  'es_coordinador', 'pais')
+        fields = ('id', 'nombres', 'apellido_paterno', 'apellido_materno',
+                  'correo', 'correo_secundario', 'pais')
 
 
 """

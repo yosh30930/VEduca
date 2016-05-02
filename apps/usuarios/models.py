@@ -47,10 +47,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    correo = models.OneToOneField('Persona', on_delete=models.CASCADE,
-                                  to_field='correo')
+    email = models.OneToOneField('Persona', on_delete=models.CASCADE,
+                                 to_field='correo')
 
-    USERNAME_FIELD = 'correo'
+    USERNAME_FIELD = 'email'
     # REQUIRED_FIELDS = ['nombres']
 
     class Meta:
@@ -80,16 +80,32 @@ class SecretarioGeneral(models.Model):
 
 
 class Persona(models.Model):
+    DR_GRADO = 1
+    DRA_GRADO = 2
+    MTRO_GRADO = 3
+    MTRA_GRADO = 4
+    LIC_GRADO = 5
+    OTRO_GRADO = 6
+    GRADO_CHOICES = (
+        (DR_GRADO, 'Dr'),
+        (DRA_GRADO, 'Dra'),
+        (MTRO_GRADO, 'Mtro'),
+        (MTRA_GRADO, 'Mtra'),
+        (LIC_GRADO, 'Lic'),
+        (OTRO_GRADO, ''),
+    )
     correo = models.EmailField("correo electrónico",
                                max_length=254, unique=True)
     correo_secundario = models.EmailField(
         "correo secundario", max_length=254, blank=True)
     nombres = models.CharField("nombre(s)", max_length=100)
-    apellidos = models.CharField("apellido(s)", max_length=100)
+    apellido_paterno = models.CharField("apellido paterno", max_length=100)
+    apellido_materno = models.CharField("apellido materno", max_length=100,
+                                        blank=True)
     fecha_registro = models.DateTimeField('fecha de registro',
                                           default=timezone.now)
-    es_coordinador = models.BooleanField(default=False)
     pais = models.ForeignKey('Pais', default="")
+    grado = models.IntegerField(choices=GRADO_CHOICES, default=OTRO_GRADO)
 
     def get_full_name(self):
         full_name = '%s %s' % (self.nombres, self.apellidos)

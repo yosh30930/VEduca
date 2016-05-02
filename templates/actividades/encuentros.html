@@ -75,7 +75,6 @@
 {% endif %}
 <div id="jstree_demo_div"></div>
 <div id="tree1"></div>
-<button type="button" data-toggle="modal" data-target="#persona_modal" data-operacion="creacion">Launch modal</button>
 {# Assumes you setup the password_reset view in your URLconf #}
 {# <p><a href="{% url 'password_reset' %}">Lost password?</a></p> #}
 <script type="text/javascript">
@@ -140,6 +139,8 @@
           href:"/programa_academico/" + node.id + "/"
         });
       $span.html($anchor_gestion);
+      var $small = $("<small>", {text: " " + node.pais + " - " + node.ciudad});
+      $span.append($small);
       if ($.inArray('editar como super responsable', permisos) > -1) {
         var $btns_actividades = $("<div>", {class: "btns-actividades"});
 
@@ -171,6 +172,9 @@
 
         $div.prepend($btns_actividades);
         $div.append($("<div style=clear:right></div>"));
+        var fecha_inicio = moment(node.fecha_inicio).format("DD/MM/YYYY");
+        var fecha_fin = moment(node.fecha_fin).format("DD/MM/YYYY");
+        $div.append($("<small>", {text: " " + fecha_inicio + " - " + fecha_fin}));
       }
     }
   });

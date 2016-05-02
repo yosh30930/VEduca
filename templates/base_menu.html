@@ -10,6 +10,23 @@
   .navbar-nav>li>a.liga-azul {
         color: #337ab7;
   }
+  .navbar-brand {
+    float: none;
+  }
+  .navbar>.container .navbar-brand,
+  .navbar>.container-fluid .navbar-brand {
+    margin-left: 0;
+  }
+
+  .navbar-center {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
+    margin: auto;
+    height:100%;
+  }
 </style>
 {% endblock header %}
 
@@ -17,6 +34,9 @@
 {{ block.super }}
 <nav class="navbar navbar-default">
   <div class="container-fluid">
+    <div class="navbar-center navbar-brand" href="#">
+      <a class="navbar-brand">Gestión de encuentros Virtual Educa</a>
+    </div>
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
@@ -29,7 +49,6 @@
       </a>-->
       <a href="/" class="pull-left"><img src="{% static 'img/logo-virtual-educa-institucional.png' %}"></a>
     </div>
-
     <!-- Col°lect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
@@ -39,7 +58,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li style="text-align: center">
           <a class="liga-azul" href="{% url 'logout' %}">Salir</a>
-          <span style="font-size: 12px">Bienvenido(a) {{ request.user.nombres }}</span>
+          <span style="font-size: 12px">Bienvenido(a) {{ request.user.email.nombres }}</span>
         </li>
       </ul>
     </div><!-- /.navbar-collapse -->
