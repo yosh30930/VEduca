@@ -200,7 +200,8 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
   var operacion = $button.data('operacion');
   selectize_init();
   if (typeof operacion === 'undefined') {
-
+    rellena_responsables(selectize, responsables, id_seleccionados)
+    resp_selectize.refreshOptions(false);
     return;
   }
   reset_modal();
