@@ -143,23 +143,8 @@ function reset_modal(){
   $cal_inicio.data("DateTimePicker").date(null);
   $cal_fin.data("DateTimePicker").date(null);
   // Se hace el reset de los responsables del encuentro
-  if (resp_selectize === null) {
-    var $selector = $modal.find('#encuentro_modal_responsables').selectize({
-      plugins: ['remove_button'],
-      openOnFocus: false,
-    });
-    resp_selectize = $selector[0].selectize;
-  }
+  selectize_init();
   resp_selectize.clearOptions();
-  // Se hace el reset de las sedes del encuentro
-  if (sedes_selectize === null) {
-    var $selector = $modal.find('#encuentro_modal_sedes').selectize({
-      plugins: ['remove_button'],
-      create: true,
-      openOnFocus: false,
-    });
-    sedes_selectize = $selector[0].selectize;
-  }
   sedes_selectize.clearOptions();
   // Se oculta el form
   $modal_body.find("form").hide();
@@ -169,6 +154,25 @@ function reset_modal(){
   // Se muestra la imágen de carga
   $modal_body.find(".modal-cargando-div").show();
 };
+
+function selectize_init() {
+  if (resp_selectize === null) {
+    var $selector = $modal.find('#encuentro_modal_responsables').selectize({
+      plugins: ['remove_button'],
+      openOnFocus: false,
+    });
+    resp_selectize = $selector[0].selectize;
+  }
+  // Se hace el reset de las sedes del encuentro
+  if (sedes_selectize === null) {
+    var $selector = $modal.find('#encuentro_modal_sedes').selectize({
+      plugins: ['remove_button'],
+      create: true,
+      openOnFocus: false,
+    });
+    sedes_selectize = $selector[0].selectize;
+  }
+}
 
 function rellena_responsables(selectize, responsables, id_seleccionados) {
   id_seleccionados = typeof id_seleccionados !== 'undefined' ? id_seleccionados : [];
@@ -194,7 +198,11 @@ function rellena_responsables(selectize, responsables, id_seleccionados) {
 $('#encuentro_modal').on('show.bs.modal', function (event) {
   var $button = $(event.relatedTarget) // Botón que mostró el  modal
   var operacion = $button.data('operacion');
-  if (typeof operacion === 'undefined') {return;}
+  selectize_init();
+  if (typeof operacion === 'undefined') {
+
+    return;
+  }
   reset_modal();
   var id = $button.data('id-actividad');
   var $modal = $(this);
