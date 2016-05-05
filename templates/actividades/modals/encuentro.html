@@ -156,6 +156,7 @@ function reset_modal(){
 };
 
 function selectize_init() {
+  var $modal = $("#encuentro_modal");
   if (resp_selectize === null) {
     var $selector = $modal.find('#encuentro_modal_responsables').selectize({
       plugins: ['remove_button'],

@@ -30,6 +30,10 @@
   .modal-status-img{
     width: 200px;
   }
+  .agrega-institucion-group,
+  .agrega-cargo-group {
+    display: none;
+  }
 </style>
 <div class="modal fade" id="persona_modal" tabindex="-1" role="dialog" aria-labelledby="persona_modal_label">
   <div class="modal-dialog" role="document">
@@ -74,8 +78,7 @@
           </div>
           <div class="form-group required">
             <label for="persona_modal_nombres" class="control-label">Nombre(s)</label>
-            <select id="persona_modal_nombres" class="form-control" placeholder="Nombre">
-            </select>
+            <input id="persona_modal_nombres" type="text" class="form-control" placeholder="Nombre">
           </div>
           <div class="row">
             <div class='col-md-6'>
@@ -108,12 +111,30 @@
               <div class="form-group">
                 <label for="" class="control-label">Institución</label>
                 <select id="" class="form-control"></select>
+                <small><a class="agrega-institucion agrega-institucion-btn" href="#">Agregar otro</a></small>
+                <div class="input-group agrega-institucion-group">
+                  <input type="text" class="form-control agrega-institucion-input" placeholder="Institución nueva">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">
+                      <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                  </span>
+                </div>
               </div>
             </div>
             <div class='col-md-6'>
               <div class="form-group">
                 <label for="" class="control-label">Cargo</label>
                 <select id="" class="form-control"></select>
+                <small><a class="agrega-cargo agrega-cargo-btn" href="#">Agregar otro</a></small>
+                <div class="input-group agrega-cargo-group">
+                  <input type="text" class="form-control agrega-cargo-input" placeholder="Cargo nuevo">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">
+                      <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -345,6 +366,15 @@ $('#persona_modal_apellidos').on('input', function (event) {
 $('#persona_modal_correo').on('input', function (event) {
   verifica_inputs();
 });
+
+$('#persona_modal .agrega-institucion-btn').on('click', function (event) {
+  var $modal = $("#persona_modal");
+  $modal.find(".agrega-institucion-input").parent().css("display", "table");
+})
+$('#persona_modal .agrega-cargo-btn').on('click', function (event) {
+  var $modal = $("#persona_modal");
+  $modal.find(".agrega-cargo-input").parent().css("display", "table");
+})
 
 $('#persona_modal_submit').on('click', function (event) {
   var $modal = $("#persona_modal");
