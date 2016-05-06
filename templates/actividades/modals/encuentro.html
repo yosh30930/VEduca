@@ -201,8 +201,20 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
   var operacion = $button.data('operacion');
   selectize_init();
   if (typeof operacion === 'undefined') {
-    rellena_responsables(selectize, responsables, id_seleccionados)
-    resp_selectize.refreshOptions(false);
+    // Se obtiene la lista de los posibles responsables que están registrados
+    var prom_resp = $.get('/responsables/');
+    // Se ejecuta cuando se obtiene la lista de responsables
+    prom_resp.done(function(responsables) {
+      // Se el selector con los responsables
+      rellena_responsables(resp_selectize, responsables);
+      resp_selectize.refreshOptions(false);
+      // Se muestra una animación de carga en lo que se cargan los responsables
+      $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
+        $form.fadeIn(400);
+      });
+    });
+    //rellena_responsables(selectize, responsables, id_seleccionados)
+    //resp_selectize.refreshOptions(false);
     return;
   }
   reset_modal();

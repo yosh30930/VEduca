@@ -127,3 +127,21 @@ class Persona(models.Model):
 class Pais(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     nombre = models.CharField(max_length=50)
+
+
+class Puesto(models.Model):
+    persona = models.ForeignKey('Persona', on_delete=models.CASCADE)
+    institucion = models.ForeignKey('Institucion', on_delete=models.CASCADE)
+    cargo = models.CharField(max_length=300)
+
+
+class Institucion(models.Model):
+    ESCOLAR_TIPO = 1
+    EMPRESA_TIPO = 2
+    TIPO_CHOICES = (
+        (ESCOLAR_TIPO, 'Escolar'),
+        (EMPRESA_TIPO, 'Empresa'),
+    )
+    nombre = models.CharField(max_length=150)
+    nombre_corto = models.CharField(max_length=150)
+    pais = models.ForeignKey('Pais', default="")
