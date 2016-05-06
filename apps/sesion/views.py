@@ -6,7 +6,7 @@ from django.contrib.auth.views import login
 from django import forms
 # from django.core.urlresolvers import reverse
 # Create your views here.
-from apps.usuarios.models import Usuario, Pais
+from apps.usuarios.models import Usuario, Pais, Institucion
 from apps.actividades.models import Encuentro, Foro, Seminario, Panel, Espacio
 
 from .forms import UsuarioResetForm
@@ -50,6 +50,8 @@ def crea_actividad(Modelo, nombre, padre, *args, **kwargs):
 def ResetPruebas():
     if len(Pais.objects.all()) == 0:
         ResetPais()
+    if len(Institucion.objects.all()) == 0:
+        ResetInstitucion()
     if len(Usuario.objects.all()) == 0:
         ResetUsuarios()
     if len(Encuentro.objects.all()) == 0:
@@ -105,6 +107,19 @@ def ResetEspacios():
             nombre = "Espacio " + str(idx)
             Espacio(nombre=nombre, encuentro=encuentro).save()
             idx += 1
+
+
+def ResetInstitucion():
+    pais = Pais.objects.get(id="MX")
+    Institucion.objects.create(
+        nombre="Universidad Nacional Autonoma de Mexico", nombre_corto="UNAM",
+        pais=pais)
+    pais = Pais.objects.get(id="US")
+    Institucion.objects.create(
+        nombre="Organización de los Estados Americanos", nombre_corto="OEA",
+        pais=pais)
+    pais = Pais.objects.get(id="CA")
+    Institucion.objects.create(nombre="Google", pais=pais)
 
 
 def ResetPais():

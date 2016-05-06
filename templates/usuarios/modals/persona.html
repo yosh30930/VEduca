@@ -109,13 +109,13 @@
           <div class="row">
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="" class="control-label">Institución</label>
-                <select id="" class="form-control"></select>
+                <label for="persona_modal_instituciones" class="control-label">Institución</label>
+                <select id="persona_modal_instituciones" class="form-control"></select>
                 <small><a class="agrega-institucion agrega-institucion-btn" href="#">Agregar otro</a></small>
                 <div class="input-group agrega-institucion-group">
-                  <input type="text" class="form-control agrega-institucion-input" placeholder="Institución nueva">
+                  <input id="persona_modal_nueva_institucion" type="text" class="form-control agrega-institucion-input" placeholder="Institución nueva">
                   <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">
+                    <button id="persona_modal_agrega_institucion" class="btn btn-default" type="button">
                       <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                   </span>
@@ -154,6 +154,7 @@ $(function(){
 
 var sedes_selectize = null;
 var personas_selectize = null;
+var instituciones_selectize = null;
 var llenando_persona = false;
 
 // Limpia el modal del encuentro
@@ -197,6 +198,14 @@ function reset_modal(){
       }
     });
   }
+
+  if (instituciones_selectize === null) {
+    var $selector = $modal.find('#persona_modal_instituciones').selectize({
+      openOnFocus: false,
+    });
+    instituciones_selectize = $selector[0].selectize;
+  }
+
   personas_selectize.clearOptions();
   // Se oculta el form
   //$modal_body.find("form").hide();
@@ -245,6 +254,7 @@ $('#persona_modal').on('show.bs.modal', function (event) {
   // Se obtiene la lista de los posibles responsables que están registrados
   var prom_resp = $.get('/responsables/');
   var prom_pers = $.get('/personas/');
+  var prom_inst = $.get('/instituciones/');
   prom_pers.done(function(personas) {
     // Se el selector con los responsables
     rellena_personas(personas_selectize, personas);
@@ -253,6 +263,27 @@ $('#persona_modal').on('show.bs.modal', function (event) {
     $('#persona_modal').find(".modal-cargando-div").fadeOut(800, function () {
       $form.fadeIn(400);
     });
+  });
+  prom_inst.done(function(instituciones) {
+    // Se el selector con los responsables
+      id_seleccionados = typeof id_seleccionados !== 'undefined' ? id_seleccionados : [];
+      $(instituciones).each(function (idx, institucion) {
+        var selected = false;
+        $(id_seleccionados).each(function (i, inst_id) {
+          if (institucion.id == inst_id) {
+            selected = true;
+          }
+        })
+        instituciones_selectize.addOption({
+          text: institucion.nombre,
+          value: institucion.id,
+          selected: selected,
+        });
+        if (selected) {
+          instituciones_selectize.setValue(instituciones_selectize.getValue().concat([institucion.id]), true)
+        }
+      });
+    instituciones_selectize.refreshOptions(false);
   });
   return;
   //Se buscan los elementos a modificar
@@ -371,9 +402,22 @@ $('#persona_modal .agrega-institucion-btn').on('click', function (event) {
   var $modal = $("#persona_modal");
   $modal.find(".agrega-institucion-input").parent().css("display", "table");
 })
+
 $('#persona_modal .agrega-cargo-btn').on('click', function (event) {
   var $modal = $("#persona_modal");
   $modal.find(".agrega-cargo-input").parent().css("display", "table");
+})
+
+$('#persona_modal_agrega_institucion').on('click', function (event) {
+  var $input = $("#persona_modal_nueva_institucion");
+  var nombre = $input.val().trim();
+  if (nombre == "") {return;}
+  instituciones_selectize.addOption({
+    text: _.capitalize(nombre),
+    value: nombre,
+    selected: true,
+  });
+  instituciones_selectize.refreshOptions(false);
 })
 
 $('#persona_modal_submit').on('click', function (event) {

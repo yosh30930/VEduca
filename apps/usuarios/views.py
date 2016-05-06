@@ -5,8 +5,9 @@ from rest_framework import status, generics
 from rest_framework.response import Response
 
 from .serializersDRF import ResponsableSerializer, PersonaSerializer
+from .serializersDRF import InstitucionSerializer
 # from .serializersDRF import ParticipanteSerializer
-from .models import Usuario, Persona
+from .models import Usuario, Persona, Institucion
 # from apps.actividades.models import Participante
 
 
@@ -75,7 +76,6 @@ class PersonaListView(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class PersonaDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     Regresa un persona (GET)
@@ -108,3 +108,15 @@ class PersonaDetailView(generics.RetrieveUpdateDestroyAPIView):
         persona = self.get_object(id)
         persona.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class InstitucionListView(generics.ListCreateAPIView):
+    """
+    Regresa una lista de todos los **foros** (GET)
+    Agrega un nuevo foro (POST)
+    Actualiza todos los foros (PUT)
+    Elimina todos los foros en el sistema (DELETE)
+    """
+    model = Institucion
+    serializer_class = InstitucionSerializer
+    queryset = Institucion.objects.all().order_by('nombre')

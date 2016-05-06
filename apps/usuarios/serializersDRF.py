@@ -2,7 +2,7 @@ from django_countries import Countries
 from rest_framework import serializers
 
 # from apps.actividades.models import Participante
-from .models import Usuario, Persona
+from .models import Usuario, Persona, Institucion
 
 
 class ResponsableSerializer(serializers.ModelSerializer):
@@ -17,6 +17,11 @@ class PersonaSerializer(serializers.ModelSerializer):
         fields = ('id', 'nombres', 'apellido_paterno', 'apellido_materno',
                   'correo', 'correo_secundario', 'pais')
 
+
+class InstitucionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Institucion
+        fields = ('id', 'nombre', 'nombre_corto')
 
 """
 class ParticipanteSerializer(serializers.ModelSerializer):

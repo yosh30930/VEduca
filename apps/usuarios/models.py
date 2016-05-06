@@ -143,5 +143,5 @@ class Institucion(models.Model):
         (EMPRESA_TIPO, 'Empresa'),
     )
     nombre = models.CharField(max_length=150)
-    nombre_corto = models.CharField(max_length=150)
+    nombre_corto = models.CharField(max_length=150, default="")
     pais = models.ForeignKey('Pais', default="")
