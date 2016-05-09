@@ -110,7 +110,7 @@
             <select id="encuentro_modal_responsables" class="form-control" multiple placeholder="Nombre del responsable">
             </select>
             <small>¿No encuentra un responsable? <a class="registra-responsable-modal" href="#">Regístrelo</a></small><br>
-            <small>¿El responsable no tiene la institución o el cargo que necesita? <a class="edita-responsable-modal" href="#">Edítelo</a></small>
+            <small>¿El responsable no tienen la institución o el cargo que necesita? <a class="edita-responsable-modal" href="#">Edítelo</a></small>
           </div>
         </form>
       </div>
@@ -208,10 +208,6 @@ $('#encuentro_modal').on('show.bs.modal', function (event) {
       // Se el selector con los responsables
       rellena_responsables(resp_selectize, responsables);
       resp_selectize.refreshOptions(false);
-      // Se muestra una animación de carga en lo que se cargan los responsables
-      $('#encuentro_modal').find(".modal-cargando-div").fadeOut(800, function () {
-        $form.fadeIn(400);
-      });
     });
     //rellena_responsables(selectize, responsables, id_seleccionados)
     //resp_selectize.refreshOptions(false);
@@ -343,14 +339,14 @@ $('#encuentro_modal .edita-responsable-modal').on('click', function (event) {
 });
 
 $('#encuentro_modal .registra-responsable-modal').on('click', function (event) {
-  $modal = $("#persona_modal");
+  $modal = $("#persona_crear_modal");
   $modal_body = $modal.find(".modal-body");
-  $boton_submit = $modal.find("#persona_modal_submit");
+  $boton_submit = $modal.find("#persona_crear_modal_submit");
   $boton_submit.text("Registrar cambios");
   $("#encuentro_modal").modal('hide');
-  $("#persona_modal").data('modal-anterior', 'encuentro_modal');
-  $("#persona_modal").find('.modal-title').text("Registrar Responsable");
-  $("#persona_modal").modal('show');
+  $("#persona_crear_modal").data('modal-anterior', 'encuentro_modal');
+  $("#persona_crear_modal").find('.modal-title').text("Registrar Responsable");
+  $("#persona_crear_modal").modal('show');
 });
 
 $('#encuentro_modal_submit').on('click', function (event) {

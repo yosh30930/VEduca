@@ -34,8 +34,16 @@
   .agrega-cargo-group {
     display: none;
   }
+  .persona_agregar_institucion{
+    padding: 0 5px;
+    display: none;
+  }
+
+  .oculta-agrega-institucion-btn {
+    display: none;
+  }
 </style>
-<div class="modal fade" id="persona_modal" tabindex="-1" role="dialog" aria-labelledby="persona_modal_label">
+<div class="modal fade" id="persona_crear_modal" tabindex="-1" role="dialog" aria-labelledby="persona_crear_modal_label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-info">
@@ -55,7 +63,7 @@
       </div>
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="persona_modal_label">Persona</h4>
+        <h4 class="modal-title" id="persona_crear_modal_label">Registrar Persona</h4>
       </div>
       <div class="modal-body">
         <div class="modal-cargando-div">
@@ -63,78 +71,91 @@
         </div>
         <form>
           <div class="form-group required">
-            <label for="persona_modal_correo" class="control-label">Correo electrónico</label>
-            <input id="persona_modal_correo" type="text" class="form-control" placeholder="Correo" required="required">
+            <label for="persona_crear_modal_correo" class="control-label">Correo electrónico</label>
+            <input id="persona_crear_modal_correo" type="text" class="form-control" placeholder="Correo" required="required">
           </div>
           <div class="row" style="display: none">
             <div class='col-md-6'>
             </div>
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="persona_modal_correo_secundario" class="control-label">Correo electrónico alternativo</label>
-                <input id="persona_modal_correo_secundario" type="text" class="form-control" placeholder="Correo alternativo">
+                <label for="persona_crear_modal_correo_secundario" class="control-label">Correo electrónico alternativo</label>
+                <input id="persona_crear_modal_correo_secundario" type="text" class="form-control" placeholder="Correo alternativo">
               </div>
             </div>
           </div>
           <div class="form-group required">
-            <label for="persona_modal_nombres" class="control-label">Nombre(s)</label>
-            <input id="persona_modal_nombres" type="text" class="form-control" placeholder="Nombre">
+            <label for="persona_crear_modal_nombres" class="control-label">Nombre(s)</label>
+            <input id="persona_crear_modal_nombres" type="text" class="form-control" placeholder="Nombre">
           </div>
           <div class="row">
             <div class='col-md-6'>
               <div class="form-group required">
-                <label for="persona_modal_apellido_paterno" class="control-label">Apellido paterno</label>
-                <input id="persona_modal_apellido_paterno" type="text" class="form-control" placeholder="Apellido paterno" required="required">
+                <label for="persona_crear_modal_apellido_paterno" class="control-label">Apellido paterno</label>
+                <input id="persona_crear_modal_apellido_paterno" type="text" class="form-control" placeholder="Apellido paterno" required="required">
               </div>
             </div>
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="persona_modal_apellido_materno" class="control-label">Apellido materno</label>
-                <input id="persona_modal_apellido_materno" type="text" class="form-control" placeholder="Apellido materno" required="required">
+                <label for="persona_crear_modal_apellido_materno" class="control-label">Apellido materno</label>
+                <input id="persona_crear_modal_apellido_materno" type="text" class="form-control" placeholder="Apellido materno" required="required">
               </div>
             </div>
           </div>
           <div class="row">
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="persona_modal_pais" class="control-label">País</label>
-                <select id="persona_modal_pais" class="form-control" placeholder="Elige un país">
+                <label for="persona_crear_modal_pais" class="control-label">País</label>
+                <select id="persona_crear_modal_pais" class="form-control" placeholder="Elige un país">
+                  <option value='' selected>Selecciona un país</option>
                   {% include "usuarios/modals/pais.html" %}
                 </select>
               </div>
             </div>
-            <div class='col-md-6'>
-            </div>
           </div>
           <div class="row">
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="persona_modal_instituciones" class="control-label">Institución</label>
-                <select id="persona_modal_instituciones" class="form-control"></select>
-                <small><a class="agrega-institucion agrega-institucion-btn" href="#">Agregar otro</a></small>
-                <div class="input-group agrega-institucion-group">
-                  <input id="persona_modal_nueva_institucion" type="text" class="form-control agrega-institucion-input" placeholder="Institución nueva">
+                <label for="persona_crear_modal_instituciones" class="control-label">Institución</label>
+                <select id="persona_crear_modal_instituciones" class="form-control"></select>
+                <small><a class="agrega-institucion agrega-institucion-btn" href="#">Agregar otra</a></small>
+                <small><a class="oculta-agrega-institucion oculta-agrega-institucion-btn" href="#">Ocultar</a></small>
+                <div class="persona_agregar_institucion">
+                  <div class="form-group">
+                    <label for="" class="control-label"><small>Nombre de la institución</small></label>
+                    <input id="" class="form-control" placeholder="Nombre">
+                  </div>
+                  <div class="form-group">
+                    <label for="" class="control-label"><small>Nombre de la institución corto</small></label>
+                    <input id="" class="form-control" placeholder="Nombre corto">
+                  </div>
+                  <div class="form-group">
+                    <label for="" class="control-label"><small>País</small></label>
+                    <select id="" class="form-control" placeholder="Elige un país">
+                      <option value='' selected disabled>Selecciona un país</option>
+                      {% include "usuarios/modals/pais.html" %}
+                    </select>
+                  </div>
                   <span class="input-group-btn">
-                    <button id="persona_modal_agrega_institucion" class="btn btn-default" type="button">
-                      <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    <button id="persona_crear_modal_agrega_institucion" class="btn btn-default btn-block" type="button">
+                      Agregar
                     </button>
                   </span>
+                  <div class="input-group agrega-institucion-group">
+                    <input id="persona_crear_modal_nueva_institucion" type="text" class="form-control agrega-institucion-input" placeholder="Institución nueva">
+                    <span class="input-group-btn">
+                      <button id="persona_crear_modal_agrega_institucion" class="btn btn-default" type="button">
+                        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
+                      </button>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
             <div class='col-md-6'>
               <div class="form-group">
                 <label for="" class="control-label">Cargo</label>
-                <select id="" class="form-control"></select>
-                <small><a class="agrega-cargo agrega-cargo-btn" href="#">Agregar otro</a></small>
-                <div class="input-group agrega-cargo-group">
-                  <input type="text" class="form-control agrega-cargo-input" placeholder="Cargo nuevo">
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">
-                      <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
-                    </button>
-                  </span>
-                </div>
+                <input id="" class="form-control" placeholder="Cargo">
               </div>
             </div>
           </div>
@@ -142,7 +163,7 @@
       </div>
       <div class="modal-footer">
         <span class="label_obligatorio">Campos obligatorios</span>
-        <button id="persona_modal_submit" type="button" class="btn btn-primary" ></button>
+        <button id="persona_crear_modal_submit" type="button" class="btn btn-primary" >Completar registro</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
       </div>
     </div>
@@ -159,16 +180,16 @@ var llenando_persona = false;
 
 // Limpia el modal del encuentro
 function reset_modal(){
-  var $modal = $("#persona_modal");
+  var $modal = $("#persona_crear_modal");
   var $modal_body = $modal.find(".modal-body");
-  $('#persona_modal_apellidos').val("");
-  $('#persona_modal_correo').val("");
-  $('#persona_modal_correo_secundario').val("");
-  $('#persona_modal_pais').val("");
+  $('#persona_crear_modal_apellidos').val("");
+  $('#persona_crear_modal_correo').val("");
+  $('#persona_crear_modal_correo_secundario').val("");
+  $('#persona_crear_modal_pais').val("");
   //Oculta el estatus del modal
   $modal.find(".modal-info").css('display', 'none');
   if (personas_selectize === null) {
-    var $selector = $modal.find('#persona_modal_nombres').selectize({
+    var $selector = $modal.find('#persona_crear_modal_nombres').selectize({
       openOnFocus: false,
       create: true,
     });
@@ -177,22 +198,22 @@ function reset_modal(){
       var promesa = $.get('/personas/'+ val +'/');
       promesa.done(function(data){
         console.log(data);
-        var $modal = $("#persona_modal");
-        $('#persona_modal_apellidos').val(data.apellidos);
-        $('#persona_modal_correo').val(data.correo);
-        $('#persona_modal_correo_secundario').val(data.correo_secundario);
-        $('#persona_modal_pais').val(data.pais);
-        var $boton_submit = $modal.find('#persona_modal_submit');
+        var $modal = $("#persona_crear_modal");
+        $('#persona_crear_modal_apellidos').val(data.apellidos);
+        $('#persona_crear_modal_correo').val(data.correo);
+        $('#persona_crear_modal_correo_secundario').val(data.correo_secundario);
+        $('#persona_crear_modal_pais').val(data.pais);
+        var $boton_submit = $modal.find('#persona_crear_modal_submit');
         $modal.find('.modal-title').text('Editar una Persona');
         $boton_submit.text('Guardar cambios');
-        var $boton_submit = $modal.find('#persona_modal_submit');
+        var $boton_submit = $modal.find('#persona_crear_modal_submit');
         $boton_submit.data('operacion', 'edicion');
         $boton_submit.data('id-actividad', data.id);
       })
     });
     personas_selectize.on('option_add', function (val){
       if (!llenando_persona) {
-        var $boton_submit = $modal.find('#persona_modal_submit');
+        var $boton_submit = $modal.find('#persona_crear_modal_submit');
         $modal.find('.modal-title').text('Registrar una Persona');
         $boton_submit.text('Registrar Persona');
       }
@@ -200,7 +221,7 @@ function reset_modal(){
   }
 
   if (instituciones_selectize === null) {
-    var $selector = $modal.find('#persona_modal_instituciones').selectize({
+    var $selector = $modal.find('#persona_crear_modal_instituciones').selectize({
       openOnFocus: false,
     });
     instituciones_selectize = $selector[0].selectize;
@@ -210,7 +231,7 @@ function reset_modal(){
   // Se oculta el form
   //$modal_body.find("form").hide();
   // Se desbloqué el botón submit
-  var $boton_submit = $modal.find('#persona_modal_submit');
+  var $boton_submit = $modal.find('#persona_crear_modal_submit');
   $boton_submit.attr('disabled', 'disabled');
   // Se muestra la imágen de carga
   //$modal_body.find(".modal-cargando-div").show();
@@ -237,14 +258,14 @@ function rellena_personas(selectize, personas, id_seleccionados) {
   });
   llenando_persona = false;
 }
-$('#persona_modal').on('hide.bs.modal', function (event) {
-  if ($('#persona_modal').data('modal-anterior')) {
-    var anterior_id = "#" + $('#persona_modal').data('modal-anterior');
+$('#persona_crear_modal').on('hide.bs.modal', function (event) {
+  if ($('#persona_crear_modal').data('modal-anterior')) {
+    var anterior_id = "#" + $('#persona_crear_modal').data('modal-anterior');
     $(anterior_id).modal('show');
   }
 });
 // Se ejecuta cuando se muestra el modal
-$('#persona_modal').on('show.bs.modal', function (event) {
+$('#persona_crear_modal').on('show.bs.modal', function (event) {
   reset_modal();
   var $button = $(event.relatedTarget) // Botón que mostró el  modal
   var operacion = $button.data('operacion');
@@ -260,7 +281,7 @@ $('#persona_modal').on('show.bs.modal', function (event) {
     rellena_personas(personas_selectize, personas);
     personas_selectize.refreshOptions(false);
     // Se muestra una animación de carga en lo que se cargan los responsables
-    $('#persona_modal').find(".modal-cargando-div").fadeOut(800, function () {
+    $('#persona_crear_modal').find(".modal-cargando-div").fadeOut(800, function () {
       $form.fadeIn(400);
     });
   });
@@ -287,8 +308,8 @@ $('#persona_modal').on('show.bs.modal', function (event) {
   });
   return;
   //Se buscan los elementos a modificar
-  var $boton_submit = $modal.find('#persona_modal_submit');
-  var $selector = $modal.find('#persona_modal_responsables');
+  var $boton_submit = $modal.find('#persona_crear_modal_submit');
+  var $selector = $modal.find('#persona_crear_modal_responsables');
   // Se le asignan datos al botón submit para cuando se realice la creación
   // o edicion del encuentro
   $boton_submit.data('operacion', operacion);
@@ -303,7 +324,7 @@ $('#persona_modal').on('show.bs.modal', function (event) {
         rellena_personas(resp_selectize, responsables);
         resp_selectize.refreshOptions(false);
         // Se muestra una animación de carga en lo que se cargan los responsables
-        $('#persona_modal').find(".modal-cargando-div").fadeOut(800, function () {
+        $('#persona_crear_modal').find(".modal-cargando-div").fadeOut(800, function () {
           $form.fadeIn(400);
         });
       });
@@ -335,23 +356,23 @@ $('#persona_modal').on('show.bs.modal', function (event) {
         sedes_selectize.setValue(encuentro.sedes, false);
         sedes_selectize.refreshOptions();
         // Rellena el campo del nombre del encuentro
-        $modal.find('#persona_modal_nombre').val(encuentro.nombre);
+        $modal.find('#persona_crear_modal_nombre').val(encuentro.nombre);
         // Rellena el campo del país del encuentro
-        $modal.find('#persona_modal_pais').val(encuentro.pais);
+        $modal.find('#persona_crear_modal_pais').val(encuentro.pais);
         // Rellena el campo de la ciudad del encuentro
-        $modal.find('#persona_modal_ciudad').val(encuentro.ciudad);
+        $modal.find('#persona_crear_modal_ciudad').val(encuentro.ciudad);
         // Llena la lista de responsables marcando los que son
         // responsables del encuentro
         rellena_personas(resp_selectize, responsables, encuentro.responsables);
         // Se muestra una animación de carga en lo que se carga el encuentro
-        $('#persona_modal').find(".modal-cargando-div").fadeOut(800, function () {
+        $('#persona_crear_modal').find(".modal-cargando-div").fadeOut(800, function () {
           $form.fadeIn(400);
         });
         // Se obtienen las fechas del encuentro, si es que las tiene
         var fecha_fin = moment(encuentro.fecha_fin);
         var fecha_inicio = moment(encuentro.fecha_inicio);
-        var cal_inicio = $modal.find('#persona_modal_fecha_inicio').closest(".date");
-        var cal_fin = $modal.find('#persona_modal_fecha_fin').closest(".date");
+        var cal_inicio = $modal.find('#persona_crear_modal_fecha_inicio').closest(".date");
+        var cal_fin = $modal.find('#persona_crear_modal_fecha_fin').closest(".date");
         var fecha_inicio = moment(fecha_inicio);
         // Si la fecha de inicio es válida se llena el campo correspondiente
         if (fecha_inicio.isValid()) {
@@ -370,16 +391,16 @@ $('#persona_modal').on('show.bs.modal', function (event) {
 });
 
 function verifica_inputs() {
-  $modal = $("#persona_modal");
+  $modal = $("#persona_crear_modal");
   $modal_body = $modal.find(".modal-body");
-  $boton_submit = $modal.find("#persona_modal_submit");
+  $boton_submit = $modal.find("#persona_crear_modal_submit");
   var son_validos = true;
   // Verifica nombre del encuentro
-  if ($("#persona_modal_nombres").val().trim() === "") { son_validos = false;}
+  if ($("#persona_crear_modal_nombres").val().trim() === "") { son_validos = false;}
   // Verifica nombre del encuentro
-  if ($("#persona_modal_apellidos").val().trim() === "") { son_validos = false;}
+  if ($("#persona_crear_modal_apellidos").val().trim() === "") { son_validos = false;}
   // Verifica nombre del encuentro
-  if ($("#persona_modal_correo").val().trim() === "") { son_validos = false;}
+  if ($("#persona_crear_modal_correo").val().trim() === "") { son_validos = false;}
   // Bloquea el botón submit si faltan datos
   if (son_validos) {
     $boton_submit.removeAttr('disabled', 'disabled');
@@ -388,28 +409,28 @@ function verifica_inputs() {
   }
 };
 
-$('#persona_modal_nombres').on('input', function (event) {
+$('#persona_crear_modal_nombres').on('input', function (event) {
   verifica_inputs();
 });
-$('#persona_modal_apellidos').on('input', function (event) {
+$('#persona_crear_modal_apellidos').on('input', function (event) {
   verifica_inputs();
 });
-$('#persona_modal_correo').on('input', function (event) {
+$('#persona_crear_modal_correo').on('input', function (event) {
   verifica_inputs();
 });
 
-$('#persona_modal .agrega-institucion-btn').on('click', function (event) {
-  var $modal = $("#persona_modal");
-  $modal.find(".agrega-institucion-input").parent().css("display", "table");
+$('#persona_crear_modal .agrega-institucion-btn').on('click', function (event) {
+  var $modal = $("#persona_crear_modal");
+  $modal.find(".persona_agregar_institucion").css("display", "block");
 })
 
-$('#persona_modal .agrega-cargo-btn').on('click', function (event) {
-  var $modal = $("#persona_modal");
+$('#persona_crear_modal .agrega-cargo-btn').on('click', function (event) {
+  var $modal = $("#persona_crear_modal");
   $modal.find(".agrega-cargo-input").parent().css("display", "table");
 })
 
-$('#persona_modal_agrega_institucion').on('click', function (event) {
-  var $input = $("#persona_modal_nueva_institucion");
+$('#persona_crear_modal_agrega_institucion').on('click', function (event) {
+  var $input = $("#persona_crear_modal_nueva_institucion");
   var nombre = $input.val().trim();
   if (nombre == "") {return;}
   instituciones_selectize.addOption({
@@ -420,8 +441,8 @@ $('#persona_modal_agrega_institucion').on('click', function (event) {
   instituciones_selectize.refreshOptions(false);
 })
 
-$('#persona_modal_submit').on('click', function (event) {
-  var $modal = $("#persona_modal");
+$('#persona_crear_modal_submit').on('click', function (event) {
+  var $modal = $("#persona_crear_modal");
   $modal.find(".modal-info>div").hide();
   $modal.find(".modal-info").css('display', 'block');
   $modal.find(".modal-info .modal-info-cargando").show();
@@ -432,9 +453,9 @@ $('#persona_modal_submit').on('click', function (event) {
   // Datos a ser enviados al servidor
   var data = {
     'nombres': personas_selectize.getOption(personas_selectize.getValue()).context.innerText,
-    'apellidos': $('#persona_modal_apellidos').val().trim(),
-    'correo': $('#persona_modal_correo').val().trim(),
-    'pais': $('#persona_modal_pais').val(),
+    'apellidos': $('#persona_crear_modal_apellidos').val().trim(),
+    'correo': $('#persona_crear_modal_correo').val().trim(),
+    'pais': $('#persona_crear_modal_pais').val(),
   };
   var operacion = $boton_submit.data('operacion');
   switch (operacion) {
@@ -448,7 +469,7 @@ $('#persona_modal_submit').on('click', function (event) {
       promesa
       .fail(function(data) {
         // Se crea un mensaje para avisar que hubo un problema en la creación
-        var $modal = $("#persona_modal");
+        var $modal = $("#persona_crear_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-error").show();
@@ -457,11 +478,11 @@ $('#persona_modal_submit').on('click', function (event) {
         // Se lanza un evento indicando que se creó un actividad con éxito
         $(document).trigger( "actividadCreada", data);
         // Se crea un mensaje para avisar que se creó el encuentro
-        var $modal = $("#persona_modal");
+        var $modal = $("#persona_crear_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-exito").show();
-        setTimeout(function(){$("#persona_modal").modal('hide')}, 3000);
+        setTimeout(function(){$("#persona_crear_modal").modal('hide')}, 3000);
       })
       .always(function(data) {
         console.log(data);
@@ -479,7 +500,7 @@ $('#persona_modal_submit').on('click', function (event) {
       promesa
       .fail(function(data) {
         // Se crea un mensaje para avisar que hubo un problema en la edición
-        var $modal = $("#persona_modal");
+        var $modal = $("#persona_crear_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-error").show();
@@ -488,11 +509,11 @@ $('#persona_modal_submit').on('click', function (event) {
       .done(function(data){
         // Se lanza un evento indicando que se editó un actividad con éxito
         $(document).trigger( "actividadModificada", data);
-        var $modal = $("#persona_modal");
+        var $modal = $("#persona_crear_modal");
         $modal.find(".modal-info>div").hide();
         $modal.find(".modal-info").css('display', 'block');
         $modal.find(".modal-info .modal-info-exito").show();
-        setTimeout(function(){$("#persona_modal").modal('hide')}, 3000);
+        setTimeout(function(){$("#persona_crear_modal").modal('hide')}, 3000);
       })
       .always(function(data) {
         console.log(data);
@@ -504,8 +525,8 @@ $('#persona_modal_submit').on('click', function (event) {
 });
 
 // Se buscan los selectores de fechas en el DOM del modal
-var cal_inicio = $('#persona_modal_fecha_inicio').closest(".date");
-var cal_fin = $('#persona_modal_fecha_fin').closest(".date");
+var cal_inicio = $('#persona_crear_modal_fecha_inicio').closest(".date");
+var cal_fin = $('#persona_crear_modal_fecha_fin').closest(".date");
 // Inicializa el calendario de la fecha de inicio
 $(cal_inicio).datetimepicker({
   format: 'DD/MM/YYYY',
