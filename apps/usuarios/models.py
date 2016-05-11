@@ -70,6 +70,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         """
         send_mail(subject, message, from_email, [self.persona.correo])
 
+    def __str__(self):
+        return self.email.correos
+
 
 class SecretarioGeneral(models.Model):
     """

@@ -121,36 +121,39 @@
               <div class="form-group">
                 <label for="persona_crear_modal_instituciones" class="control-label">Institución</label>
                 <select id="persona_crear_modal_instituciones" class="form-control"></select>
-                <small><a class="agrega-institucion agrega-institucion-btn" href="#">Agregar otra</a></small>
-                <small><a class="oculta-agrega-institucion oculta-agrega-institucion-btn" href="#">Ocultar</a></small>
-                <div class="persona_agregar_institucion">
-                  <div class="form-group">
-                    <label for="persona_crear_modal_crear_institucion_nombre" class="control-label"><small>Nombre de la institución</small></label>
-                    <input id="persona_crear_modal_crear_institucion_nombre" class="form-control" placeholder="Nombre">
-                  </div>
-                  <div class="form-group">
-                    <label for="persona_crear_modal_crear_institucion_nombre_corto" class="control-label"><small>Nombre de la institución corto</small></label>
-                    <input id="persona_crear_modal_crear_institucion_nombre_corto" class="form-control" placeholder="Nombre corto">
-                  </div>
-                  <div class="form-group">
-                    <label for="persona_crear_modal_crear_institucion_pais" class="control-label"><small>País</small></label>
-                    <select id="persona_crear_modal_crear_institucion_pais" class="form-control" placeholder="Elige un país">
-                      <option value='' selected disabled>Selecciona un país</option>
-                      {% include "usuarios/modals/pais.html" %}
-                    </select>
-                  </div>
-                  <span class="input-group-btn">
-                    <button id="persona_crear_modal_agrega_institucion" class="btn btn-default btn-block" type="button">
-                      Agregar
-                    </button>
-                  </span>
-                </div>
+                <small><a class="agrega-institucion agrega-institucion-btn" href="#">Agregar otra </a></small>
+                <small><a class="oculta-agrega-institucion oculta-agrega-institucion-btn" href="#">Ocultar creación</a></small>
               </div>
             </div>
             <div class='col-md-6'>
               <div class="form-group">
                 <label for="persona_crear_modal_cargo" class="control-label">Cargo</label>
                 <input id="persona_crear_modal_cargo" class="form-control" placeholder="Cargo">
+              </div>
+            </div>
+          </div>
+        </form>
+        <form>
+          <div class="persona_agregar_institucion">
+            <div class="form-group">
+              <label for="persona_crear_modal_crear_institucion_nombre" class="control-label"><small>Nombre de la institución</small></label>
+              <input id="persona_crear_modal_crear_institucion_nombre" class="form-control" placeholder="Nombre">
+            </div>
+            <div class="row">
+              <div class='col-md-6'>
+                <div class="form-group">
+                  <label for="persona_crear_modal_crear_institucion_nombre_corto" class="control-label"><small>Nombre corto de la institución</small></label>
+                  <input id="persona_crear_modal_crear_institucion_nombre_corto" class="form-control" placeholder="Nombre corto">
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <div class="form-group">
+                  <label for="persona_crear_modal_crear_institucion_pais" class="control-label"><small>País</small></label>
+                  <select id="persona_crear_modal_crear_institucion_pais" class="form-control" placeholder="Elige un país">
+                    <option value='' selected disabled>Selecciona un país</option>
+                    {% include "usuarios/modals/pais.html" %}
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -182,7 +185,7 @@ function reset_modal(){
 
   if (instituciones_selectize === null) {
     var $selector = $modal.find('#persona_crear_modal_instituciones').selectize({
-      openOnFocus: false,
+      openOnFocus: true,
     });
     instituciones_selectize = $selector[0].selectize;
   }
@@ -375,8 +378,19 @@ $('#persona_crear_modal_correo').on('input', function (event) {
 });
 
 $('#persona_crear_modal .agrega-institucion-btn').on('click', function (event) {
+  instituciones_selectize.clear();
+  instituciones_selectize.lock();
   var $modal = $("#persona_crear_modal");
   $modal.find(".persona_agregar_institucion").css("display", "block");
+  $modal.find(".oculta-agrega-institucion-btn").css("display", "inline");
+  $modal.find(".agrega-institucion-btn").css("display", "none");
+})
+$('#persona_crear_modal .oculta-agrega-institucion-btn').on('click', function (event) {
+  instituciones_selectize.unlock();
+  var $modal = $("#persona_crear_modal");
+  $modal.find(".persona_agregar_institucion").css("display", "none");
+  $modal.find(".oculta-agrega-institucion-btn").css("display", "none");
+  $modal.find(".agrega-institucion-btn").css("display", "inline");
 })
 
 $('#persona_crear_modal .agrega-cargo-btn').on('click', function (event) {
