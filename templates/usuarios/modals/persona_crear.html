@@ -42,6 +42,9 @@
   .oculta-agrega-institucion-btn {
     display: none;
   }
+  #persona_crear_modal .modal-body > form{
+    display: none;
+  }
 </style>
 <div class="modal fade" id="persona_crear_modal" tabindex="-1" role="dialog" aria-labelledby="persona_crear_modal_label">
   <div class="modal-dialog" role="document">
@@ -122,16 +125,16 @@
                 <small><a class="oculta-agrega-institucion oculta-agrega-institucion-btn" href="#">Ocultar</a></small>
                 <div class="persona_agregar_institucion">
                   <div class="form-group">
-                    <label for="" class="control-label"><small>Nombre de la institución</small></label>
-                    <input id="" class="form-control" placeholder="Nombre">
+                    <label for="persona_crear_modal_crear_institucion_nombre" class="control-label"><small>Nombre de la institución</small></label>
+                    <input id="persona_crear_modal_crear_institucion_nombre" class="form-control" placeholder="Nombre">
                   </div>
                   <div class="form-group">
-                    <label for="" class="control-label"><small>Nombre de la institución corto</small></label>
-                    <input id="" class="form-control" placeholder="Nombre corto">
+                    <label for="persona_crear_modal_crear_institucion_nombre_corto" class="control-label"><small>Nombre de la institución corto</small></label>
+                    <input id="persona_crear_modal_crear_institucion_nombre_corto" class="form-control" placeholder="Nombre corto">
                   </div>
                   <div class="form-group">
-                    <label for="" class="control-label"><small>País</small></label>
-                    <select id="" class="form-control" placeholder="Elige un país">
+                    <label for="persona_crear_modal_crear_institucion_pais" class="control-label"><small>País</small></label>
+                    <select id="persona_crear_modal_crear_institucion_pais" class="form-control" placeholder="Elige un país">
                       <option value='' selected disabled>Selecciona un país</option>
                       {% include "usuarios/modals/pais.html" %}
                     </select>
@@ -141,21 +144,13 @@
                       Agregar
                     </button>
                   </span>
-                  <div class="input-group agrega-institucion-group">
-                    <input id="persona_crear_modal_nueva_institucion" type="text" class="form-control agrega-institucion-input" placeholder="Institución nueva">
-                    <span class="input-group-btn">
-                      <button id="persona_crear_modal_agrega_institucion" class="btn btn-default" type="button">
-                        <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
-                      </button>
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
             <div class='col-md-6'>
               <div class="form-group">
-                <label for="" class="control-label">Cargo</label>
-                <input id="" class="form-control" placeholder="Cargo">
+                <label for="persona_crear_modal_cargo" class="control-label">Cargo</label>
+                <input id="persona_crear_modal_cargo" class="form-control" placeholder="Cargo">
               </div>
             </div>
           </div>
@@ -172,11 +167,7 @@
 
 <script type="text/javascript">
 $(function(){
-
-var sedes_selectize = null;
-var personas_selectize = null;
 var instituciones_selectize = null;
-var llenando_persona = false;
 
 // Limpia el modal del encuentro
 function reset_modal(){
@@ -188,37 +179,6 @@ function reset_modal(){
   $('#persona_crear_modal_pais').val("");
   //Oculta el estatus del modal
   $modal.find(".modal-info").css('display', 'none');
-  if (personas_selectize === null) {
-    var $selector = $modal.find('#persona_crear_modal_nombres').selectize({
-      openOnFocus: false,
-      create: true,
-    });
-    personas_selectize = $selector[0].selectize;
-    personas_selectize.on('item_add', function (val){
-      var promesa = $.get('/personas/'+ val +'/');
-      promesa.done(function(data){
-        console.log(data);
-        var $modal = $("#persona_crear_modal");
-        $('#persona_crear_modal_apellidos').val(data.apellidos);
-        $('#persona_crear_modal_correo').val(data.correo);
-        $('#persona_crear_modal_correo_secundario').val(data.correo_secundario);
-        $('#persona_crear_modal_pais').val(data.pais);
-        var $boton_submit = $modal.find('#persona_crear_modal_submit');
-        $modal.find('.modal-title').text('Editar una Persona');
-        $boton_submit.text('Guardar cambios');
-        var $boton_submit = $modal.find('#persona_crear_modal_submit');
-        $boton_submit.data('operacion', 'edicion');
-        $boton_submit.data('id-actividad', data.id);
-      })
-    });
-    personas_selectize.on('option_add', function (val){
-      if (!llenando_persona) {
-        var $boton_submit = $modal.find('#persona_crear_modal_submit');
-        $modal.find('.modal-title').text('Registrar una Persona');
-        $boton_submit.text('Registrar Persona');
-      }
-    });
-  }
 
   if (instituciones_selectize === null) {
     var $selector = $modal.find('#persona_crear_modal_instituciones').selectize({
@@ -226,8 +186,6 @@ function reset_modal(){
     });
     instituciones_selectize = $selector[0].selectize;
   }
-
-  personas_selectize.clearOptions();
   // Se oculta el form
   //$modal_body.find("form").hide();
   // Se desbloqué el botón submit
@@ -266,6 +224,10 @@ $('#persona_crear_modal').on('hide.bs.modal', function (event) {
 });
 // Se ejecuta cuando se muestra el modal
 $('#persona_crear_modal').on('show.bs.modal', function (event) {
+  var $modal = $("#persona_crear_modal");
+  var $modal_body = $modal.find(".modal-body");
+  $modal_body.find(".modal-cargando-div").show()
+  $("#persona_crear_modal .modal-body > form").hide();
   reset_modal();
   var $button = $(event.relatedTarget) // Botón que mostró el  modal
   var operacion = $button.data('operacion');
@@ -274,17 +236,7 @@ $('#persona_crear_modal').on('show.bs.modal', function (event) {
   var $form = $modal.find(".modal-content form");
   // Se obtiene la lista de los posibles responsables que están registrados
   var prom_resp = $.get('/responsables/');
-  var prom_pers = $.get('/personas/');
   var prom_inst = $.get('/instituciones/');
-  prom_pers.done(function(personas) {
-    // Se el selector con los responsables
-    rellena_personas(personas_selectize, personas);
-    personas_selectize.refreshOptions(false);
-    // Se muestra una animación de carga en lo que se cargan los responsables
-    $('#persona_crear_modal').find(".modal-cargando-div").fadeOut(800, function () {
-      $form.fadeIn(400);
-    });
-  });
   prom_inst.done(function(instituciones) {
     // Se el selector con los responsables
       id_seleccionados = typeof id_seleccionados !== 'undefined' ? id_seleccionados : [];
@@ -305,6 +257,9 @@ $('#persona_crear_modal').on('show.bs.modal', function (event) {
         }
       });
     instituciones_selectize.refreshOptions(false);
+    $('#persona_crear_modal').find(".modal-cargando-div").fadeOut(800, function () {
+      $form.fadeIn(400);
+    });
   });
   return;
   //Se buscan los elementos a modificar
@@ -398,7 +353,7 @@ function verifica_inputs() {
   // Verifica nombre del encuentro
   if ($("#persona_crear_modal_nombres").val().trim() === "") { son_validos = false;}
   // Verifica nombre del encuentro
-  if ($("#persona_crear_modal_apellidos").val().trim() === "") { son_validos = false;}
+  if ($("#persona_crear_modal_apellido_paterno").val().trim() === "") { son_validos = false;}
   // Verifica nombre del encuentro
   if ($("#persona_crear_modal_correo").val().trim() === "") { son_validos = false;}
   // Bloquea el botón submit si faltan datos
@@ -430,15 +385,30 @@ $('#persona_crear_modal .agrega-cargo-btn').on('click', function (event) {
 })
 
 $('#persona_crear_modal_agrega_institucion').on('click', function (event) {
-  var $input = $("#persona_crear_modal_nueva_institucion");
-  var nombre = $input.val().trim();
-  if (nombre == "") {return;}
-  instituciones_selectize.addOption({
-    text: _.capitalize(nombre),
-    value: nombre,
-    selected: true,
+  var data = {
+    'nombre': $('#persona_crear_modal_crear_institucion_nombre').val().trim(),
+    'nombre_corto': $('#persona_crear_modal_crear_institucion_nombre_corto').val().trim(),
+    'pais': $('#persona_crear_modal_crear_institucion_pais').val().trim(),
+  };
+  var promesa = $.ajax({
+    url: '/instituciones/',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(data),
   });
-  instituciones_selectize.refreshOptions(false);
+  promesa
+  .fail(function(data) {
+    // Se crea un mensaje para avisar que hubo un problema en la creación
+    alert("Error");
+    console.log(data);
+  })
+  .done(function(data){
+    // Se lanza un evento indicando que se creó un actividad con éxito
+    console.log(data);
+  })
+  .always(function(data) {
+    console.log(data);
+  });
 })
 
 $('#persona_crear_modal_submit').on('click', function (event) {
@@ -452,16 +422,18 @@ $('#persona_crear_modal_submit').on('click', function (event) {
   $boton_submit.attr('disabled', 'disabled');
   // Datos a ser enviados al servidor
   var data = {
-    'nombres': personas_selectize.getOption(personas_selectize.getValue()).context.innerText,
-    'apellidos': $('#persona_crear_modal_apellidos').val().trim(),
+    'nombres': $('#persona_crear_modal_nombres').val().trim(),
+    'apellido_paterno': $('#persona_crear_modal_apellido_paterno').val().trim(),
+    'apellido_materno': $('#persona_crear_modal_apellido_materno').val().trim(),
     'correo': $('#persona_crear_modal_correo').val().trim(),
-    'pais': $('#persona_crear_modal_pais').val(),
+    'pais': $('#persona_crear_modal_pais').val().trim(),
+    'cargo': $('#persona_crear_modal_cargo').val().trim(),
   };
-  var operacion = $boton_submit.data('operacion');
+  var operacion = "responsable";
   switch (operacion) {
-    case 'creacion':
+    case 'responsable':
       var promesa = $.ajax({
-        url: '/encuentros/',
+        url: '/responsables/',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(data),

@@ -3,6 +3,7 @@ from django.http import Http404
 from drf_multiple_model.views import MultipleModelAPIView
 from rest_framework import status, generics
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializersDRF import ResponsableSerializer, PersonaSerializer
 from .serializersDRF import InstitucionSerializer
@@ -23,8 +24,12 @@ class ResponsableListView(generics.ListCreateAPIView):
     queryset = Persona.objects.all()
 
     def post(self, request, format=None):
-        data = dict()
-        serializer = ResponsableSerializer(data=data)
+        data = request.data
+        serializer = ResponsableSerializer(
+            data=data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 """
