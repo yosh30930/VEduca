@@ -18,13 +18,17 @@ class UserManager(BaseUserManager):
             val = extra_fields.pop(campo, None)
             if val is not None:
                 kwargs_persona[campo] = val
-        persona = Persona(**kwargs_persona)
+        persona = None
+        try:
+            persona = Persona.objects.get(correo=correo)
+        except Persona.DoesNotExist:
+            persona = Persona(**kwargs_persona)
         usuario = None
         try:
             with transaction.atomic():
                 persona.save()
                 usuario = self.model(is_active=True, is_staff=is_staff,
-                                     is_superuser=is_superuser, correo=persona,
+                                     is_superuser=is_superuser, email=persona,
                                      **extra_fields)
                 usuario.set_password(contrasena)
                 usuario.save(using=self._db)

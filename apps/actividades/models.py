@@ -280,15 +280,14 @@ class OtraActividadSeminario(Actividad):
 class Panel(Actividad):
     tipo = "panel"
     nombre_corto = models.CharField(max_length=200, blank=True)
-    #espacio = models.ForeignKey(
-    #    'Espacio', models.SET_NULL, blank=True, null=True)
+    espacio = models.ForeignKey(
+        'Espacio', models.SET_NULL, blank=True, null=True)
     fecha = models.DateTimeField(null=True, blank=True)
-    duracion = models.PositiveSmallIntegerField(default=1*60)
-    orden = models.PositiveSmallIntegerField()
+    duracion = models.PositiveSmallIntegerField(default=1 * 60)
+    orden = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         verbose_name_plural = "paneles"
-
 
 
 modelosActividades = [Encuentro, Foro, Seminario, Panel]

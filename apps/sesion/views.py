@@ -110,6 +110,7 @@ def ResetEspacios():
 
 
 def ResetInstitucion():
+    Institucion.objects.all().delete()
     pais = Pais.objects.get(id="MX")
     Institucion.objects.create(
         nombre="Universidad Nacional Autonoma de Mexico", nombre_corto="UNAM",
@@ -123,6 +124,7 @@ def ResetInstitucion():
 
 
 def ResetPais():
+    Pais.objects.all().delete()
     Pais.objects.create(id='', nombre='Otro')
     Pais.objects.create(id='AF', nombre='Afganistán')
     Pais.objects.create(id='AL', nombre='Albania')

@@ -16,8 +16,6 @@ class ResponsableSerializer(serializers.ModelSerializer):
         obj = None
         try:
             with transaction.atomic():
-                obj = super(ResponsableSerializer, self).create(
-                    *args, **kwargs)
                 print("Correoooooooooo", obj.correo)
                 Usuario.objects.create_user(correo=obj.correo)
         except IntegrityError as e:
