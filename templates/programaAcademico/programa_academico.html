@@ -221,6 +221,26 @@ function set_botones_seminarios(node, $li) {
   return btns_actividades;
 };
 
+function set_botones_paneles(node, $li) {
+  var btns_actividades = $("<div>", {class: "btns-actividades"});
+  var permisos = node.parent.permisos_edicion;
+  if ($.inArray('agregar hijos', permisos) > -1) {
+    $(btns_actividades).append($("<div style=clear:right></div>"));
+    var boton_agregar = $("<a>",
+      {text:"Agregar un Panel",
+      class:"btn btn-default btn-sm btn-agregar",
+      href: "#"
+    });
+    $(boton_agregar).attr("data-toggle", "modal")
+    $(boton_agregar).attr("data-target", "#panel_modal")
+    $(boton_agregar).attr("data-operacion", "creacion")
+    $(boton_agregar).attr("data-id-actividad", node.parent.id),
+    $(boton_agregar).attr("data-tipo-padre", node.parent.tipo),
+    $(btns_actividades).append(boton_agregar);
+  }
+  return btns_actividades;
+};
+
 function set_botones_foro(node, $li) {
   var permisos = node.permisos_edicion;
   var btns_actividades = $("<div>", {class: "btns-actividades"});

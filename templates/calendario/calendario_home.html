@@ -156,7 +156,7 @@
       lang: 'es',
       slotDuration: '00:15:00',
       snapDuration: '00:05:00',
-      defaultTimedEventDuration: '00:30:00',
+      defaultTimedEventDuration: '00:00:00',
       forceEventDuration: true,
       allDaySlot: false,
       header: {
@@ -176,6 +176,14 @@
         updateEvent(event);
       },
       eventReceive: function (event) {
+        console.log(event);
+        var duracion = event.objeto.duracion || 30;
+        if (duracion) {
+          console.log(event);
+          event.end.add(duracion, "minutes");
+          event._end.add(duracion, "minutes");
+          console.log(event);
+        }
         $('#calendar').fullCalendar('removeEvents', function (evento) {
           return (event.id === evento.id && event !== evento);
         });
