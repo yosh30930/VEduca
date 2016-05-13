@@ -16,7 +16,7 @@ from .serializersDRF import (
     EncuentroSerializer, ForoSerializer, SeminarioSerializer,
     PanelSerializer, EspacioSerializer, ActividadSerializer)
 from .models import (Encuentro, Foro, Seminario, Panel, Espacio,
-                     modelosActividades)
+                     modelosActividades, Sede)
 from apps.usuarios.models import SecretarioGeneral
 
 modelo_dict = {
@@ -140,7 +140,10 @@ class EspacioListView(generics.ListCreateAPIView):
         for the currently authenticated user.
         """
         id = self.kwargs['encuentro_id']
-        return Espacio.objects.filter(encuentro=id)
+        sedes = Sede.objects.filter(encuentro=id)
+        sedes_id = [sede.pk for sede in sedes]
+        espacios = Espacio.objects.filter(sede__in=sedes_id)
+        return espacios
 """
     def post(self, request, format=None):
         serializer = EspacioSerializer(data=request.data, context={'request': request})
@@ -178,12 +181,16 @@ class HijosListView(MultipleModelAPIView):
             Panel: ([], PanelSerializer, 'paneles'),
             Seminario: ([], SeminarioSerializer, 'seminarios'),
         }
+        posibles_hijos = {
+            Encuentro: [Foro], Foro: [Seminario], Seminario: [Panel],
+            Panel: [],
+        }
         for nodo_hijo in nodos_hijos_permitidos:
             hijo = nodo_hijo.elemento
             conjunto_hijos[type(hijo)][0].append(hijo)
 
         for llave, valor in conjunto_hijos.items():
-            if len(valor[0]) > 0:
+            if (llave in posibles_hijos[Modelo]) or len(valor[0]) > 0:
                 queryList.append(valor)
         return queryList
 

@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from .views import PersonaDetailView, PersonaListView, ResponsableListView
 from .views import InstitucionListView
-# from .views import ParticipanteListView
+from .views import ParticipanteListView
 
 urlpatterns = [
     url(r'^responsables/$', ResponsableListView.as_view(),
@@ -11,5 +11,6 @@ urlpatterns = [
         name='personas-detail'),
     url(r'^instituciones/$', InstitucionListView.as_view(),
         name='instituciones-list'),
-    # url(r'^participantes/$', ParticipanteListView.as_view(), name='participante-list'),
+    url(r'^participantes/$', ParticipanteListView.as_view(),
+        name='participante-list'),
 ]

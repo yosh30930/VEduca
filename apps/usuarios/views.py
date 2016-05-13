@@ -32,34 +32,32 @@ class ResponsableListView(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-"""
 
 class ParticipanteListView(MultipleModelAPIView):
 
-    Regresa una lista de los participantes, si se epecifica
-    el id de un encuentro se regresan 2 listas, los que son locales al encuentro
-    con ese id y los que son globales.
-
+    """Regresa una lista de los participantes, si se epecifica
+    el id de un encuentro se regresan 2 listas, los que son locales al
+    encuentro con ese id y los que son globales."""
 
     def get_queryList(self):
-        participantes = Participante.objects.order_by('nombre')
-        encuentro_id = self.request.query_params.get('encuentro_id', None)
-        if encuentro_id is None:
-            queryList = [(participantes, ParticipanteSerializer)]
+        participantes = Persona.objects.order_by('nombres')
+        # encuentro_id = self.request.query_params.get('encuentro_id', None)
+        queryList = [(participantes, PersonaSerializer)]
+        """if encuentro_id is None:
+            queryList = [(participantes, PersonaSerializer)]
         else:
             try:
                 encuentro = Encuentro.objects.get(id=encuentro_id)
                 queryList = (
                     (participantes.filter(encuentro=encuentro),
-                        ParticipanteSerializer, "locales"),
+                        PersonaSerializer, "locales"),
                     (participantes.filter(encuentro=None),
-                        ParticipanteSerializer, "globales"),
+                        PersonaSerializer, "globales"),
                 )
 
             except Encuentro.ObjectDoesNotExist:
-                raise Http404
+                raise Http404"""
         return queryList
-"""
 
 
 class PersonaListView(generics.ListCreateAPIView):
