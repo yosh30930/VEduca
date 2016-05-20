@@ -90,22 +90,22 @@
           </div>
           <div class="form-group">
             <label for="panel_modal_coordinador" class="control-label">Coordinador del panel</label>
-            <select id="panel_modal_coordinador" class="selectpicker form-control" data-live-search="true" title="No hay un coordinador seleccionado">
+            <select id="panel_modal_coordinador" class="selectpicker form-control" data-live-search="true" title="Selecciona uno o más coordinadores">
             </select>
           </div>
           <div class="form-group">
             <label for="panel_modal_moderador" class="control-label">Moderador del panel</label>
-            <select id="panel_modal_moderador" class="selectpicker form-control" data-live-search="true" title="No hay un mooderador seleccionado">
+            <select id="panel_modal_moderador" class="selectpicker form-control" data-live-search="true" title="Selecciona uno o más mooderadores">
             </select>
           </div>
           <div class="form-group">
             <label for="panel_modal_intervienen" class="control-label">Quienes intervienen</label>
-            <select id="panel_modal_intervienen" class="selectpicker form-control" data-live-search="true" title="No hay personas seleccionads" multiple>
+            <select id="panel_modal_intervienen" class="selectpicker form-control" data-live-search="true" title="Selecciona una o varias personas" multiple>
             </select>
           </div>
           <div class="form-group">
             <label for="panel_modal_espacio" class="control-label">Espacio para el panel</label>
-            <select id="panel_modal_espacio" class="selectpicker form-control" data-live-search="true" title="No hay personas seleccionadss">
+            <select id="panel_modal_espacio" class="selectpicker form-control" data-live-search="true" title="Selecciona un espacio">
             </select>
           </div>
         </form>
@@ -155,7 +155,7 @@ $('#panel_modal').on('show.bs.modal', function (event) {
   var $form = $modal.find(".modal-content form");
   //modal.find('#panel_modal_nombre').val('');
   var prom_esp = $.get('/espacios/' + {{encuentro_id}} + "/");
-  var prom_par = $.get('/participantes/', {encuentro_id: {{encuentro_id}} });
+  var prom_par = $.get('/personas/', {encuentro_id: {{encuentro_id}} });
   $modal.find('#panel_modal_submit').data('operacion', operacion);
   $modal.find('#panel_modal_submit').data('id-actividad', id);
   $modal.find('#panel_modal_submit').removeAttr('disabled');
@@ -185,30 +185,16 @@ $('#panel_modal').on('show.bs.modal', function (event) {
           selected: selected,
         }));
       });
-      var $optgroup_l = $('<optgroup label="Locales"></optgroup>');
-      $(participantes[0]['locales']).each(function (idx, participante) {
+      $(participantes).each(function (idx, participante) {
         var $option = $('<option>', {
-          text: participante.nombre,
+          text: participante.nombres,
           value: participante.id,
           selected: false,
         });
-        $optgroup_l.append($option);
-      })
-      $coordinardor_s.append($optgroup_l.clone());
-      $moderador_s.append($optgroup_l.clone());
-      $intervienen_s.append($optgroup_l.clone());
-      var $optgroup_g = $('<optgroup label="Globales"></optgroup>');
-      $(participantes[1]['globales']).each(function (idx, participante) {
-        var $option = $('<option>', {
-          text: participante.nombre,
-          value: participante.id,
-          selected: false,
-        });
-        $optgroup_g.append($option);
-      })
-      $coordinardor_s.append($optgroup_g.clone());
-      $moderador_s.append($optgroup_g.clone());
-      $intervienen_s.append($optgroup_g.clone());
+        $coordinardor_s.append($option.clone());
+        $moderador_s.append($option.clone());
+        $intervienen_s.append($option.clone());
+      });
       $coordinardor_s.selectpicker('refresh');
       $moderador_s.selectpicker('refresh');
       $intervienen_s.selectpicker('refresh');

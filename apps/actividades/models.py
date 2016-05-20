@@ -16,7 +16,7 @@ class Nodo(MPTTModel):
     """
     Estructura que hace posible ver a las actividades como un árbol.
 
-    Cada nodo está asociado a una actividad y viceversa.
+    Cada nodo está asociado a una actividad y viceversa. nodo <-> actividad
 
     ¿Por qué no se hizo que cada actividad heredara de MPTTModel en vez de
     crear una estructura 'Nodo' con apuntadores a actividades?
@@ -42,7 +42,7 @@ class Nodo(MPTTModel):
 
 class Actividad(models.Model):
     """
-    Base de cualquier tipo de actividad(Encuentro, Foro, Seminario, ...)
+    Modelo base de cualquier tipo de actividad(Encuentro, Foro, Seminario, ...)
     """
     nombre = models.CharField(max_length=300)
     nodos = GenericRelation(
@@ -55,12 +55,10 @@ class Actividad(models.Model):
 
     def save(self, *args, **kwargs):
         es_creacion = self.pk is None
-        # Se obtiene el elemento padre
-        padre = None
-        if "padre" in kwargs:
-            padre = kwargs.pop("padre", None)
-        # Le asigna un nodo a la actividad y se
-        # le asigna un padre si es que se especificó
+        # Se obtiene el elemento padre si es que se proporciona
+        padre = kwargs.pop("padre", None)
+        # Le asigna un nodo a la actividad y se le asigna un padre si es
+        # que se especificó
         if es_creacion:
             # Se encarga del nodo
             try:
