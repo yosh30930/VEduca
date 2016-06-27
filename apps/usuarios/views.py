@@ -16,8 +16,6 @@ class ResponsableListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **usuarios** (GET)
     Agrega un nuevo foro (POST)
-    Actualiza todos los usuarios (PUT)
-    Elimina todos los usuarios en el sistema (DELETE)
     """
     model = Persona
     serializer_class = PersonaSerializer
@@ -34,7 +32,6 @@ class ResponsableListView(generics.ListCreateAPIView):
 
 
 class ParticipanteListView(MultipleModelAPIView):
-
     """Regresa una lista de los participantes, si se epecifica
     el id de un encuentro se regresan 2 listas, los que son locales al
     encuentro con ese id y los que son globales."""
@@ -43,20 +40,6 @@ class ParticipanteListView(MultipleModelAPIView):
         participantes = Persona.objects.order_by('nombres')
         # encuentro_id = self.request.query_params.get('encuentro_id', None)
         queryList = [(participantes, PersonaSerializer)]
-        """if encuentro_id is None:
-            queryList = [(participantes, PersonaSerializer)]
-        else:
-            try:
-                encuentro = Encuentro.objects.get(id=encuentro_id)
-                queryList = (
-                    (participantes.filter(encuentro=encuentro),
-                        PersonaSerializer, "locales"),
-                    (participantes.filter(encuentro=None),
-                        PersonaSerializer, "globales"),
-                )
-
-            except Encuentro.ObjectDoesNotExist:
-                raise Http404"""
         return queryList
 
 
@@ -64,8 +47,6 @@ class PersonaListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **foros** (GET)
     Agrega un nuevo foro (POST)
-    Actualiza todos los foros (PUT)
-    Elimina todos los foros en el sistema (DELETE)
     """
     model = Persona
     serializer_class = PersonaSerializer
@@ -117,8 +98,6 @@ class InstitucionListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **foros** (GET)
     Agrega un nuevo foro (POST)
-    Actualiza todos los foros (PUT)
-    Elimina todos los foros en el sistema (DELETE)
     """
     model = Institucion
     serializer_class = InstitucionSerializer

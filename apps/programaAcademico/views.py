@@ -25,6 +25,11 @@ class ProgramaAcademico(LoginRequiredMixin, TemplateView):
 
 
 def set_context_tab_menu(context, usuario, encuentro):
+    """
+    Indica las tabs que el usuario tiene permitido ver para poderle dar click
+    como (calendario del encuentro, espacios del encuentro, programa académico)
+    Este se guarda como variables en el contexto de la vista
+    """
     if not usuario.is_authenticated():
         return
     # Indica quienes pueden ver el prográma académico

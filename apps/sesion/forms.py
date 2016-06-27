@@ -1,14 +1,13 @@
-from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordResetForm
 from django import forms
+
 from apps.usuarios.models import Persona
 
 
 class UsuarioResetForm(PasswordResetForm):
-    """Given an email, return matching user(s) who should receive a reset.
-    This allows subclasses to more easily customize the default policies
-    that prevent inactive users and users with unusable passwords from
-    resetting their password.
+    """
+    Forma para iniciar el reestablecimiento de contraseña
     """
 
     def get_users(self, email):

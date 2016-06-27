@@ -48,6 +48,10 @@ class UserManager(BaseUserManager):
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
+    """
+    Se define un nuevo tipo de usuario distinto al que te da Django por
+    defecto. Esto es para que se pueda iniciar sesión usuando el correo
+    """
     objects = UserManager()
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -55,7 +59,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
                                  to_field='correo')
 
     USERNAME_FIELD = 'email'
-    # REQUIRED_FIELDS = ['nombres']
 
     class Meta:
         verbose_name = 'usuario'
@@ -70,7 +73,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def email_user(self, subject, message, from_email=None):
         """
-        Sends an email to this User.
+        Manda correos a este usuario
         """
         send_mail(subject, message, from_email, [self.persona.correo])
 

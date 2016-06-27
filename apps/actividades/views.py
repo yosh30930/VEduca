@@ -23,113 +23,18 @@ modelo_dict = {
     'encuentro': Encuentro, 'foro': Foro, 'seminario': Seminario,
     'panel': Panel}
 
-
+"""
 def get_model(nombre_str):
     Modelo = apps.get_model(
         app_label='actividades', model_name=nombre_str)
     return Modelo
-
-
-class ActividadListView(generics.ListCreateAPIView):
-    """
-    Regresa una lista de todos los **encuentros** (GET)
-
-    Agrega un nuevo encuentro (POST)
-
-    Actualiza todos los encuentros (PUT)
-
-    Elimina todos los encuentros en el sistema (DELETE)
-    """
-    serializer_class = ActividadSerializer
-
-    def post(self, request, format=None):
-        serializer = ActividadSerializer(
-            data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-#           #publish_data(channel='notification', data=data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def get_queryset(self):
-        """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
-        """
-        user = self.request.user
-        queryset = Actividad.objects.none()
-        if not user.is_authenticated():
-            queryset = Actividad.objects.all()
-        elif tiene_permiso_absoluto(user):
-            queryset = Actividad.objects.all()
-        else:
-            encuentros_id = set()
-            for Modelo in modelosActividades:
-                query_results = []
-                try:
-                    query_result = Modelo.objects.filter(responsables=user)
-                    query_results.append(query_result)
-                except Modelo.FieldDoesNotExist:
-                    continue
-                for query_result in query_results:
-                    for actividad in query_result:
-                        nodo = actividad.nodos.first()
-                        ancestros = nodo.get_ancestors(include_self=True)
-                        ancestro_raiz = ancestros.first()
-                        actividad_raiz = ancestro_raiz.elemento
-                        if type(actividad_raiz) == Actividad:
-                            encuentros_id.add(actividad_raiz.pk)
-                        else:
-                            continue
-                        # encuentros_id.add()
-            queryset = Actividad.objects.filter(pk__in=encuentros_id)
-        # return Purchase.objects.filter(purchaser=user)
-        return queryset.order_by('-fecha_creacion')
-
-
-class ActividadDetailView(APIView):
-    """
-    Regresa un encuentro (GET)
-    Actualiza un encuentro (PUT)
-    Elimina un encuentro (DELETE)
-    """
-
-    def get_object(self, id):
-        try:
-            return Actividad.objects.get(pk=id)
-        except Actividad.DoesNotExist:
-            raise Http404
-
-    def get(self, request, id, format=None):
-        encuentro = self.get_object(id)
-        serializer = ActividadSerializer(
-            encuentro, context={'request': request})
-        return Response(serializer.data)
-
-    def put(self, request, id, format=None):
-        encuentro = self.get_object(id)
-        serializer = ActividadSerializer(
-            encuentro, data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, id, format=None):
-        encuentro = self.get_object(id)
-        encuentro.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+"""
 
 
 class EspacioListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **espacios** (GET)
-
     Agrega un nuevo espacio (POST)
-
-    Actualiza todos los espacios (PUT)
-
-    Elimina todos los espacios en el sistema (DELETE)
     """
     model = Espacio
     serializer_class = EspacioSerializer
@@ -233,12 +138,7 @@ class AncestrosListView(MultipleModelAPIView):
 class EncuentroListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **encuentros** (GET)
-
     Agrega un nuevo encuentro (POST)
-
-    Actualiza todos los encuentros (PUT)
-
-    Elimina todos los encuentros en el sistema (DELETE)
     """
     model = Encuentro
     serializer_class = EncuentroSerializer
@@ -252,15 +152,10 @@ class EncuentroListView(generics.ListCreateAPIView):
         if serializer.is_valid():
             print("Post", serializer_kwargs)
             serializer.save(**serializer_kwargs)
-#           #publish_data(channel='notification', data=data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
-        """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
-        """
         user = self.request.user
         queryset = Encuentro.objects.none()
         if not user.is_authenticated():
@@ -333,8 +228,6 @@ class ForoListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **foros** (GET)
     Agrega un nuevo foro (POST)
-    Actualiza todos los foros (PUT)
-    Elimina todos los foros en el sistema (DELETE)
     """
     model = Foro
     serializer_class = ForoSerializer
@@ -391,8 +284,6 @@ class SeminarioListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **seminarios** (GET)
     Agrega un nuevo seminario (POST)
-    Actualiza todos los seminarios (PUT)
-    Elimina todos los seminarios en el sistema (DELETE)
     """
     model = Seminario
     serializer_class = SeminarioSerializer
@@ -451,8 +342,6 @@ class PanelListView(generics.ListCreateAPIView):
     """
     Regresa una lista de todos los **paneles** (GET)
     Agrega un nuevo panel (POST)
-    Actualiza todos los paneles (PUT)
-    Elimina todos los paneles en el sistema (DELETE)
     """
     model = Panel
     serializer_class = PanelSerializer
@@ -505,8 +394,12 @@ class PanelDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Vistas con html
 def tiene_permiso_absoluto(usuario, actividad=None):
+    """
+    Indica si tiene permisos sin restricciones sobre una actividad.
+    Los tiene si tiene el rol de Secretario General, es un super usuario
+    en el sistema o si es responable de alguna actividad superior.
+    """
     if not usuario.is_active:
         return False
     if (usuario.is_superuser or
@@ -523,6 +416,12 @@ def tiene_permiso_absoluto(usuario, actividad=None):
 
 
 def tiene_permiso_restringido(usuario, actividad):
+    """
+    Indica si el el usuario tiene permisos restringidos en una actividad.
+
+    *Tener cuidado porque un usuario puede tener permiso absoluto y restringido
+    de una actividad*
+    """
     return usuario in actividad.responsables.all()
 
 

@@ -10,10 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 from unipath import Path
-import os
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = Path(__file__).ancestor(3)
 
 # Quick-start development settings - unsuitable for production
@@ -32,17 +28,15 @@ DJANGO_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',  # !!Debe ir antes de contrib.staticfiles
-    'django.contrib.staticfiles',
-    ]
+    'whitenoise.runserver_nostatic',  # ¡Debe ir antes de contrib.staticfiles!
+    'django.contrib.staticfiles']
 
 THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_docs',
     'mptt',
     'drf_multiple_model',
-    'django_countries'
-    ]
+    'django_countries']
 
 LOCAL_APPS = [
     'apps.actividades',
@@ -50,8 +44,7 @@ LOCAL_APPS = [
     'apps.programaAcademico',
     'apps.sesion',
     'apps.tests',
-    'apps.usuarios',
-    ]
+    'apps.usuarios']
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -119,8 +112,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-#AUTH_USER_MODEL = 'usuarios.Usuario'
-
 LOGIN_REDIRECT_URL = '/'
 
 REST_FRAMEWORK = {
@@ -138,10 +129,5 @@ REST_FRAMEWORK = {
         'user': '1000/day'
     }
 }
-"""
-# SwampDragon settings
-SWAMP_DRAGON_CONNECTION = ('swampdragon.connections.sockjs_connection.DjangoSubscriberConnection', '/data')
-"""
-
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

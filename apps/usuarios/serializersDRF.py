@@ -1,4 +1,3 @@
-from django_countries import Countries
 from rest_framework import serializers
 from django.db import transaction, IntegrityError
 
@@ -7,6 +6,10 @@ from .models import Usuario, Persona, Institucion
 
 
 class ResponsableSerializer(serializers.ModelSerializer):
+    """
+    Se encarga de hacer la conversión entre objetos de tipo Responsable en
+    formato Python a objetos en formato json y visceversa.
+    """
     class Meta:
         model = Persona
         fields = ('id', 'nombres', 'apellido_paterno', 'apellido_materno',
@@ -24,6 +27,10 @@ class ResponsableSerializer(serializers.ModelSerializer):
 
 
 class PersonaSerializer(serializers.ModelSerializer):
+    """
+    Se encarga de hacer la conversión entre objetos de tipo Persona en
+    formato Python a objetos en formato json y visceversa.
+    """
     class Meta:
         model = Persona
         fields = ('id', 'nombres', 'apellido_paterno', 'apellido_materno',
@@ -31,6 +38,10 @@ class PersonaSerializer(serializers.ModelSerializer):
 
 
 class InstitucionSerializer(serializers.ModelSerializer):
+    """
+    Se encarga de hacer la conversión entre objetos de tipo Institución en
+    formato Python a objetos en formato json y visceversa.
+    """
     class Meta:
         model = Institucion
         fields = ('id', 'nombre', 'nombre_corto', 'pais')

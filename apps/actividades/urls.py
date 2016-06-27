@@ -1,19 +1,17 @@
 from django.conf.urls import url
 from .views import (
-    EspacioListView,
-    InicioEncuentros,
-    ActividadListView,
-    ActividadDetailView,
-    EncuentroListView,
+    AncestrosListView,
     EncuentroDetailView,
-    ForoListView,
+    EncuentroListView,
+    EspacioListView,
     ForoDetailView,
-    SeminarioListView,
-    SeminarioDetailView,
-    PanelListView,
-    PanelDetailView,
+    ForoListView,
     HijosListView,
-    AncestrosListView,)
+    InicioEncuentros,
+    PanelDetailView,
+    PanelListView,
+    SeminarioDetailView,
+    SeminarioListView,)
 
 urlpatterns = [
     url(r'^inicio/$', InicioEncuentros.as_view()),
@@ -25,10 +23,6 @@ urlpatterns = [
         EncuentroDetailView.as_view(), name='encuentro-detail'),
     url(r'^foros/$', ForoListView.as_view(), name='foro-list'),
     url(r'^foros/(?P<id>\d+)/$', ForoDetailView.as_view(), name='foro-detail'),
-    url(r'^actividad/(?P<tipo_actividad>\w+)/$',
-        ActividadListView.as_view(), name='actividad-list'),
-    url(r'^actividad/(?P<tipo_actividad>\w+)/(?P<id>\d+)/$',
-        ActividadDetailView.as_view(), name='actividad-detail'),
     url(r'^seminarios/$', SeminarioListView.as_view(), name='seminario-list'),
     url(
         r'^seminarios/(?P<id>\d+)/$',

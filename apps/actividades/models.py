@@ -11,6 +11,8 @@ from django.template.loader import render_to_string
 
 from mptt.models import MPTTModel, TreeForeignKey
 
+from apps.usuarios.models import SecretarioGeneral
+
 
 class Nodo(MPTTModel):
     """
@@ -57,25 +59,25 @@ class Actividad(models.Model):
         es_creacion = self.pk is None
         # Se obtiene el elemento padre si es que se proporciona
         padre = kwargs.pop("padre", None)
-        # Le asigna un nodo a la actividad y se le asigna un padre si es
-        # que se especificó
+        # Si es creacion se le asigna un nodo a la actividad y además se le
+        # asigna un padre si es que se especificó
         if es_creacion:
-            # Se encarga del nodo
             try:
+                # (atomic) Evita que se cree una actividad sin nodo asociado
                 with transaction.atomic():
                     super(Actividad, self).save(*args, **kwargs)
-                    if padre is not None:
+                    if padre is not None:  # Se especificó un padre
                         nodo = Nodo(
                             parent=padre.nodos.all().first(),
                             elemento=self)
-                    else:
+                    else:  # No se especificó un padre de la actividad
                         nodo = Nodo(elemento=self)
                     nodo.save()
                     self.nodo = nodo
                     self.save()
             except IntegrityError as e:
                 raise e
-        else:
+        else:  # Caso de modificación de la actividad
             super(Actividad, self).save(*args, **kwargs)
 
     def es_responsable(self, usuario, checar_padres=False):
@@ -288,6 +290,7 @@ class Panel(Actividad):
         verbose_name_plural = "paneles"
 
 
+# Lista de Clases de las distintas Actividades
 modelosActividades = [Encuentro, Foro, Seminario, Panel]
 
 """
@@ -327,10 +330,6 @@ class Participante(models.Model):
         on_delete=models.SET_NULL)
 """
 
-
-class Institucion(models.Model):
-    pass
-
 """
 class ParticipanteActividad(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -361,12 +360,16 @@ class Sede(models.Model):
 class Espacio(models.Model):
     """
     Espacios disponibles en un encuentro para ser asignado a alguna actividad.
+    Cade encuentro tiene una o más sedes y cada sede tiene espacios.
     """
     nombre = models.CharField(max_length=100)
     sede = models.ForeignKey('Sede', models.CASCADE)
     cupo = models.PositiveIntegerField(null=True, blank=True)
 
     def get_actividades(self):
+        """
+        Obtiene la lista de actividades que están asociadas a este espacio
+        """
         lista_querys = []
         relaciones = self._meta.related_objects
         for relacion in relaciones:

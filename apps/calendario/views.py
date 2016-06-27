@@ -20,6 +20,10 @@ class CalendarioHome(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = "calendario/calendario_home.html"
 
     def test_func(self, user):
+        """
+        Función test de UserPassesTestMixin para indicar si una persona
+        tiene derecho a ver esta vista
+        """
         if not user.is_staff:
             return False
         if (SecretarioGeneral.objects.filter(usuario=user) or
@@ -44,39 +48,14 @@ class CalendarioHome(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return context
 
 
-def ActualizarActividad(request):
-    pk = request.GET['pk']
-    modelo = request.GET['modelo']
-    nombre = request.GET['nombre']
-    calId = request.GET['calId']
-    allDay = request.GET['allDay']
-    start = request.GET['start']
-    end = request.GET['end']
-    print('pk', type(pk), pk)
-    print('nombre', type(nombre), nombre)
-    print('calId', type(calId), calId)
-    print('allDay', type(allDay), allDay)
-    print('start', type(start), start)
-    print('end', type(end), end)
-    print('modelo', type(modelo), modelo)
-    app_label, nombre_modelo = modelo.split(".")
-    ModeloActividad = apps.get_model(app_label, nombre_modelo)
-    actividad = ModeloActividad.objects.get(pk=int(pk))
-    actividad.nombre = nombre
-    actividad.calId = calId
-    actividad.allDay = allDay == "true"
-    actividad.start = start
-    actividad.end = None if end == "null" else end
-    actividad.save()
-    #actividad = Actividad.objects.get(pk=int(pk))
-#    print(actividad.nombre, actividad.calId, actividad.allDay, actividad.start, actividad.end)
-    return HttpResponse('<h1>Page was found</h1>')
-
-
 class ActualizarActividadView(LoginRequiredMixin,
                               UserPassesTestMixin, View):
 
     def test_func(self, user):
+        """
+        Función test de UserPassesTestMixin para indicar si una persona
+        tiene derecho a ver esta vista
+        """
         return True
 
     def post(self, request, *args, **kwargs):

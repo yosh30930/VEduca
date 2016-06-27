@@ -11,11 +11,16 @@ from apps.actividades.models import Encuentro, Foro, Seminario, Panel, Espacio
 
 from .forms import UsuarioResetForm
 
+
 class InicioSesionView(View):
+    """
+    Vista inicial donde se realiza el inicio de sesión o se redige a la
+    siguiente si es que el usuario ya se encuentra autenticado
+    """
+
     def get(self, request, *args, **kwargs):
         ResetPruebas()
         if request.user.is_authenticated():
-        #   return HttpResponseRedirect(reverse('login'))
             return HttpResponseRedirect('/inicio/')
         else:
             template_name = 'sesion/inicio_sesion.html'
@@ -38,6 +43,9 @@ class UsuarioResetView(FormView):
 
 @transaction.atomic
 def crea_actividad(Modelo, nombre, padre, *args, **kwargs):
+    """
+    Función auxiliar para la creación de actividades de prueba.
+    """
     try:
         with transaction.atomic():
             actividad = Modelo(nombre=nombre, *args, **kwargs)
@@ -48,6 +56,10 @@ def crea_actividad(Modelo, nombre, padre, *args, **kwargs):
 
 
 def ResetPruebas():
+    """
+    Llena la base de datos con datos de prueba además de llenar la tabla con
+    los distintos paises a usar
+    """
     if len(Pais.objects.all()) == 0:
         ResetPais()
     if len(Institucion.objects.all()) == 0:
@@ -56,27 +68,30 @@ def ResetPruebas():
         ResetUsuarios()
     if len(Encuentro.objects.all()) == 0:
         ResetActividades()
-    if len(Espacio.objects.all()) == 0:
-        ResetEspacios()
 
 
 def ResetActividades():
+    """
+    Crea un encuentro de prueba
+    """
     modelos = [Encuentro, Foro, Seminario, Panel]
     for modelo in modelos:
         modelo.objects.all().delete()
-    encuentro = Encuentro.objects.create(nombre="Encuentro Internacional 2016 Costa Rica")
+    encuentro = Encuentro.objects.create(
+        nombre="Encuentro Internacional 2016 Costa Rica")
     foro1 = crea_actividad(
-        Foro, "Educación Superior, Innovación e Internacionalización", encuentro,
-        nombre_corto="Educación Superior")
+        Foro, "Educación Superior, Innovación e Internacionalización",
+        encuentro, nombre_corto="Educación Superior")
     foro2 = crea_actividad(
         Foro, "Investigación, Desarrollo e Innovación (I+D+i) ", encuentro,
         nombre_corto="(I+D+i) ")
     seminario11 = crea_actividad(
-        Seminario, "Programa Piloto Inclusión Digital, Estrategia Digital\
-        Nacional, Gobierno de México", foro1)
+        Seminario,
+        "Programa Piloto Inclusión Digital, Estrategia Digital Nacional",
+        foro1)
     seminario21 = crea_actividad(
-        Seminario, "Programa Piloto de Inclusión Digital, Estrategia Digital\
-        Nacional, Gobierno de México", foro2)
+        Seminario, "Programa Piloto de Inclusión Digital, Estrategia",
+        foro2)
     for idx in range(3):
         crea_actividad(Panel, "Panel 1." + str(idx), seminario11)
     for idx in range(3):
@@ -85,9 +100,11 @@ def ResetActividades():
 
 
 def ResetUsuarios():
+    """
+    Crea usuarios de prueba
+    """
     Usuario.objects.all().delete()
     Usuario.objects.create_superuser('sainoba@gmail.com', nombres='Marco Nila', contrasena='bar')
-    Usuario.objects.create_user('mabruka8@mailinator.com', nombres='Alejandro Llovet', contrasena='bar')
     Usuario.objects.create_user('mabruka1@mailinator.com', nombres='Fernando Gamboa', contrasena='bar')
     Usuario.objects.create_user('mabruka2@mailinator.com', nombres='Elena García', contrasena='bar')
     Usuario.objects.create_user('mabruka3@mailinator.com', nombres='Pedro Rocha', contrasena='bar')
@@ -95,21 +112,13 @@ def ResetUsuarios():
     Usuario.objects.create_user('mabruka5@mailinator.com', nombres='Julieta Palma', contrasena='bar')
     Usuario.objects.create_user('mabruka6@mailinator.com', nombres='Juan Manuel Valdés', contrasena='bar')
     Usuario.objects.create_user('mabruka7@mailinator.com', nombres='Luis Andrés Ochoa', contrasena='bar')
-
-
-def ResetEspacios():
-    return
-    Espacio.objects.all().delete()
-    encuentros = Encuentro.objects.all()
-    idx = 1
-    for encuentro in encuentros:
-        for _ in range(10):
-            nombre = "Espacio " + str(idx)
-            Espacio(nombre=nombre, encuentro=encuentro).save()
-            idx += 1
+    Usuario.objects.create_user('mabruka8@mailinator.com', nombres='Alejandro Llovet', contrasena='bar')
 
 
 def ResetInstitucion():
+    """
+    Crea instituciones de prueba
+    """
     Institucion.objects.all().delete()
     pais = Pais.objects.get(id="MX")
     Institucion.objects.create(
@@ -124,6 +133,9 @@ def ResetInstitucion():
 
 
 def ResetPais():
+    """
+    Se encarga de llenar la tabla de paises
+    """
     Pais.objects.all().delete()
     Pais.objects.create(id='', nombre='Otro')
     Pais.objects.create(id='AF', nombre='Afganistán')
