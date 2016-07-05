@@ -1,0 +1,3 @@
+[console_scripts]
+dragon-admin = swampdragon.core:run
+
