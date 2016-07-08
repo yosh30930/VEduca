@@ -13,17 +13,16 @@ class ResponsableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
         fields = ('id', 'nombres', 'apellido_paterno', 'apellido_materno',
-                  'correo', 'correo_secundario', 'pais')
+                  'correo', 'pais')
 
-    def create(self, *args, **kwargs):
-        obj = None
-        try:
-            with transaction.atomic():
-                print("Correoooooooooo", obj.correo)
-                Usuario.objects.create_user(correo=obj.correo)
-        except IntegrityError as e:
-            raise e
-        return obj
+    def create(self, validated_data):
+        persona = Persona (
+                    nombres=validated_data['nombres'],
+                    apellido_paterno=validated_data['apellido_paterno'],
+                    apellido_materno=validated_data['apellido_materno'],
+                    correo=validated_data['correo'])
+        persona.save()
+        return persona
 
 
 class PersonaSerializer(serializers.ModelSerializer):

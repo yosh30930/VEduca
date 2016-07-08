@@ -19,7 +19,7 @@ class ResponsableListView(generics.ListCreateAPIView):
     """
     model = Persona
     serializer_class = PersonaSerializer
-    queryset = Persona.objects.all()
+    queryset = Persona.objects.order_by("correo")
 
     def post(self, request, format=None):
         data = request.data

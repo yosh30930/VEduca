@@ -1,4 +1,5 @@
 {% load static from staticfiles %}
+{% include "usuarios/modals/persona_crear.html" %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
 <!-- Edición Encuentro Modal -->
 <style type="text/css">
@@ -67,6 +68,7 @@
             <label for="seminario_modal_responsables" class="control-label">Responsable(s) del Seminario</label>
             <select id="seminario_modal_responsables" class="form-control" multiple>
             </select>
+            <small>¿No encuentra un responsable? <a class="registra-responsable-modal" href="#">Regístrelo</a></small><br>
           </div>
         </form>
       </div>
@@ -204,6 +206,17 @@ function verifica_inputs() {
 
 $('#seminario_modal_nombre').on('input', function (event) {
   verifica_inputs();
+});
+
+$('#seminario_modal .registra-responsable-modal').on('click', function (event) {
+  $modal = $("#persona_crear_modal");
+  $modal_body = $modal.find(".modal-body");
+  $boton_submit = $modal.find("#persona_crear_modal_submit");
+  $boton_submit.text("Registrar Responsable");
+  $("#seminario_modal").modal('hide');
+  $("#persona_crear_modal").data('modal-anterior', 'seminario_modal');
+  $("#persona_crear_modal").find('.modal-title').text("Registrar Responsable");
+  $("#persona_crear_modal").modal('show');
 });
 
 $('#seminario_modal_submit').on('click', function (event) {

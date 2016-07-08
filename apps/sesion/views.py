@@ -103,7 +103,7 @@ def ResetUsuarios():
     """
     Crea usuarios de prueba
     """
-    Usuario.objects.all().delete()
+    #Usuario.objects.all().delete()
     Usuario.objects.create_superuser('sainoba@gmail.com', nombres='Marco Nila', contrasena='bar')
     Usuario.objects.create_user('mabruka1@mailinator.com', nombres='Fernando Gamboa', contrasena='bar')
     Usuario.objects.create_user('mabruka2@mailinator.com', nombres='Elena García', contrasena='bar')

@@ -1,4 +1,5 @@
 {% load static from staticfiles %}
+{% include "usuarios/modals/persona_crear.html" %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
 <!-- Edición Encuentro Modal -->
 <style type="text/css">
@@ -90,7 +91,10 @@
             <div class='col-md-6'>
               <div class="form-group">
                 <label for="encuentro_modal_pais" class="control-label">País</label>
-                <input id="encuentro_modal_pais" type="text" class="form-control" placeholder="Ejemplo: México">
+                <select id="encuentro_modal_pais" class="form-control" placeholder="Elige un país">
+                  <option value='' selected>Selecciona un país</option>
+                  {% include "usuarios/modals/pais.html" %}
+                </select>
               </div>
             </div>
             <div class='col-md-6'>
@@ -185,7 +189,7 @@ function rellena_responsables(selectize, responsables, id_seleccionados) {
       }
     })
     selectize.addOption({
-      text: responsable.nombres,
+      text: responsable.nombres + " " + responsable.apellido_paterno + " " + responsable.apellido_materno,
       value: responsable.id,
       selected: selected,
     });

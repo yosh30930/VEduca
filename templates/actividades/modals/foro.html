@@ -1,4 +1,5 @@
 {% load static from staticfiles %}
+{% include "usuarios/modals/persona_crear.html" %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/ring.css' %}">
 <!-- Edición Encuentro Modal -->
 <style type="text/css">
@@ -75,6 +76,8 @@
             <label for="foro_modal_responsables" class="control-label">Responsables del Foro</label>
             <select id="foro_modal_responsables" class="form-control" multiple title="Sin responsables">
             </select>
+            <small>¿No encuentra un responsable? <a class="registra-responsable-modal" href="#">Regístrelo</a></small><br>
+            <small>¿El responsable no tienen la institución o el cargo que necesita? <a class="edita-responsable-modal" href="#">Edítelo</a></small>
           </div>
         </form>
       </div>
@@ -200,6 +203,8 @@ $('#foro_modal').on('show.bs.modal', function (event) {
   // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 });
 
+
+
 function verifica_inputs() {
   $modal = $("#foro_modal");
   $modal_body = $modal.find(".modal-body");
@@ -217,6 +222,17 @@ function verifica_inputs() {
 
 $('#foro_modal_nombre').on('input', function (event) {
   verifica_inputs();
+});
+
+$('#foro_modal .registra-responsable-modal').on('click', function (event) {
+  $modal = $("#persona_crear_modal");
+  $modal_body = $modal.find(".modal-body");
+  $boton_submit = $modal.find("#persona_crear_modal_submit");
+  $boton_submit.text("Registrar Responsable");
+  $("#foro_modal").modal('hide');
+  $("#persona_crear_modal").data('modal-anterior', 'foro_modal');
+  $("#persona_crear_modal").find('.modal-title').text("Registrar Responsable");
+  $("#persona_crear_modal").modal('show');
 });
 
 $('#foro_modal_submit').on('click', function (event) {

@@ -78,7 +78,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.persona.correo])
 
     def __str__(self):
-        return self.email.correos
+        return self.email.correo
 
 
 class SecretarioGeneral(models.Model):
@@ -104,6 +104,7 @@ class Persona(models.Model):
         (LIC_GRADO, 'Lic'),
         (OTRO_GRADO, ''),
     )
+    #cargo = models.ForeignKey('Puesto', default="", related_name="+")
     correo = models.EmailField("correo electrónico",
                                max_length=254, unique=True)
     correo_secundario = models.EmailField(

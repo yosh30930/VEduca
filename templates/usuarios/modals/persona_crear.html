@@ -176,7 +176,7 @@ var instituciones_selectize = null;
 function reset_modal(){
   var $modal = $("#persona_crear_modal");
   var $modal_body = $modal.find(".modal-body");
-  $('#persona_crear_modal_apellidos').val("");
+  $('#persona_crear_modal_apellido_materno').val("");
   $('#persona_crear_modal_correo').val("");
   $('#persona_crear_modal_correo_secundario').val("");
   $('#persona_crear_modal_pais').val("");
@@ -370,7 +370,10 @@ function verifica_inputs() {
 $('#persona_crear_modal_nombres').on('input', function (event) {
   verifica_inputs();
 });
-$('#persona_crear_modal_apellidos').on('input', function (event) {
+$('#persona_crear_modal_apellido_materno').on('input', function (event) {
+  verifica_inputs();
+});
+$('#persona_crear_modal_apellido_paterno').on('input', function (event) {
   verifica_inputs();
 });
 $('#persona_crear_modal_correo').on('input', function (event) {
@@ -440,7 +443,7 @@ $('#persona_crear_modal_submit').on('click', function (event) {
     'apellido_paterno': $('#persona_crear_modal_apellido_paterno').val().trim(),
     'apellido_materno': $('#persona_crear_modal_apellido_materno').val().trim(),
     'correo': $('#persona_crear_modal_correo').val().trim(),
-    'pais': $('#persona_crear_modal_pais').val().trim(),
+    'pais': $('#persona_crear_modal_institucion_pais').val(),
     'cargo': $('#persona_crear_modal_cargo').val().trim(),
   };
   var operacion = "responsable";
